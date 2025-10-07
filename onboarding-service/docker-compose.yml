@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  onboarding-db:
+    image: postgres:latest
+    container_name: onboarding-service-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: onboardingdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - onboarding-service-data:/var/lib/postgresql/data
+    networks:
+      - onboarding-net
+
+  onboarding-service:
+    build:
+      context: .
+      dockerfile: onboarding-service/Dockerfile
+    container_name: onboarding-service
+    restart: always
+    depends_on:
+      - onboarding-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://onboarding-service-db:5432/onboardingdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "4000:4000"
+    networks:
+      - onboarding-net
+
+volumes:
+  onboarding-service-data:
+
+networks:
+  onboarding-net:
+    driver: bridge
