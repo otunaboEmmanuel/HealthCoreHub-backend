@@ -11,9 +11,9 @@
 4||10|c|G
 4||10|C|G
 4||10|T|G</Grants>
-      <IntrospectionStateNumber>766</IntrospectionStateNumber>
+      <IntrospectionStateNumber>767</IntrospectionStateNumber>
       <ServerVersion>18.0</ServerVersion>
-      <StartupTime>1759872741</StartupTime>
+      <StartupTime>1759891022</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -707,7 +707,7 @@ true posixrules
 13293||10|C|G
 13293||-9223372036854775808|U|G
 13293||10|U|G</Grants>
-      <IntrospectionStateNumber>766</IntrospectionStateNumber>
+      <IntrospectionStateNumber>767</IntrospectionStateNumber>
       <ObjectId>16384</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
@@ -4228,11 +4228,11 @@ true posixrules
       <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <LastIntrospectionL1Xid>766</LastIntrospectionL1Xid>
-      <LastIntrospectionL2Xid>766</LastIntrospectionL2Xid>
-      <LastIntrospectionL3Xid>766</LastIntrospectionL3Xid>
+      <LastIntrospectionL1Xid>767</LastIntrospectionL1Xid>
+      <LastIntrospectionL2Xid>767</LastIntrospectionL2Xid>
+      <LastIntrospectionL3Xid>767</LastIntrospectionL3Xid>
       <LastIntrospectionLevel>3</LastIntrospectionLevel>
-      <LastIntrospectionLocalTimestamp>2025-10-07.22:56:18</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-10-08.02:40:20</LastIntrospectionLocalTimestamp>
       <ObjectId>2200</ObjectId>
       <StateNumber>546</StateNumber>
       <OwnerName>pg_database_owner</OwnerName>
@@ -4246,20 +4246,36 @@ true posixrules
       <StoredType>integer|0s</StoredType>
       <OwnerName>postgres</OwnerName>
     </sequence>
-    <table id="274" parent="272" name="hospital">
+    <sequence id="274" parent="272" name="subscription_id_seq">
+      <DetailsLevel>2</DetailsLevel>
+      <ObjectId>16402</ObjectId>
+      <SequenceIdentity>1</SequenceIdentity>
+      <StartValue>1</StartValue>
+      <StateNumber>755</StateNumber>
+      <StoredType>integer|0s</StoredType>
+      <OwnerName>postgres</OwnerName>
+    </sequence>
+    <table id="275" parent="272" name="hospital">
       <DetailsLevel>2</DetailsLevel>
       <ObjectId>16386</ObjectId>
       <StateNumber>754</StateNumber>
       <AccessMethodId>2</AccessMethodId>
       <OwnerName>postgres</OwnerName>
     </table>
-    <check id="275" parent="274" name="hospital_status_check">
+    <table id="276" parent="272" name="subscription">
+      <DetailsLevel>2</DetailsLevel>
+      <ObjectId>16403</ObjectId>
+      <StateNumber>755</StateNumber>
+      <AccessMethodId>2</AccessMethodId>
+      <OwnerName>postgres</OwnerName>
+    </table>
+    <check id="277" parent="275" name="hospital_status_check">
       <ColNames>status</ColNames>
       <ObjectId>16389</ObjectId>
       <Predicate>(status)::text = ANY ((ARRAY[&apos;PENDING&apos;::character varying, &apos;ACTIVE&apos;::character varying, &apos;SUSPENDED&apos;::character varying])::text[])</Predicate>
       <StateNumber>754</StateNumber>
     </check>
-    <column id="276" parent="274" name="id">
+    <column id="278" parent="275" name="id">
       <IdentityKind>by-default</IdentityKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -4268,56 +4284,56 @@ true posixrules
       <SequenceId>16385</SequenceId>
       <TypeId>23</TypeId>
     </column>
-    <column id="277" parent="274" name="address">
+    <column id="279" parent="275" name="address">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="278" parent="274" name="contact_person">
+    <column id="280" parent="275" name="contact_person">
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="279" parent="274" name="created_at">
+    <column id="281" parent="275" name="created_at">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StateNumber>754</StateNumber>
       <StoredType>timestamp(6)|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="280" parent="274" name="email">
+    <column id="282" parent="275" name="email">
       <NotNull>1</NotNull>
       <Position>5</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="281" parent="274" name="name">
+    <column id="283" parent="275" name="name">
       <NotNull>1</NotNull>
       <Position>6</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="282" parent="274" name="phone_number">
+    <column id="284" parent="275" name="phone_number">
       <NotNull>1</NotNull>
       <Position>7</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="283" parent="274" name="status">
+    <column id="285" parent="275" name="status">
       <NotNull>1</NotNull>
       <Position>8</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <index id="284" parent="274" name="hospital_pkey">
+    <index id="286" parent="275" name="hospital_pkey">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16400</ObjectId>
@@ -4326,12 +4342,64 @@ true posixrules
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="285" parent="274" name="hospital_pkey">
+    <key id="287" parent="275" name="hospital_pkey">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16401</ObjectId>
       <Primary>1</Primary>
       <StateNumber>754</StateNumber>
       <UnderlyingIndexId>16400</UnderlyingIndexId>
+    </key>
+    <check id="288" parent="276" name="subscription_name_check">
+      <ColNames>name</ColNames>
+      <ObjectId>16406</ObjectId>
+      <Predicate>(name)::text = ANY ((ARRAY[&apos;BASIC&apos;::character varying, &apos;STANDARD&apos;::character varying, &apos;PREMIUM&apos;::character varying])::text[])</Predicate>
+      <StateNumber>755</StateNumber>
+    </check>
+    <column id="289" parent="276" name="id">
+      <IdentityKind>by-default</IdentityKind>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StateNumber>755</StateNumber>
+      <StoredType>integer|0s</StoredType>
+      <SequenceId>16402</SequenceId>
+      <TypeId>23</TypeId>
+    </column>
+    <column id="290" parent="276" name="duration_in_days">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StateNumber>755</StateNumber>
+      <StoredType>integer|0s</StoredType>
+      <TypeId>23</TypeId>
+    </column>
+    <column id="291" parent="276" name="name">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StateNumber>755</StateNumber>
+      <StoredType>varchar(255)|0s</StoredType>
+      <TypeId>1043</TypeId>
+    </column>
+    <column id="292" parent="276" name="price">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StateNumber>755</StateNumber>
+      <StoredType>double precision|0s</StoredType>
+      <TypeId>701</TypeId>
+    </column>
+    <index id="293" parent="276" name="subscription_pkey">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <ObjectId>16411</ObjectId>
+      <Primary>1</Primary>
+      <StateNumber>755</StateNumber>
+      <Unique>1</Unique>
+      <AccessMethodId>403</AccessMethodId>
+    </index>
+    <key id="294" parent="276" name="subscription_pkey">
+      <NameSurrogate>1</NameSurrogate>
+      <ObjectId>16412</ObjectId>
+      <Primary>1</Primary>
+      <StateNumber>755</StateNumber>
+      <UnderlyingIndexId>16411</UnderlyingIndexId>
     </key>
   </database-model>
 </dataSource>

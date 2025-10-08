@@ -1,4 +1,4 @@
-package com.hc.onboardingservice.dto;
+package com.hc.onboardingservice.requests;
 import com.hc.onboardingservice.enums.Status;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

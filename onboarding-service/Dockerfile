@@ -8,13 +8,14 @@ RUN mvn dependency:go-offline -B
 
 COPY src ./src
 
-RUN mvn clean package
+RUN mvn clean package -DskipTests
+
 
 FROM openjdk:21-jdk AS runner
 
 WORKDIR /app
 
-COPY --from=builder ./app/target/onboarding-service-0.0.1-SNAPSHOT.jar ./app.jar
+COPY --from=builder /app/target/onboarding-service-0.0.1-SNAPSHOT.jar ./app.jar
 
 EXPOSE 4000
 

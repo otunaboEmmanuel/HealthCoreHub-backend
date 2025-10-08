@@ -1,4 +1,4 @@
-package com.hc.onboardingservice.dto;
+package com.hc.onboardingservice.requests;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

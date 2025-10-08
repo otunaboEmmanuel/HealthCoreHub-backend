@@ -1,8 +1,8 @@
 package com.hc.onboardingservice.controller;
 
 import com.hc.onboardingservice.dto.HospitalDto;
-import com.hc.onboardingservice.dto.HospitalRequest;
-import com.hc.onboardingservice.dto.UpdateRequest;
+import com.hc.onboardingservice.requests.HospitalRequest;
+import com.hc.onboardingservice.requests.UpdateRequest;
 import com.hc.onboardingservice.entity.Hospital;
 import com.hc.onboardingservice.repository.HospitalRepository;
 import com.hc.onboardingservice.service.HospitalService;
