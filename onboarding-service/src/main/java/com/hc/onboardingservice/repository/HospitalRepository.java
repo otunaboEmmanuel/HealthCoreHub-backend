@@ -19,4 +19,6 @@ public interface HospitalRepository extends JpaRepository<Hospital, Integer> {
            FROM Hospital hospital
            """)
     Page<Hospital> findAllHospital(Pageable pageable);
+
+    Optional<Hospital> findByDbName(String dbName);
 }

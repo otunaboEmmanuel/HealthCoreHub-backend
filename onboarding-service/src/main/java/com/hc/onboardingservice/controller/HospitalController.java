@@ -6,6 +6,7 @@ import com.hc.onboardingservice.requests.UpdateRequest;
 import com.hc.onboardingservice.entity.Hospital;
 import com.hc.onboardingservice.repository.HospitalRepository;
 import com.hc.onboardingservice.service.HospitalService;
+import com.hc.onboardingservice.service.TenantDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class HospitalController {
     private final HospitalService hospitalService;
     private final HospitalRepository hospitalRepository;
+    private final TenantDatabaseService tenantDatabaseService;
     @PostMapping()
     public ResponseEntity<?> registerHospital(@RequestBody HospitalRequest hospitalRequest) {
         Map<String, String> response = new HashMap<>();
@@ -60,33 +62,51 @@ public class HospitalController {
         }
         return new ResponseEntity<>(hospital, HttpStatus.OK);
     }
-    @PutMapping("{id}")
-    public ResponseEntity<?>updateHospital(@PathVariable Integer id, @RequestBody UpdateRequest updateRequest)
-        {
-            Map<String, String> response = new HashMap<>();
-            Hospital hospital = hospitalService.updateHospital(id, updateRequest);
-            if (hospital == null)
-            {
-                response.put("code", "100");
-                response.put("message", "hospital already exists".toUpperCase());
-            }
-                response.put("code", "00");
-                response.put("message", "hospital successfully updated".toUpperCase());
-             return new ResponseEntity<>(response, HttpStatus.OK);
-        }
+//    @PutMapping("{id}")
+//    public ResponseEntity<?>updateHospital(@PathVariable Integer id, @RequestBody UpdateRequest updateRequest)
+//        {
+//            Map<String, String> response = new HashMap<>();
+//            Hospital hospital = hospitalService.updateHospital(id, updateRequest);
+//            if (hospital == null)
+//            {
+//                response.put("code", "100");
+//                response.put("message", "hospital already exists".toUpperCase());
+//            }
+//                response.put("code", "00");
+//                response.put("message", "hospital successfully updated".toUpperCase());
+//             return new ResponseEntity<>(response, HttpStatus.OK);
+//        }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<?> deleteHospital(@PathVariable Integer id)
-    {
-        Map<String, String> response = new HashMap<>();
-        Hospital hospital = hospitalService.deleteHospital(id);
-        if (hospital == null)
-        {
-            response.put("code", "101");
-            response.put("message", "hospital does not exist".toUpperCase());
+//    @DeleteMapping("{id}")
+//    public ResponseEntity<?> deleteHospital(@PathVariable Integer id)
+//    {
+//        Map<String, String> response = new HashMap<>();
+//        Hospital hospital = hospitalService.deleteHospital(id);
+//        if (hospital == null)
+//        {
+//            response.put("code", "101");
+//            response.put("message", "hospital does not exist".toUpperCase());
+//        }
+//        response.put("code", "00");
+//        response.put("message", "hospital successfully deleted".toUpperCase());
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
+    @DeleteMapping("/{dbName}")
+    public ResponseEntity<?> dropTenantDatabase(
+            @PathVariable String dbName,
+            @RequestParam String dbUser) {
+
+        try {
+            tenantDatabaseService.dropTenantDatabase(dbName, dbUser);
+            return ResponseEntity.ok(Map.of(
+                    "code", "00",
+                    "message", "Tenant database dropped successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "code", "99",
+                    "message", "Failed to drop database: " + e.getMessage()
+            ));
         }
-        response.put("code", "00");
-        response.put("message", "hospital successfully deleted".toUpperCase());
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

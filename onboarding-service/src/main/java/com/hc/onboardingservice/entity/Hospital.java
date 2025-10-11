@@ -20,19 +20,40 @@ public class Hospital {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @NotNull
+    @Column(nullable = false, unique = true)
     private String name;
-    @NotNull
-    private String address;
-    @NotNull
+
+    @Column(nullable = false, unique = true)
     private String email;
-    @NotNull
-    private String phoneNumber;
-    @NotNull
-    private String contactPerson;
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private Status status;
-    @NotNull
+
+    private String phone;
+
+    @Column(name = "hospital_type")
+    private String hospitalType;
+
+    private String country;
+    private String state;
+    private String city;
+
+    @Column(columnDefinition = "TEXT")
+    private String address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plan_id")
+    private Plan plan;
+
+    @Column(name = "db_name", nullable = false)
+    private String dbName;
+
+    @Column(name = "db_user", nullable = false)
+    private String dbUser;
+
+    @Column(name = "db_password", nullable = false)
+    private String dbPassword;
+
+    @Column(name = "is_active")
+    private Boolean isActive = false;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }

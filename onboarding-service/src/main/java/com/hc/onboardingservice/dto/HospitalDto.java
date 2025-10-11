@@ -16,9 +16,10 @@ public class HospitalDto {
     private String name;
     private String address;
     private String email;
+    private String city;
+    private String state;
+    private String hospitalType;
     private String phoneNumber;
-    private String contactPerson;
-    private Status status;
     private LocalDateTime createdAt;
     //complete the constructor
     public HospitalDto(Hospital hospital) {
@@ -26,9 +27,10 @@ public class HospitalDto {
         this.name = hospital.getName();
         this.address= hospital.getAddress();
         this.email = hospital.getEmail();
-        this.phoneNumber=hospital.getPhoneNumber();
-        this.contactPerson= hospital.getContactPerson();
-        this.status=hospital.getStatus();
+        this.city = hospital.getCity();
+        this.state = hospital.getState();
+        this.hospitalType = hospital.getHospitalType();
+        this.phoneNumber=hospital.getPhone();
         this.createdAt=hospital.getCreatedAt();
     }
 }

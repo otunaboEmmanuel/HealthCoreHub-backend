@@ -22,5 +22,12 @@ public class HospitalRequest {
     @NotBlank(message = "field must not be blank")
     private String phoneNumber;
     @NotBlank(message = "field must not be blank")
-    private String contactPerson;
+    private String city;
+    @NotBlank(message = "field must not be blank")
+    private String state;
+    @NotBlank(message = "field must not be blank")
+    private String hospitalType;
+    @NotBlank(message = "field must not be blank")
+    private String country;
+    private PlanRequest plan;
 }
