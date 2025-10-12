@@ -28,13 +28,13 @@ services:
     depends_on:
       onboarding-db:
         condition: service_healthy
-    env_file:
-      - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://onboarding-service-db:5432/onboardingdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
     ports:
       - "4000:4000"
     networks:
