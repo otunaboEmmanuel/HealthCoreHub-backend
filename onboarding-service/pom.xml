@@ -77,6 +77,15 @@
             <artifactId>hypersistence-utils-hibernate-63</artifactId>
             <version>3.7.0</version>
         </dependency>
+        <!-- Just the crypto module for BCrypt password encoding -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

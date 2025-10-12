@@ -26,7 +26,6 @@ public class Plan {
     private double price;
     private int durationDays;
 
-
     @JdbcTypeCode(SqlTypes.JSON)  // This tells Hibernate to use JSON type
     @Column(columnDefinition = "jsonb")
     private List<String> features;

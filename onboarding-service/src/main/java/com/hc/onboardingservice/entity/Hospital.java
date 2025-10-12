@@ -1,14 +1,14 @@
 package com.hc.onboardingservice.entity;
 
-import com.hc.onboardingservice.enums.Status;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -50,6 +50,9 @@ public class Hospital {
 
     @Column(name = "db_password", nullable = false)
     private String dbPassword;
+    // Admin references (one-to-many relationship)
+    @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HospitalAdmin> admins = new ArrayList<>();
 
     @Column(name = "is_active")
     private Boolean isActive = false;

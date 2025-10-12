@@ -21,4 +21,12 @@ public interface HospitalRepository extends JpaRepository<Hospital, Integer> {
     Page<Hospital> findAllHospital(Pageable pageable);
 
     Optional<Hospital> findByDbName(String dbName);
+
+    Optional<Hospital> findByEmail(String hospitalEmail);
+
+    @Query("SELECT DISTINCT h FROM Hospital h " +
+            "LEFT JOIN FETCH h.plan " +
+            "LEFT JOIN FETCH h.admins " +
+            "ORDER BY h.id DESC")
+    Page<Hospital> findAllWithDetails(Pageable pageable);
 }

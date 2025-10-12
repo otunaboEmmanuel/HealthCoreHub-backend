@@ -1,13 +1,16 @@
 package com.hc.onboardingservice.controller;
 
-import com.hc.onboardingservice.dto.HospitalDto;
-import com.hc.onboardingservice.requests.HospitalRequest;
-import com.hc.onboardingservice.requests.UpdateRequest;
+import com.hc.onboardingservice.dto.HospitalListResponse;
+import com.hc.onboardingservice.dto.HospitalRegistrationResponse;
 import com.hc.onboardingservice.entity.Hospital;
+import com.hc.onboardingservice.requests.HospitalRegistrationRequest;
+
 import com.hc.onboardingservice.repository.HospitalRepository;
 import com.hc.onboardingservice.service.HospitalService;
 import com.hc.onboardingservice.service.TenantDatabaseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,32 +25,49 @@ import java.util.Map;
 @RestController
 @RequestMapping("api/hospital")
 @RequiredArgsConstructor
+@Slf4j
 public class HospitalController {
     private final HospitalService hospitalService;
     private final HospitalRepository hospitalRepository;
     private final TenantDatabaseService tenantDatabaseService;
-    @PostMapping()
-    public ResponseEntity<?> registerHospital(@RequestBody HospitalRequest hospitalRequest) {
-        Map<String, String> response = new HashMap<>();
-        Hospital hospital = hospitalService.registerHospital(hospitalRequest);
-        if (hospital == null) {
-            response.put("code", "100");
-            response.put("message", "hospital already exists".toUpperCase());
-            return new ResponseEntity<>(response,HttpStatus.OK);
-        }
-        else {
-            response.put("code", "00");
-            response.put("message", "hospital successfully registered".toUpperCase());
+    @PostMapping
+    public ResponseEntity<HospitalRegistrationResponse> registerHospital(
+            @Valid @RequestBody HospitalRegistrationRequest request) {
+
+        log.info("📝 Received hospital registration request for: {}",
+                request.getHospital().getName());
+
+        try {
+            HospitalRegistrationResponse response = hospitalService.registerHospital(request);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
+
+        } catch (IllegalArgumentException e) {
+            log.warn("⚠️ Validation error: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(
+                    HospitalRegistrationResponse.builder()
+                            .code("01")
+                            .message(e.getMessage())
+                            .build()
+            );
+
+        } catch (Exception e) {
+            log.error("❌ Registration failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    HospitalRegistrationResponse.builder()
+                            .code("99")
+                            .message("Registration failed: " + e.getMessage())
+                            .build()
+            );
         }
     }
     @GetMapping()
-    public Page<?> getRegisteredHospitals(@RequestParam(name = "page",defaultValue = "0", required = false)int page,
+    public ResponseEntity<Page<?>> getRegisteredHospitals(@RequestParam(name = "page",defaultValue = "0", required = false)int page,
                                           @RequestParam(name= "size", defaultValue = "10", required = false) int size)
     {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<Hospital> allHospital= hospitalRepository.findAllHospital(pageable);
-        return allHospital.map(HospitalDto::new);
+        Page<Hospital> hospitals = hospitalRepository.findAllWithDetails(pageable);
+        Page<HospitalListResponse> response = hospitals.map(HospitalListResponse::new);
+        return ResponseEntity.ok(response);
     }
     @GetMapping("{id}")
     public ResponseEntity<?> findHospital(@PathVariable Integer id)
@@ -63,50 +83,50 @@ public class HospitalController {
         return new ResponseEntity<>(hospital, HttpStatus.OK);
     }
 //    @PutMapping("{id}")
-//    public ResponseEntity<?>updateHospital(@PathVariable Integer id, @RequestBody UpdateRequest updateRequest)
+//    public ResponseEntity<?>updateHospital(@PathVariable Integer id, @RequestBody HospitalRegistrationRequest updateRequest)
 //        {
 //            Map<String, String> response = new HashMap<>();
 //            Hospital hospital = hospitalService.updateHospital(id, updateRequest);
 //            if (hospital == null)
 //            {
 //                response.put("code", "100");
-//                response.put("message", "hospital already exists".toUpperCase());
+//                response.put("message", "hospital does not exist".toUpperCase());
 //            }
 //                response.put("code", "00");
 //                response.put("message", "hospital successfully updated".toUpperCase());
 //             return new ResponseEntity<>(response, HttpStatus.OK);
 //        }
 
-//    @DeleteMapping("{id}")
-//    public ResponseEntity<?> deleteHospital(@PathVariable Integer id)
-//    {
-//        Map<String, String> response = new HashMap<>();
-//        Hospital hospital = hospitalService.deleteHospital(id);
-//        if (hospital == null)
-//        {
-//            response.put("code", "101");
-//            response.put("message", "hospital does not exist".toUpperCase());
-//        }
-//        response.put("code", "00");
-//        response.put("message", "hospital successfully deleted".toUpperCase());
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
-    @DeleteMapping("/{dbName}")
-    public ResponseEntity<?> dropTenantDatabase(
-            @PathVariable String dbName,
-            @RequestParam String dbUser) {
-
-        try {
-            tenantDatabaseService.dropTenantDatabase(dbName, dbUser);
-            return ResponseEntity.ok(Map.of(
-                    "code", "00",
-                    "message", "Tenant database dropped successfully"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "code", "99",
-                    "message", "Failed to drop database: " + e.getMessage()
-            ));
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> deleteHospital(@PathVariable Integer id)
+    {
+        Map<String, String> response = new HashMap<>();
+        Hospital hospital = hospitalService.deleteHospital(id);
+        if (hospital == null)
+        {
+            response.put("code", "101");
+            response.put("message", "hospital does not exist".toUpperCase());
         }
+        response.put("code", "00");
+        response.put("message", "hospital successfully deleted".toUpperCase());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
+//    @DeleteMapping("/{dbName}")
+//    public ResponseEntity<?> dropTenantDatabase(
+//            @PathVariable String dbName,
+//            @RequestParam String dbUser) {
+//
+//        try {
+//            tenantDatabaseService.dropTenantDatabase(dbName, dbUser);
+//            return ResponseEntity.ok(Map.of(
+//                    "code", "00",
+//                    "message", "Tenant database dropped successfully"
+//            ));
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(Map.of(
+//                    "code", "99",
+//                    "message", "Failed to drop database: " + e.getMessage()
+//            ));
+//        }
+//    }
 }

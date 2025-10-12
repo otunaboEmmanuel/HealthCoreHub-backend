@@ -46,6 +46,7 @@ CREATE TABLE hospital_admins (
                                  email VARCHAR(150) UNIQUE NOT NULL,
                                  phone VARCHAR(20),
                                  password_hash VARCHAR(255) NOT NULL,
+                                 tenant_user_id INTEGER,
                                  role VARCHAR(50) DEFAULT 'Admin',
                                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
