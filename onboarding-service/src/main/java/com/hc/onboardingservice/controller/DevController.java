@@ -10,6 +10,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/dev")  // Clear it's for development
 @RequiredArgsConstructor
+@CrossOrigin
 public class DevController {
 
     private final TenantDatabaseService tenantDatabaseService;

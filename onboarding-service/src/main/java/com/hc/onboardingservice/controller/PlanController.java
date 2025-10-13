@@ -14,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/plans")
+@CrossOrigin
 @RequiredArgsConstructor
 public class PlanController {
 

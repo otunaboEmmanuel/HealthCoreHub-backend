@@ -25,6 +25,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("api/hospital")
 @RequiredArgsConstructor
+@CrossOrigin
 @Slf4j
 public class HospitalController {
     private final HospitalService hospitalService;
