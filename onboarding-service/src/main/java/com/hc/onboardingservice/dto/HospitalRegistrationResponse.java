@@ -31,7 +31,6 @@ public class HospitalRegistrationResponse {
         private String planName;
         private Integer planDurationDays;
         private Boolean isActive;
-        private String subscriptionStatus;
         private LocalDateTime createdAt;
     }
 
