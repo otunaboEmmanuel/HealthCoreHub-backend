@@ -10,7 +10,9 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: onboardingdb
     ports:
-      - "5433:5432"
+      - "5433:5432"  # Host:Container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -29,10 +31,21 @@ services:
       onboarding-db:
         condition: service_healthy
     environment:
+      # Use docker profile
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://onboarding-service-db:5432/onboardingdb
+
+      # Master DB connection (internal Docker network)
+      SPRING_DATASOURCE_URL: jdbc:postgresql://onboarding-db:5432/onboardingdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+
+      # Tenant DB configuration (internal Docker network)
+      TENANT_DB_HOST: onboarding-db
+      TENANT_DB_PORT: 5432
+      TENANT_DB_USERNAME: postgres
+      TENANT_DB_PASSWORD: postgres
+
+      # Email
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
     ports:
@@ -43,3 +56,6 @@ services:
 networks:
   onboarding-net:
     driver: bridge
+
+volumes:
+  postgres_data:

@@ -10,6 +10,7 @@ import com.hc.onboardingservice.repository.HospitalRepository;
 import com.hc.onboardingservice.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,18 @@ public class HospitalService {
     private final TenantDatabaseService tenantDatabaseService;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+
+    @Value("${tenant.datasource.host}")
+    private String tenantDbHost;
+
+    @Value("${tenant.datasource.port}")
+    private String tenantDbPort;
+
+    @Value("${tenant.datasource.username}")
+    private String tenantDbUsername;
+
+    @Value("${tenant.datasource.password}")
+    private String tenantDbPassword;
 
     @Transactional(rollbackFor = Exception.class)
     public HospitalRegistrationResponse registerHospital(HospitalRegistrationRequest request) {
@@ -157,8 +170,12 @@ public class HospitalService {
                                           String dbUser,
                                           String dbPassword) {
 
-        String tenantUrl = "jdbc:postgresql://localhost:5433/" + dbName;
+        // Use configurable host and port
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, dbName);
         String hashedPassword = passwordEncoder.encode(adminInfo.getPassword());
+
+        log.info("Connecting to tenant DB: {}", tenantUrl);
 
         String insertSql = """
             INSERT INTO users (first_name, last_name, email, phone_number, password, role, status)
@@ -166,7 +183,8 @@ public class HospitalService {
             RETURNING id
             """;
 
-        try (Connection conn = DriverManager.getConnection(tenantUrl, dbUser, dbPassword);
+        // IMPORTANT: Use master credentials, not tenant-specific ones for initial connection
+        try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = conn.prepareStatement(insertSql)) {
 
             stmt.setString(1, adminInfo.getFirstName());
@@ -187,11 +205,10 @@ public class HospitalService {
             throw new SQLException("Failed to create admin user in tenant database");
 
         } catch (SQLException e) {
-            log.error("❌ Error creating admin in tenant database", e);
+            log.error("❌ Error creating admin in tenant database. URL: {}", tenantUrl, e);
             throw new RuntimeException("Failed to create admin user: " + e.getMessage(), e);
         }
     }
-
     private HospitalAdmin createAdminInMasterDb(HospitalRegistrationRequest.AdminInfo adminInfo,
                                                 Hospital hospital,
                                                 Integer tenantUserId) {
