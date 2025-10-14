@@ -1,0 +1,45 @@
+server:
+  port: 4004
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # === ROUTE DEFINITIONS ===
+          routes:
+            - id: onboarding-service
+              uri: http://onboarding-service:4000
+              predicates:
+                - Path=/api/hospitals/**, /api/plans/**, /api/admin/**
+              filters:
+                - name: DedupeResponseHeader
+                  args:
+                    name: Access-Control-Allow-Credentials
+                    strategy: RETAIN_FIRST
+
+          # === GLOBAL CORS CONFIGURATION ===
+          cors:
+            allowed-origins: "*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
+          discovery:
+            locator:
+              enabled: false
+
+      # === ENABLE DISCOVERY CLIENT IF YOU USE EUREKA (OPTIONAL) ===
+
+# === LOGGING CONFIG ===
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: INFO
+    reactor.netty.http.client: INFO
+
+# === SPRING BOOT MIGRATION NOTE ===
+# The new key structure (spring.cloud.gateway.server.webflux.routes)
+# replaces the old one (spring.cloud.gateway.routes) in Spring Boot 3.4+

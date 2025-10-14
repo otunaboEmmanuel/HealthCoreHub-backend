@@ -26,12 +26,13 @@ services:
       context: ./onboarding-service
       dockerfile: Dockerfile
     container_name: onboarding-service
+    expose:
+      - "4000"
     restart: always
     depends_on:
       onboarding-db:
         condition: service_healthy
     environment:
-      # Use docker profile
       SPRING_PROFILES_ACTIVE: docker
 
       # Master DB connection (internal Docker network)
@@ -39,17 +40,34 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
 
-      # Tenant DB configuration (internal Docker network)
+      # Tenant DB configuration
       TENANT_DB_HOST: onboarding-db
       TENANT_DB_PORT: 5432
       TENANT_DB_USERNAME: postgres
       TENANT_DB_PASSWORD: postgres
 
-      # Email
+      # Email credentials
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
+#    ports:
+#      - "4000:4000" # Onboarding runs on 4000
+    networks:
+      - onboarding-net
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    restart: always
+    depends_on:
+      - onboarding-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # Internal Docker network URL for onboarding service
+      ONBOARDING_SERVICE_URL: http://onboarding-service:4000
     ports:
-      - "4000:4000"
+      - "4004:4004" # Gateway listens on 4004
     networks:
       - onboarding-net
 
