@@ -12,9 +12,29 @@ services:
     ports:
       - "5433:5432"  # Host:Container
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - onboarding_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - onboarding-net
+
+  auth-service-db:
+    image: postgres:latest
+    container_name: auth-service-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: authdb
+    ports:
+      - "5434:5432"  # Host:Container
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -49,8 +69,6 @@ services:
       # Email credentials
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
-#    ports:
-#      - "4000:4000" # Onboarding runs on 4000
     networks:
       - onboarding-net
 
@@ -64,10 +82,9 @@ services:
       - onboarding-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      # Internal Docker network URL for onboarding service
       ONBOARDING_SERVICE_URL: http://onboarding-service:4000
     ports:
-      - "4004:4004" # Gateway listens on 4004
+      - "4004:4004" # Only gateway is public
     networks:
       - onboarding-net
 
@@ -76,4 +93,5 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  onboarding_postgres_data:
+  auth_postgres_data:
