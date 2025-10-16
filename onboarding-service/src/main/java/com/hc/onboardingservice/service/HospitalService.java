@@ -11,12 +11,15 @@ import com.hc.onboardingservice.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -30,6 +33,7 @@ public class HospitalService {
     private final TenantDatabaseService tenantDatabaseService;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final RestTemplate restTemplate;
 
     @Value("${tenant.datasource.host}")
     private String tenantDbHost;
@@ -42,6 +46,9 @@ public class HospitalService {
 
     @Value("${tenant.datasource.password}")
     private String tenantDbPassword;
+
+    @Value("${auth.service.url}")
+    private String authServiceUrl;
 
     @Transactional(rollbackFor = Exception.class)
     public HospitalRegistrationResponse registerHospital(HospitalRegistrationRequest request) {
@@ -72,9 +79,12 @@ public class HospitalService {
             log.info("🔧 Initializing tenant schema");
             tenantDatabaseService.initializeTenantSchema(dbName, dbUser, dbPassword);
 
+            log.info("🔐 Registering admin in auth service");
+            String authUserId = registerInAuthService(request.getAdmin(), hospital.getId(), dbName);
+
             // 7. Create admin user in tenant database
             log.info("👤 Creating admin user in tenant database");
-            Integer tenantUserId = createAdminInTenantDb(request.getAdmin(), dbName, dbUser, dbPassword);
+            Integer tenantUserId = createAdminInTenantDb(request.getAdmin(), dbName, dbUser, dbPassword,authUserId);
 
             // 8. Create admin reference in master database
             log.info("📝 Creating admin reference in master database");
@@ -168,7 +178,8 @@ public class HospitalService {
     private Integer createAdminInTenantDb(HospitalRegistrationRequest.AdminInfo adminInfo,
                                           String dbName,
                                           String dbUser,
-                                          String dbPassword) {
+                                          String dbPassword,
+                                          String authUserId) {
 
         // Use configurable host and port
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
@@ -178,8 +189,8 @@ public class HospitalService {
         log.info("Connecting to tenant DB: {}", tenantUrl);
 
         String insertSql = """
-            INSERT INTO users (first_name, last_name, email, phone_number, password, role, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users (first_name, last_name, email, phone_number, password, role, status, auth_user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             RETURNING id
             """;
 
@@ -194,6 +205,7 @@ public class HospitalService {
             stmt.setString(5, hashedPassword);
             stmt.setString(6, "ADMIN");
             stmt.setString(7, "ACTIVE");
+            stmt.setObject(8, UUID.fromString(authUserId));
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -282,7 +294,34 @@ public class HospitalService {
         hospitalRepository.findById(id).ifPresent(hospitalRepository::delete);
         return null;
     }
+    private String registerInAuthService(
+            HospitalRegistrationRequest.AdminInfo adminInfo,
+            Integer hospitalId,
+            String tenantDb) {
 
+        Map<String, Object> authRequest = Map.of(
+                "email", adminInfo.getEmail(),
+                "password", adminInfo.getPassword(),
+                "hospitalId", hospitalId,
+                "tenantDb", tenantDb,
+                "globalRole", "HOSPITAL_ADMIN"
+        );
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    authServiceUrl + "/auth/register",
+                    authRequest,
+                    Map.class
+            );
+
+            String authUserId = (String) response.getBody().get("userId");
+            log.info("✅ Admin registered in auth service: {}", authUserId);
+            return authUserId;
+
+        } catch (Exception e) {
+            log.error("❌ Failed to register admin in auth service", e);
+            throw new RuntimeException("Auth service registration failed: " + e.getMessage());
+        }
+    }
 //    public Hospital updateHospital(Integer id, HospitalRegistrationRequest updateRequest) {
 //        Hospital hospital = hospitalRepository.findById(id).orElse(null);
 //        if (hospital == null) {

@@ -1,0 +1,42 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # Onboarding Service
+            - id: onboarding-service-hospitals
+              uri: http://onboarding-service:4000
+              predicates:
+                - Path=/api/hospital/**
+
+            - id: onboarding-service-plans
+              uri: http://onboarding-service:4000
+              predicates:
+                - Path=/api/plans/**
+
+            # Auth Service
+            - id: auth-service
+              uri: http://auth-service:4001
+              predicates:
+                - Path=/auth/**
+
+            # Hospital Service
+            - id: hospital-service-users
+              uri: http://hospital-service:4002
+              predicates:
+                - Path=/api/users/**
+
+            - id: hospital-service-profile
+              uri: http://hospital-service:4002
+              predicates:
+                - Path=/api/profile/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

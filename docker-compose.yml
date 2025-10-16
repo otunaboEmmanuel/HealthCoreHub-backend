@@ -1,6 +1,10 @@
 version: "3.9"
 
 services:
+  # ============================================
+  # DATABASES
+  # ============================================
+
   onboarding-db:
     image: postgres:latest
     container_name: onboarding-service-db
@@ -10,7 +14,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: onboardingdb
     ports:
-      - "5433:5432"  # Host:Container
+      - "5433:5432"
     volumes:
       - onboarding_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,9 +23,9 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      - onboarding-net
+      - healthcare-network
 
-  auth-service-db:
+  auth-db:
     image: postgres:latest
     container_name: auth-service-db
     restart: always
@@ -30,24 +34,26 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: authdb
     ports:
-      - "5434:5432"  # Host:Container
+      - "5434:5432"
     volumes:
       - auth_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
     networks:
-      - onboarding-net
+      - healthcare-network
+
+  # ============================================
+  # MICROSERVICES
+  # ============================================
 
   onboarding-service:
     build:
       context: ./onboarding-service
       dockerfile: Dockerfile
     container_name: onboarding-service
-    expose:
-      - "4000"
     restart: always
     depends_on:
       onboarding-db:
@@ -55,22 +61,112 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
-      # Master DB connection (internal Docker network)
+      # Master DB
       SPRING_DATASOURCE_URL: jdbc:postgresql://onboarding-db:5432/onboardingdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
 
-      # Tenant DB configuration
+      # Tenant DB
       TENANT_DB_HOST: onboarding-db
       TENANT_DB_PORT: 5432
       TENANT_DB_USERNAME: postgres
       TENANT_DB_PASSWORD: postgres
 
-      # Email credentials
+      # Auth Service URL
+      AUTH_SERVICE_URL: http://auth-service:4001
+
+      # Email
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
+    expose:
+      - "4000"
     networks:
-      - onboarding-net
+      - healthcare-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    restart: always
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      onboarding-db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      # Auth DB
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/authdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+      # Tenant DB (for querying tenant roles)
+      TENANT_DB_HOST: onboarding-db
+      TENANT_DB_PORT: 5432
+      TENANT_DB_USERNAME: postgres
+      TENANT_DB_PASSWORD: postgres
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: 86400000
+      JWT_REFRESH_EXPIRATION: 604800000
+    expose:
+      - "4001"
+    networks:
+      - healthcare-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4001/api/auth/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  hospital-service:
+    build:
+      context: ./hospital-service
+      dockerfile: Dockerfile
+    container_name: hospital-service
+    restart: always
+    depends_on:
+      - onboarding-db
+      - auth-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      # Auth Service URL
+      AUTH_SERVICE_URL: http://auth-service:4001
+
+      # Tenant DB
+      TENANT_DB_HOST: onboarding-db
+      TENANT_DB_PORT: 5432
+      TENANT_DB_USERNAME: postgres
+      TENANT_DB_PASSWORD: postgres
+
+      # JWT (must match auth-service)
+      JWT_SECRET: ${JWT_SECRET}
+
+    expose:
+      - "4002"
+    networks:
+      - healthcare-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4002/api/users/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # API GATEWAY (PUBLIC FACING)
+  # ============================================
 
   gateway-service:
     build:
@@ -80,18 +176,44 @@ services:
     restart: always
     depends_on:
       - onboarding-service
+      - auth-service
+      - hospital-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
+
+      # Service URLs
       ONBOARDING_SERVICE_URL: http://onboarding-service:4000
+      AUTH_SERVICE_URL: http://auth-service:4001
+      HOSPITAL_SERVICE_URL: http://hospital-service:4002
     ports:
-      - "4004:4004" # Only gateway is public
+      - "4004:4004"  # Only the gateway is exposed to the host
     networks:
-      - onboarding-net
+      - healthcare-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4004/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
+
+
+
+# ============================================
+# NETWORKS
+# ============================================
 
 networks:
-  onboarding-net:
+  healthcare-network:
     driver: bridge
+
+# ============================================
+# VOLUMES
+# ============================================
 
 volumes:
   onboarding_postgres_data:
+    driver: local
   auth_postgres_data:
+    driver: local
