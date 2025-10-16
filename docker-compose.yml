@@ -53,6 +53,7 @@ services:
     build:
       context: ./onboarding-service
       dockerfile: Dockerfile
+      network: host
     container_name: onboarding-service
     restart: always
     depends_on:
@@ -93,6 +94,7 @@ services:
     build:
       context: ./auth-service
       dockerfile: Dockerfile
+      network: host
     container_name: auth-service
     restart: always
     depends_on:
@@ -133,6 +135,7 @@ services:
     build:
       context: ./hospital-service
       dockerfile: Dockerfile
+      network: host
     container_name: hospital-service
     restart: always
     depends_on:
@@ -172,6 +175,7 @@ services:
     build:
       context: ./gateway-service
       dockerfile: Dockerfile
+      network: host
     container_name: gateway-service
     restart: always
     depends_on:
