@@ -4,7 +4,11 @@ WORKDIR /app
 
 COPY pom.xml .
 
-RUN mvn dependency:go-offline -B
+# Download dependencies with retry logic
+RUN mvn dependency:go-offline -B \
+    -Dmaven.wagon.http.retryHandler.count=3 \
+    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
+
 
 COPY src ./src
 
