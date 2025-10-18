@@ -12,10 +12,4 @@ import lombok.NoArgsConstructor;
 public class LoginResponse {
     private String token;
     private String refreshToken;
-    private String userId;
-    private String email;
-    private Integer hospitalId;
-    private String tenantDb;
-    private String globalRole;
-    private String tenantRole;
 }

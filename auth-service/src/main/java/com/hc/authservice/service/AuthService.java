@@ -136,12 +136,6 @@ public class AuthService {
         return LoginResponse.builder()
                 .token(accessToken)
                 .refreshToken(refreshToken)
-                .userId(authUser.getId().toString())
-                .email(authUser.getEmail())
-                .hospitalId(authUser.getHospitalId())
-                .tenantDb(authUser.getTenantDb())
-                .globalRole(authUser.getGlobalRole())
-                .tenantRole(tenantRole)
                 .build();
     }
 

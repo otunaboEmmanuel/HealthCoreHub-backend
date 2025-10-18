@@ -80,7 +80,7 @@ public class UserManagementService {
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(
-                    authServiceUrl + "/api/auth/register",
+                    authServiceUrl + "/auth/register",
                     authRequest,
                     Map.class
             );
