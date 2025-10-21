@@ -1,5 +1,6 @@
 package com.hc.hospitalservice.controller;
 
+import com.hc.hospitalservice.dto.PatientDto;
 import com.hc.hospitalservice.dto.UserProfileDTO;
 import com.hc.hospitalservice.service.JwtService;
 import com.hc.hospitalservice.service.UserProfileService;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -39,6 +41,7 @@ public class UserProfileController {
                     .body(Map.of("error", "Failed to fetch profile"));
         }
     }
+
     @GetMapping("/{email}")
     public ResponseEntity<?> getUserProfile(
             @PathVariable String email,
@@ -57,6 +60,21 @@ public class UserProfileController {
             log.error("❌ Error fetching profile", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to fetch profile"));
+        }
+    }
+
+    @GetMapping("pending")
+    public ResponseEntity<?> getPendingProfile(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            Claims claims = jwtService.extractClaims(token);
+            String tenantDb = claims.get("tenant_db", String.class);
+            List<PatientDto> patients = userProfileService.getPendingPatients(tenantDb);
+            return ResponseEntity.ok(patients);
+        } catch (Exception e) {
+            log.error("❌ Error fetching profile", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to fetch patients"));
         }
     }
 }

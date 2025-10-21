@@ -51,7 +51,6 @@ public class AuthService {
     public Map<String, Object> register(RegisterRequest request) {
         log.info("📝 Registering user: {}", request.getEmail());
 
-        // Check if user already exists
         if (authUserRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("User with email '" + request.getEmail() + "' already exists");
         }
@@ -89,6 +88,16 @@ public class AuthService {
         // Find user
         AuthUser authUser = authUserRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+
+        String tenantStatus = getTenantUserStatus(authUser);
+
+        if ("PENDING".equals(tenantStatus)) {
+            throw new IllegalArgumentException("Account is pending approval. Please contact your hospital.");
+        }
+
+        if ("REJECTED".equals(tenantStatus)) {
+            throw new IllegalArgumentException("Account has been rejected. Please contact your hospital.");
+        }
 
         // Check if account is locked
         if (Boolean.TRUE.equals(authUser.getIsLocked())) {
@@ -209,5 +218,27 @@ public class AuthService {
         response.put("tenant_role", claims.get("tenant_role"));
 
         return response;
+    }
+    private String getTenantUserStatus(AuthUser authUser) {
+        if (authUser.getTenantDb() == null) {
+            return null;
+        }
+
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, authUser.getTenantDb());
+
+        try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword)) {
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT status FROM users WHERE email = ?"
+            );
+            stmt.setString(1, authUser.getEmail());
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("status");
+            }
+        } catch (SQLException e) {
+            log.error("Error fetching tenant user status", e);
+        }return null;
     }
 }

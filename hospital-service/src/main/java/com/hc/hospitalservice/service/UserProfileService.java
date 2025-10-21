@@ -1,5 +1,6 @@
 package com.hc.hospitalservice.service;
 
+import com.hc.hospitalservice.dto.PatientDto;
 import com.hc.hospitalservice.dto.UserProfileDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -156,4 +159,38 @@ public class UserProfileService {
             default -> null;
         };
 }
+
+    public List<PatientDto> getPendingPatients(String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+
+        String sql = """
+                    SELECT id,first_name,last_name,middle_name,
+                           email,phone_number,
+                           role,status FROM users WHERE status = ?""";
+        List<PatientDto> patientDtoList=new ArrayList<>();
+        try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+                                PreparedStatement stmt = con.prepareStatement(sql)){
+            stmt.setString(1, "PENDING");
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()){
+                PatientDto patientDto=PatientDto.builder()
+                        .id(rs.getInt("id"))
+                        .firstName(rs.getString("first_name"))
+                        .lastName(rs.getString("last_name"))
+                        .middleName(rs.getString("middle_name"))
+                        .email(rs.getString("email"))
+                        .phoneNumber(rs.getString("phone_number"))
+                        .role(rs.getString("role"))
+                        .status(rs.getString("status"))
+                        .build();
+                patientDtoList.add(patientDto);
+            }
+            log.info("the patients with status pending are {}", patientDtoList);
+            return patientDtoList;
+        } catch (SQLException e) {
+            log.error("❌ Failed to fetch patients", e);
+            throw new RuntimeException("Failed to fetch patients with status pending");
+        }
+
+    }
 }

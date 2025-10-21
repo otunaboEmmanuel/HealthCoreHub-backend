@@ -1,7 +1,6 @@
 package com.hc.hospitalservice.service;
 
-import com.hc.hospitalservice.dto.CreateUserRequest;
-import com.hc.hospitalservice.dto.UserResponse;
+import com.hc.hospitalservice.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.*;
-import java.util.Map;
-import java.util.UUID;
+import java.sql.Date;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -367,7 +366,299 @@ public class UserManagementService {
             throw new RuntimeException("Lab scientist record creation failed: " + e.getMessage());
         }
     }
+    @Transactional(rollbackFor = Exception.class)
+    public UserResponse registerPatient(PatientRequest request) {
 
+        log.info("🧑‍🦱 Patient self-registration: {}", request.getEmail());
+
+        try {
+            // Step 1: Get hospital's tenant DB name
+            String tenantDb = getTenantDbNameFromHospitalId(request.getHospitalId());
+
+            if (tenantDb == null) {
+                throw new IllegalArgumentException("Hospital not found with ID: " + request.getHospitalId());
+            }
+
+            // Step 2: Check if email already exists in tenant DB
+            if (emailExistsInTenantDb(request.getEmail(), tenantDb)) {
+                throw new IllegalArgumentException("User with this email already exists in this hospital");
+            }
+
+            // Step 3: Register in Auth Service
+            String authUserId = registerPatientInAuthService(request, request.getHospitalId(), tenantDb);
+
+            Integer tenantUserId = createPatientUserInTenantDb(request, tenantDb, authUserId);
+
+            log.info("✅ Patient registered successfully: {}", request.getEmail());
+
+            return UserResponse.builder()
+                    .success(true)
+                    .message("Registration successful! Your account is pending approval.")
+                    .userId(tenantUserId)
+                    .authUserId(authUserId)
+                    .email(request.getEmail())
+                    .role("PATIENT")
+                    .build();
+
+        } catch (IllegalArgumentException e) {
+            log.warn("⚠️ Registration failed: {}", e.getMessage());
+            throw e;
+
+        } catch (Exception e) {
+            log.error("❌ Patient registration failed", e);
+            throw new RuntimeException("Registration failed: " + e.getMessage(), e);
+        }
+    }
+    private String getTenantDbNameFromHospitalId(Integer hospitalId) {
+
+        String onboardingUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb",
+                tenantDbHost, tenantDbPort);
+
+        String sql = "SELECT db_name FROM hospital WHERE id = ? AND is_active = true";
+
+        try (Connection conn = DriverManager.getConnection(onboardingUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, hospitalId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("db_name");
+            }
+
+            return null;
+
+        } catch (SQLException e) {
+            log.error("Error fetching hospital info", e);
+            throw new RuntimeException("Failed to validate hospital");
+        }
+    }
+    private boolean emailExistsInTenantDb(String email, String tenantDb) {
+
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, tenantDb);
+
+        String sql = "SELECT 1 FROM users WHERE email = ?";
+
+        try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+
+            return rs.next();
+
+        } catch (SQLException e) {
+            log.error("Error checking email", e);
+            return false;
+        }
+    }
+    private Integer createPatientUserInTenantDb(
+            PatientRequest request,
+            String tenantDb,
+            String authUserId) {
+
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, tenantDb);
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
+
+        String sql = """
+            INSERT INTO users (
+                first_name, middle_name, last_name, email, phone_number,
+                password, role, status, auth_user_id,
+                created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id
+            """;
+
+        try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql))
+        {
+
+            stmt.setString(1, request.getFirstName());
+            stmt.setString(2, request.getMiddleName());
+            stmt.setString(3, request.getLastName());
+            stmt.setString(4, request.getEmail());
+            stmt.setString(5, request.getPhoneNumber());
+            stmt.setString(6, hashedPassword);
+            stmt.setString(7, "PATIENT");
+            stmt.setString(8, "PENDING");  // ← Key difference: PENDING status
+            stmt.setObject(9, UUID.fromString(authUserId));
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Integer userId = rs.getInt("id");
+                log.info("✅ Patient user created (PENDING): {}", userId);
+                return userId;
+            }
+
+            throw new SQLException("Failed to create patient user");
+
+        } catch (SQLException e) {
+            log.error("❌ Failed to create user in tenant DB", e);
+            throw new RuntimeException("Database error: " + e.getMessage());
+        }
+    }
+    private String registerPatientInAuthService(PatientRequest request, Integer hospitalId, String tenantDb) {
+
+        Map<String, Object> authRequest = Map.of(
+                "email", request.getEmail(),
+                "password", request.getPassword(),
+                "hospitalId", hospitalId,
+                "tenantDb", tenantDb,
+                "globalRole", "HOSPITAL_USER"
+        );
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    authServiceUrl + "/auth/register",
+                    authRequest,
+                    Map.class
+            );
+            String authUserId = (String) response.getBody().get("userId");
+            log.info("✅ User registered in auth service: {}", authUserId);
+            return authUserId;
+
+        } catch (Exception e) {
+            log.error("❌ Auth service registration failed", e);
+            throw new RuntimeException("Auth registration failed: " + e.getMessage());
+        }
+    }
+    public List<HospitalListDto> getHospitalList() {
+        String onboardingUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb",
+                tenantDbHost, tenantDbPort);
+        String sql = """
+            SELECT id, name, email, phone, hospital_type,\s
+                   city, state, country, address
+            FROM hospitals
+            WHERE is_active = true
+            ORDER BY name
+           \s""";
+
+        List<HospitalListDto> hospitals = new ArrayList<>();
+        try (Connection conn = DriverManager.getConnection(onboardingUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                HospitalListDto hospital = HospitalListDto.builder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
+                        .email(rs.getString("email"))
+                        .phone(rs.getString("phone"))
+                        .type(rs.getString("hospital_type"))
+                        .city(rs.getString("city"))
+                        .state(rs.getString("state"))
+                        .country(rs.getString("country"))
+                        .fullAddress(buildFullAddress(
+                                rs.getString("address"),
+                                rs.getString("city"),
+                                rs.getString("state")
+                        ))
+                        .build();
+
+                hospitals.add(hospital);
+            }
+            log.info("✅ Found {} active hospitals", hospitals.size());
+            return hospitals;
+
+        } catch (SQLException e) {
+            log.error("❌ Failed to fetch hospitals", e);
+            throw new RuntimeException("Failed to fetch hospitals");
+        }
+    }
+    private String buildFullAddress(String address, String city, String state) {
+        StringBuilder fullAddress = new StringBuilder();
+
+        if (address != null && !address.isEmpty()) {
+            fullAddress.append(address);
+        }
+        if (city != null && !city.isEmpty()) {
+            if (fullAddress.length() > 0) fullAddress.append(", ");
+            fullAddress.append(city);
+        }
+        if (state != null && !state.isEmpty()) {
+            if (fullAddress.length() > 0) fullAddress.append(", ");
+            fullAddress.append(state);
+        }
+
+        return fullAddress.toString();
+    }
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String, String> updateUser(Integer id, String tenantDb, UpdateRequest request) {
+        try {
+            if (!existsIdInTenantDb(id, tenantDb)) {
+                throw new IllegalArgumentException("User with this ID does not exist in this hospital");
+            }
+
+            PatientDto updatedUser = updateUserInTenantDb(request, id, tenantDb);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "User updated successfully");
+            response.put("updatedStatus", updatedUser.getStatus());
+            response.put("userEmail", updatedUser.getEmail());
+            return response;
+
+        } catch (IllegalArgumentException e) {
+            log.warn("⚠️ Validation failed: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("❌ Failed to update user in tenant DB", e);
+            throw new RuntimeException("Database update failed: " + e.getMessage());
+        }
+    }
+
+
+    private PatientDto updateUserInTenantDb(UpdateRequest request, Integer id, String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost,tenantDbPort,tenantDb);
+        String sql = """
+                UPDATE users
+                        SET status = ?, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                        RETURNING id, first_name, middle_name, last_name, email, phone_number, role, status
+                """;
+        try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+                                PreparedStatement stmt = con.prepareStatement(sql)){
+            stmt.setString(1,request.getStatus());
+            stmt.setInt(2, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()){
+                return PatientDto.builder()
+                        .id(rs.getInt("id"))
+                        .firstName(rs.getString("first_name"))
+                        .middleName(rs.getString("middle_name"))
+                        .lastName(rs.getString("last_name"))
+                        .email(rs.getString("email"))
+                        .phoneNumber(rs.getString("phone_number"))
+                        .role(rs.getString("role"))
+                        .status(rs.getString("status"))
+                        .build();
+            } else {
+                throw new SQLException("Failed to update user status");
+            }
+
+        } catch (SQLException e) {
+            log.error("❌ Failed to fetch hospitals", e);
+            throw new RuntimeException("Failed to fetch hospitals");
+        }
+    }
+
+    private Boolean existsIdInTenantDb(Integer id, String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = "SELECT 1 FROM users WHERE id = ?";
+        try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+                                PreparedStatement stmt = con.prepareStatement(sql)){
+            stmt.setInt(1,id);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        }catch (SQLException e) {
+            log.error("Error checking email", e);
+            return false;
+        }
+    }
 }
 
 

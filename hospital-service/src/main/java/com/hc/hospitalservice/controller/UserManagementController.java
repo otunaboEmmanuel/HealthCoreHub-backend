@@ -1,7 +1,6 @@
 package com.hc.hospitalservice.controller;
 
-import com.hc.hospitalservice.dto.CreateUserRequest;
-import com.hc.hospitalservice.dto.UserResponse;
+import com.hc.hospitalservice.dto.*;
 import com.hc.hospitalservice.service.JwtService;
 import com.hc.hospitalservice.service.UserManagementService;
 import io.jsonwebtoken.Claims;
@@ -14,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -85,12 +85,87 @@ public class UserManagementController {
                     .body(Map.of("error", "Failed to fetch users"));
         }
     }
+    @PostMapping("/register")
+    public ResponseEntity<?> registerPatient(@Valid @RequestBody PatientRequest request) {
+
+        log.info("📝 Patient registration request: {}", request.getEmail());
+
+        try {
+            UserResponse response = userManagementService.registerPatient(request);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (IllegalArgumentException e) {
+            log.warn("⚠️ Validation error: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+
+        } catch (Exception e) {
+            log.error("❌ Registration error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "message", "Registration failed. Please try again later."
+            ));
+        }
+    }
+    @GetMapping("/hospitals")
+    public ResponseEntity<?> getAvailableHospitals() {
+        try {
+            List<HospitalListDto> hospitals = userManagementService.getHospitalList();
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "count", hospitals.size(),
+                    "hospitals", hospitals
+            ));
+
+        } catch (Exception e) {
+            log.error("❌ Error fetching hospitals", e);
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "message", "Failed to fetch hospitals"
+            ));
+        }
+    }
     @GetMapping("/health")
     public ResponseEntity<?> health() {
         Map<String, String> response = new HashMap<>();
         response.put("status", "UP");
         response.put("service", "auth-service");
         return ResponseEntity.ok(response);
+    }
+    @PutMapping("{id}")
+    public ResponseEntity<?> updateStatus(@PathVariable Integer id,
+                                          @RequestBody UpdateRequest request,
+                                          @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            Claims claims = jwtService.extractClaims(token);
+            String tenantDb = claims.get("tenant_db", String.class);
+            String tenantRole = claims.get("tenant_role", String.class);
+            if (!"ADMIN".equals(tenantRole))
+            {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Only admins can create users");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+            }
+            Map<String, String> response = userManagementService.updateUser(id, tenantDb, request);
+            return ResponseEntity.ok(response);
+        }catch (IllegalArgumentException e) {
+            log.warn("⚠️ Validation error: {}", e.getMessage());
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+
+        } catch (Exception e) {
+            log.error("❌ Error creating user", e);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to create user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+
     }
 
 }
