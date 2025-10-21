@@ -40,7 +40,7 @@ public class AuthUser {
     private Boolean isActive = true;
 
     @Column(name = "email_verified")
-    private Boolean emailVerified = false;
+    private Boolean emailVerified ;
 
     @Column(name = "is_locked")
     private Boolean isLocked = false;

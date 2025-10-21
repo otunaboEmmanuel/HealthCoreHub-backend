@@ -63,7 +63,7 @@ public class AuthService {
                 .tenantDb(request.getTenantDb())
                 .globalRole(request.getGlobalRole())
                 .isActive(true)
-                .emailVerified(false)
+                .emailVerified(true)
                 .passwordChangedAt(LocalDateTime.now())
                 .build();
 
