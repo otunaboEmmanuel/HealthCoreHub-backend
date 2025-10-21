@@ -592,7 +592,9 @@ public class UserManagementService {
             if (!existsIdInTenantDb(id, tenantDb)) {
                 throw new IllegalArgumentException("User with this ID does not exist in this hospital");
             }
-
+            if(request.getStatus().equalsIgnoreCase("REJECTED")) {
+                deleteUserInTenantDb(id, tenantDb);
+            }
             PatientDto updatedUser = updateUserInTenantDb(request, id, tenantDb);
 
             Map<String, String> response = new HashMap<>();
@@ -659,6 +661,29 @@ public class UserManagementService {
             return false;
         }
     }
+    private void deleteUserInTenantDb(Integer id, String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = "DELETE FROM users WHERE id = ?";
+
+        try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected == 0) {
+                log.warn("⚠️ No user found with id={} in tenant {}", id, tenantDb);
+                throw new IllegalArgumentException("User with this ID not found or already deleted");
+            }
+
+            log.info("🗑️ Deleted user with id={} from tenant {}", id, tenantDb);
+
+        } catch (SQLException e) {
+            log.error("❌ Failed to delete user in tenant DB", e);
+            throw new RuntimeException("Error deleting user: " + e.getMessage());
+        }
+    }
+
 }
 
 
