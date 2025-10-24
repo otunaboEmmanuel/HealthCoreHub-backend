@@ -7,119 +7,92 @@ spring:
 
   cloud:
     gateway:
-      server:
-        webflux:
-          routes:
-            # === ONBOARDING SERVICE ROUTES ===
-            - id: onboarding-service-hospitals
-              uri: http://onboarding-service:4000
-              predicates:
-                - Path=/api/hospital/**
-              filters:
-                - name: DedupeResponseHeader
-                  args:
-                    name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
-                    strategy: RETAIN_FIRST
+      # === GLOBAL CORS CONFIGURATION (CRITICAL: Must be at this level) ===
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "http://localhost:3001"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600
 
-            - id: onboarding-service-plans
-              uri: http://onboarding-service:4000
-              predicates:
-                - Path=/api/plans/**
-              filters:
-                - name: DedupeResponseHeader
-                  args:
-                    name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
-                    strategy: RETAIN_FIRST
+      routes:
+        # === ONBOARDING SERVICE ROUTES ===
+        - id: onboarding-service-hospitals
+          uri: http://onboarding-service:4000
+          predicates:
+            - Path=/api/hospital/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
-            - id: onboarding-service-admin
-              uri: http://onboarding-service:4000
-              predicates:
-                - Path=/api/admin/**
-              filters:
-                - name: DedupeResponseHeader
-                  args:
-                    name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
-                    strategy: RETAIN_FIRST
+        - id: onboarding-service-plans
+          uri: http://onboarding-service:4000
+          predicates:
+            - Path=/api/plans/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
-            # === AUTH SERVICE ROUTES ===
-            - id: auth-service-login
-              uri: http://auth-service:4001
-              predicates:
-                - Path=/auth/login
-              filters:
-                - name: DedupeResponseHeader
-                  args:
-                    name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
-                    strategy: RETAIN_FIRST
+        - id: onboarding-service-admin
+          uri: http://onboarding-service:4000
+          predicates:
+            - Path=/api/admin/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
-            - id: auth-service-register
-              uri: http://auth-service:4001
-              predicates:
-                - Path=/auth/register
-              filters:
-                - name: DedupeResponseHeader
-                  args:
-                    name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
-                    strategy: RETAIN_FIRST
+        # === AUTH SERVICE ROUTES ===
+        - id: auth-service-login
+          uri: http://auth-service:4001
+          predicates:
+            - Path=/auth/login
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
-            - id: auth-service-validate
-              uri: http://auth-service:4001
-              predicates:
-                - Path=/auth/validate
-              filters:
-                - name: DedupeResponseHeader
-                  args:
-                    name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
-                    strategy: RETAIN_FIRST
+        - id: auth-service-register
+          uri: http://auth-service:4001
+          predicates:
+            - Path=/auth/register
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
-            - id: auth-service-health
-              uri: http://auth-service:4001
-              predicates:
-                - Path=/auth/health
-              filters:
-                - name: DedupeResponseHeader
-                  args:
-                    name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
-                    strategy: RETAIN_FIRST
+        - id: auth-service-validate
+          uri: http://auth-service:4001
+          predicates:
+            - Path=/auth/validate
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
-            # === HOSPITAL SERVICE ROUTES ===
-            - id: hospital-service-users
-              uri: http://hospital-service:4002
-              predicates:
-                - Path=/api/users/**
-              filters:
-                - name: DedupeResponseHeader
-                  args:
-                    name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
-                    strategy: RETAIN_FIRST
+        - id: auth-service-health
+          uri: http://auth-service:4001
+          predicates:
+            - Path=/auth/health
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
-            - id: hospital-service-profile
-              uri: http://hospital-service:4002
-              predicates:
-                - Path=/api/profile/**
-              filters:
-                - name: DedupeResponseHeader
-                  args:
-                    name: Access-Control-Allow-Credentials Access-Control-Allow-Origin
-                    strategy: RETAIN_FIRST
-          globals:
-            cors-configurations:
-              '[/**]':
-                allowed-origin-patterns:
-                  - "*"
-                allowed-methods:
-                  - GET
-                  - POST
-                  - PUT
-                  - DELETE
-                  - PATCH
-                  - OPTIONS
-                allowed-headers:
-                  - "*"
-                allow-credentials: true
-                max-age: 3600
+        # === HOSPITAL SERVICE ROUTES ===
+        - id: hospital-service-users
+          uri: http://hospital-service:4002
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
-      # === GLOBAL CORS CONFIGURATION ===
+        - id: hospital-service-profile
+          uri: http://hospital-service:4002
+          predicates:
+            - Path=/api/profile/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
+
       # Disable service discovery (direct URLs used)
       discovery:
         locator:
