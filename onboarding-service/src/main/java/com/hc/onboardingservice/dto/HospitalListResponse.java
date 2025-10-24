@@ -1,15 +1,10 @@
 package com.hc.onboardingservice.dto;
 
 import com.hc.onboardingservice.entity.Hospital;
-import com.hc.onboardingservice.entity.HospitalAdmin;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @Builder
