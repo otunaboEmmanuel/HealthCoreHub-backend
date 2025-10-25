@@ -20,6 +20,7 @@ import java.util.*;
 public class UserManagementService {
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
+    private final EmailService emailService;
     @Value("${auth.service.url}")
     private String authServiceUrl;
 
@@ -409,6 +410,24 @@ public class UserManagementService {
             throw new RuntimeException("Registration failed: " + e.getMessage(), e);
         }
     }
+
+    private String getHospitalNameFromTenantDb(Integer hospitalId) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb", tenantDbHost, tenantDbPort);
+        String sql = "SELECT name FROM hopital  WHERE id = ? AND is_active = true";
+        try(Connection con = DriverManager.getConnection(tenantUrl);
+                            PreparedStatement stmt = con.prepareStatement(sql))  {
+            stmt.setInt(1,hospitalId);
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                return rs.getString("name");
+            }
+            return null;
+        }catch (SQLException e) {
+            log.error("Error fetching hospital info", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     private String getTenantDbNameFromHospitalId(Integer hospitalId) {
 
         String onboardingUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb",
@@ -596,6 +615,9 @@ public class UserManagementService {
                 deleteUserInTenantDb(id, tenantDb);
             }
             PatientDto updatedUser = updateUserInTenantDb(request, id, tenantDb);
+
+            String hospitalName = getHospitalNameFromTenantDb(id);
+            emailService.sendEmail(request.getEmail(),request.getFirstName(), hospitalName);
 
             Map<String, String> response = new HashMap<>();
             response.put("status", "success");

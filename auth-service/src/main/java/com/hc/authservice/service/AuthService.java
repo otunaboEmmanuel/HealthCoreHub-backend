@@ -134,7 +134,7 @@ public class AuthService {
         String tenantRole = getTenantRole(authUser);
 
         // Generate tokens
-        String accessToken = jwtService.generateToken(authUser, tenantRole);
+        String accessToken = jwtService.generateToken(authUser, tenantRole, tenantStatus);
         String refreshToken = jwtService.generateRefreshToken(authUser);
 
         // Save refresh token
@@ -216,6 +216,7 @@ public class AuthService {
         response.put("tenant_db", claims.get("tenant_db"));
         response.put("global_role", claims.get("global_role"));
         response.put("tenant_role", claims.get("tenant_role"));
+        response.put("tenant_status", claims.get("status"));
 
         return response;
     }

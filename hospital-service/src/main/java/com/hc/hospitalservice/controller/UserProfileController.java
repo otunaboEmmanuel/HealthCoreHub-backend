@@ -18,7 +18,6 @@ import java.util.Map;
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin
 public class UserProfileController {
     private final JwtService jwtService;
     private final UserProfileService userProfileService;

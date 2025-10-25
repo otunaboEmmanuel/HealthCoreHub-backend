@@ -20,7 +20,7 @@ import java.util.Map;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin
+
 public class UserManagementController {
     private final UserManagementService userManagementService;
     private final JwtService jwtService;

@@ -29,7 +29,7 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(AuthUser user, String tenantRole) {
+    public String generateToken(AuthUser user, String tenantRole, String status) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("user_id", user.getId().toString());
         claims.put("email", user.getEmail());
@@ -37,6 +37,7 @@ public class JwtService {
         claims.put("tenant_db", user.getTenantDb());
         claims.put("global_role", user.getGlobalRole());
         claims.put("tenant_role", tenantRole);
+        claims.put("status", status);
 
         return Jwts.builder()
                 .claims(claims)
