@@ -17,8 +17,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="hospital-service" />
-        <module name="gateway-service" />
         <module name="auth-service" />
+        <module name="appointment-service" />
+        <module name="gateway-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -28,6 +29,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
+      <module name="appointment-service" options="-parameters" />
       <module name="auth-service" options="-parameters" />
       <module name="gateway-service" options="-parameters" />
       <module name="hospital-service" options="-parameters" />

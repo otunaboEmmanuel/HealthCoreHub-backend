@@ -142,7 +142,7 @@ public class UserManagementService {
     private boolean shouldCreateRoleSpecificRecord(String role) {
         return !role.equals("ADMIN") && !role.equals("STAFF");
     }
-    private void createRoleSpecificRecord(CreateUserRequest request, Integer userId, String tenantDb) {
+    private Integer createRoleSpecificRecord(CreateUserRequest request, Integer userId, String tenantDb) {
 
         switch (request.getRole()) {
             case "DOCTOR" -> createDoctorRecord(request.getDoctorDetails(), userId, tenantDb);
@@ -156,11 +156,11 @@ public class UserManagementService {
     /**
      * Create doctor record
      */
-    private void createDoctorRecord(CreateUserRequest.DoctorDetailsRequest details, Integer userId, String tenantDb) {
+    private Integer createDoctorRecord(CreateUserRequest.DoctorDetailsRequest details, Integer userId, String tenantDb) {
 
         if (details == null) {
             log.warn("Doctor details not provided for user: {}", userId);
-            return;
+            return null;
         }
 
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
@@ -185,10 +185,15 @@ public class UserManagementService {
             stmt.setDate(6, Date.valueOf(details.getLicenseExpiryDate()));
             stmt.setString(7, details.getLicenseAuthority());
 
-            stmt.executeUpdate();
-            log.info("✅ Doctor record created for user: {}", userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Integer doctorId = rs.getInt("id");
+                log.info("Doctor record created in tenant DB with ID: {}", doctorId);
+                return doctorId;
+            }
+            throw new SQLException("Doctor record insertion failed — no ID returned");
         } catch (SQLException e) {
-            log.error("❌ Failed to create doctor record", e);
+            log.error(" Failed to create doctor record", e);
             throw new RuntimeException("Doctor record creation failed: " + e.getMessage());
         }
     }

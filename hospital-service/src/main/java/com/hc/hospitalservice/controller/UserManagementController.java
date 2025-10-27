@@ -20,7 +20,6 @@ import java.util.Map;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Slf4j
-
 public class UserManagementController {
     private final UserManagementService userManagementService;
     private final JwtService jwtService;
@@ -138,7 +137,7 @@ public class UserManagementController {
     }
     @PutMapping("{id}")
     public ResponseEntity<?> updateStatus(@PathVariable Integer id,
-                                          @RequestBody UpdateRequest request,
+                                           @RequestBody UpdateRequest request,
                                           @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.replace("Bearer ", "");

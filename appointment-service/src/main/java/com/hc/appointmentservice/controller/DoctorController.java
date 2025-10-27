@@ -1,0 +1,48 @@
+package com.hc.appointmentservice.controller;
+
+import com.hc.appointmentservice.dto.UpdateDoctorRequest;
+import com.hc.appointmentservice.service.DoctorService;
+import com.hc.appointmentservice.service.JwtService;
+import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("api/doctor")
+@RequiredArgsConstructor
+@Slf4j
+public class DoctorController {
+    private final JwtService jwtService;
+    private final DoctorService doctorService;
+    @PostMapping("appointment/{id}")
+    public ResponseEntity<?> setAvailability(@PathVariable Integer id,
+                                             @RequestHeader("Authorization") String authHeader,
+                                             @RequestBody UpdateDoctorRequest request) {
+        try{
+            //Extract token
+            String token = authHeader.substring(7);
+            Claims claims = jwtService.extractClaims(token);
+            String tenantDb = claims.get("tenant_db", String.class);
+            String tenant_role = claims.get("tenant_role", String.class);
+            if(!("ADMIN".equals(tenant_role)) && !("DOCTOR".equals(tenant_role))){
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Only admins or doctors can create appointments");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+            }
+            Map<String, String> response = doctorService.setAppointment(id, request, tenantDb);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e) {
+            log.error(" Error creating user", e);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to create user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+
+    }
+}
