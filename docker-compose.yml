@@ -10,6 +10,8 @@ volumes:
     driver: local
   auth_postgres_data:
     driver: local
+  hospital_uploads:  # ← ADD THIS
+    driver: local
 
 # ============================================
 # NETWORKS
@@ -173,6 +175,9 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
+      FILE_UPLOAD_DIRECTORY: /app/uploads
+    volumes: # ← ADD THIS SECTION
+      - hospital_uploads:/app/uploads
     expose:
       - "4002"
     networks:
@@ -187,6 +192,39 @@ services:
       retries: 3
       start_period: 40s
 
+  appointment-service:
+    build:
+      context: ./appointment-service
+      dockerfile: Dockerfile
+      network: host
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: appointment-service
+    restart: always
+    depends_on:
+      - onboarding-db
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TENANT_DB_HOST: onboarding-db
+      TENANT_DB_PORT: 5432
+      TENANT_DB_USERNAME: postgres
+      TENANT_DB_PASSWORD: postgres
+      JWT_SECRET: ${JWT_SECRET}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+    expose:
+      - "4005"
+    networks:
+      - healthcare-network
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4002/api/users/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
   # ============================================
   # API GATEWAY (PUBLIC FACING)
   # ============================================

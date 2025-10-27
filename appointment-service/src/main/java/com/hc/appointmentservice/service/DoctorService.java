@@ -1,5 +1,8 @@
 package com.hc.appointmentservice.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hc.appointmentservice.dto.DoctorDTO;
 import com.hc.appointmentservice.dto.UpdateDoctorRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,8 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -27,7 +29,7 @@ public class DoctorService {
     private String tenantDbPassword;
 
     @Transactional(rollbackFor = Exception.class)
-    public Map<String, String> setAppointment(Integer id, UpdateDoctorRequest request, String tenantDb) {
+    public Map<String, String> setDoctorAvailability(Integer id, UpdateDoctorRequest request, String tenantDb) {
         if (!checkIdExist(id, tenantDb)) {
             throw new IllegalArgumentException("Doctor with id " + id + " does not exist");
         }
@@ -77,6 +79,64 @@ public class DoctorService {
         } catch (SQLException e) {
             log.error("Error checking if doctor exists with id: {}", id, e);
             throw new RuntimeException("Database error while checking doctor existence", e);
+        }
+    }
+
+    public List<DoctorDTO> getAllDoctors() {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb",
+                tenantDbHost, tenantDbPort);
+
+        String sql = """
+            SELECT 
+                u.first_name,
+                u.last_name,
+                u.profile_picture,
+                d.specialization,
+                d.availability,
+                d.license_number
+            FROM doctors d
+            INNER JOIN users u ON d.user_id = u.id
+            """;
+
+        try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet rs = statement.executeQuery()) {
+
+            List<DoctorDTO> doctorDTOList = new ArrayList<>();
+
+            while (rs.next()) {
+                DoctorDTO doctorDTO = DoctorDTO.builder()
+                        .firstName(rs.getString("first_name"))
+                        .lastName(rs.getString("last_name"))
+                        .profile_picture(rs.getString("profile_picture"))
+                        .specialization(rs.getString("specialization"))
+                        .license_number(rs.getString("license_number"))
+                        .availability(parseAvailability(rs.getString("availability")))  // ← Parse JSON
+                        .build();
+                doctorDTOList.add(doctorDTO);
+            }
+
+            return doctorDTOList;
+
+        } catch (SQLException e) {
+            log.error("Error fetching all doctors: {}", e.getMessage(), e);
+            throw new RuntimeException("Database error while fetching doctors", e);
+        }
+    }
+
+    // Helper method to parse JSON availability
+    private List<String> parseAvailability(String availabilityJson) {
+        if (availabilityJson == null || availabilityJson.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            // If using Jackson (common in Spring Boot)
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(availabilityJson, new TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            log.warn("Failed to parse availability JSON: {}", availabilityJson, e);
+            return Collections.singletonList(availabilityJson);  // Fallback
         }
     }
 }

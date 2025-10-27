@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,8 @@ public class UserManagementController {
     @PostMapping
     public ResponseEntity<?> createUser(
             @Valid @RequestBody CreateUserRequest request,
-            @RequestHeader("Authorization") String authHeader) {
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam("profile_picture")MultipartFile file) {
 
         try {
             // Extract JWT
@@ -46,7 +48,7 @@ public class UserManagementController {
                 error.put("error", "Only admins can create users");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
             }
-            UserResponse response = userManagementService.createUser(request, tenantDb, hospitalId);
+            UserResponse response = userManagementService.createUser(request, tenantDb, hospitalId, file);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
@@ -121,7 +123,7 @@ public class UserManagementController {
             ));
 
         } catch (Exception e) {
-            log.error("❌ Error fetching hospitals", e);
+            log.error(" Error fetching hospitals", e);
             return ResponseEntity.status(500).body(Map.of(
                     "success", false,
                     "message", "Failed to fetch hospitals"
@@ -159,7 +161,7 @@ public class UserManagementController {
             return ResponseEntity.badRequest().body(error);
 
         } catch (Exception e) {
-            log.error("❌ Error creating user", e);
+            log.error(" Error creating user", e);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to create user: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

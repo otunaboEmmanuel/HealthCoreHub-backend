@@ -1,5 +1,6 @@
 package com.hc.appointmentservice.controller;
 
+import com.hc.appointmentservice.dto.DoctorDTO;
 import com.hc.appointmentservice.dto.UpdateDoctorRequest;
 import com.hc.appointmentservice.service.DoctorService;
 import com.hc.appointmentservice.service.JwtService;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -35,7 +37,7 @@ public class DoctorController {
                 error.put("error", "Only admins or doctors can create appointments");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
             }
-            Map<String, String> response = doctorService.setAppointment(id, request, tenantDb);
+            Map<String, String> response = doctorService.setDoctorAvailability(id, request, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e) {
             log.error(" Error creating user", e);
@@ -43,6 +45,19 @@ public class DoctorController {
             error.put("error", "Failed to create user: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
-
+    }
+    @GetMapping()
+    public ResponseEntity<?> getAllDoctors(){
+        try{
+            List<DoctorDTO> doctorDTO = doctorService.getAllDoctors();
+            return ResponseEntity.ok(Map.of("doctors", doctorDTO,
+                                        "size",doctorDTO.size()));
+        }catch (Exception e)
+        {
+            log.error(" Error getting doctors", e);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to get doctors: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 }

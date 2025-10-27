@@ -9,7 +9,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -35,9 +39,12 @@ public class UserManagementService {
 
     @Value("${tenant.datasource.password}")
     private String tenantDbPassword;
+    @Value("${file.upload.directory:/app/uploads}")
+    private String uploadDirectory;
 
     @Transactional(rollbackFor = Exception.class)
-    public UserResponse createUser(CreateUserRequest request, String tenantDb, Integer hospitalId) {
+    public UserResponse createUser(CreateUserRequest request, String tenantDb, Integer hospitalId, MultipartFile file) {
+
 
         log.info("👤 Creating user: {} with role: {}", request.getEmail(), request.getRole());
 
@@ -45,8 +52,10 @@ public class UserManagementService {
             // Step 1: Register in Auth Service
             String authUserId = registerInAuthService(request, hospitalId, tenantDb);
 
+            String profile_picture=saveFileToStorage(file);
+
             // Step 2: Create user in Tenant DB
-            Integer tenantUserId = createUserInTenantDb(request, tenantDb, authUserId);
+            Integer tenantUserId = createUserInTenantDb(request, tenantDb, authUserId, profile_picture);
             Integer staffId = null;
             if (shouldCreateRoleSpecificRecord(request.getRole())) {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
@@ -68,6 +77,34 @@ public class UserManagementService {
             log.error("Failed to create user: {}", request.getEmail(), e);
             throw new RuntimeException("User creation failed: " + e.getMessage(), e);
         }
+    }
+
+    public String saveFileToStorage(MultipartFile file){
+        String extensionType=file.getContentType();//image/png
+
+        String extension= "";
+        if (!extensionType.isEmpty()) {
+            String[] parts = extensionType.split("/");
+            if (parts.length > 1) {
+                extension = "." + parts[1];
+            }
+        }
+        String fileName=UUID.randomUUID().toString().replace("-","") +extension;
+        try{
+            File directory=new File(uploadDirectory);
+            if(!directory.exists()){
+                directory.mkdir();
+            }
+
+            File outputFile=new File(uploadDirectory+fileName);
+            FileOutputStream outputStream=new FileOutputStream(outputFile);
+            outputStream.write(file.getBytes());
+            outputStream.close();
+            log.info("File saved successfully to:{} ",outputFile.getAbsolutePath());
+        }catch(IOException e){
+            log.info("Error saving file:{} ",e.getMessage());
+        }
+        return fileName;
     }
 
     private String registerInAuthService(CreateUserRequest request, Integer hospitalId, String tenantDb) {
@@ -98,7 +135,7 @@ public class UserManagementService {
     /**
      * Create user in tenant database
      */
-    private Integer createUserInTenantDb(CreateUserRequest request, String tenantDb, String authUserId) throws SQLException {
+    private Integer createUserInTenantDb(CreateUserRequest request, String tenantDb, String authUserId, String fileName) throws SQLException {
 
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
@@ -123,7 +160,7 @@ public class UserManagementService {
             stmt.setString(5, request.getPhoneNumber());
             stmt.setString(6, hashedPassword);
             stmt.setString(7, request.getRole());
-            stmt.setString(8, request.getProfilePicture());
+            stmt.setString(8, fileName);
             stmt.setString(9, "ACTIVE");
             stmt.setObject(10, UUID.fromString(authUserId));
 
@@ -570,7 +607,7 @@ public class UserManagementService {
             return authUserId;
 
         } catch (Exception e) {
-            log.error("❌ Auth service registration failed", e);
+            log.error(" Auth service registration failed", e);
             throw new RuntimeException("Auth registration failed: " + e.getMessage());
         }
     }
@@ -723,14 +760,14 @@ public class UserManagementService {
             int rowsAffected = stmt.executeUpdate();
 
             if (rowsAffected == 0) {
-                log.warn("⚠️ No user found with id={} in tenant {}", id, tenantDb);
+                log.warn("No user found with id={} in tenant {}", id, tenantDb);
                 throw new IllegalArgumentException("User with this ID not found or already deleted");
             }
 
-            log.info("🗑️ Deleted user with id={} from tenant {}", id, tenantDb);
+            log.info(" Deleted user with id={} from tenant {}", id, tenantDb);
 
         } catch (SQLException e) {
-            log.error("❌ Failed to delete user in tenant DB", e);
+            log.error(" Failed to delete user in tenant DB", e);
             throw new RuntimeException("Error deleting user: " + e.getMessage());
         }
     }

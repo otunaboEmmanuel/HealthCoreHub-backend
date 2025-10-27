@@ -35,7 +35,6 @@ public class CreateUserRequest {
     @NotBlank(message = "Role is required")
     private String role;  // DOCTOR, NURSE, PATIENT, PHARMACIST, LAB_SCIENTIST, STAFF
 
-    private String profilePicture;
 
     private DoctorDetailsRequest doctorDetails;
     private NurseDetailsRequest nurseDetails;
