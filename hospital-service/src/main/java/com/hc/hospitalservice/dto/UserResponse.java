@@ -13,6 +13,7 @@ public class UserResponse {
     private Boolean success;
     private String message;
     private Integer userId;
+    private Integer staffId;
     private String authUserId;
     private String email;
     private String role;

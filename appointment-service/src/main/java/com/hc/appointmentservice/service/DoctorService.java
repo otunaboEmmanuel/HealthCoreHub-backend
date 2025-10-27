@@ -43,27 +43,21 @@ public class DoctorService {
     private void setDoctorAppointment(Integer id, UpdateDoctorRequest request, String tenantDb) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
-
         String sql = """
                 UPDATE doctors
                 SET availability = ?::jsonb
                 WHERE id = ?
                 """;
-
         try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, String.valueOf(request.getAvailability()));
             stmt.setInt(2, id);
-
             int rowsAffected = stmt.executeUpdate();
-
             if (rowsAffected == 0) {
                 throw new IllegalStateException("No doctor found with id " + id);
             }
-
             log.info("Updated doctor {} availability. Rows affected: {}", id, rowsAffected);
-
         } catch (SQLException exception) {
             log.error("Error updating doctor appointment for id: {}", id, exception);
             throw new RuntimeException("Failed to update doctor availability: " + exception.getMessage(), exception);
@@ -73,18 +67,13 @@ public class DoctorService {
     private boolean checkIdExist(Integer id, String tenantDb) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
-
         String sql = "SELECT 1 FROM doctors WHERE id = ?";
-
         try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = connection.prepareStatement(sql)) {
-
             stmt.setInt(1, id);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }
-
         } catch (SQLException e) {
             log.error("Error checking if doctor exists with id: {}", id, e);
             throw new RuntimeException("Database error while checking doctor existence", e);

@@ -47,8 +47,9 @@ public class UserManagementService {
 
             // Step 2: Create user in Tenant DB
             Integer tenantUserId = createUserInTenantDb(request, tenantDb, authUserId);
+            Integer staffId = null;
             if (shouldCreateRoleSpecificRecord(request.getRole())) {
-                createRoleSpecificRecord(request, tenantUserId, tenantDb);
+                staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
             }
 
             log.info("✅ User created successfully: {}", request.getEmail());
@@ -58,12 +59,13 @@ public class UserManagementService {
                     .message("User created successfully")
                     .userId(tenantUserId)
                     .authUserId(authUserId)
+                    .staffId(staffId)
                     .email(request.getEmail())
                     .role(request.getRole())
                     .build();
 
         } catch (Exception e) {
-            log.error("❌ Failed to create user: {}", request.getEmail(), e);
+            log.error("Failed to create user: {}", request.getEmail(), e);
             throw new RuntimeException("User creation failed: " + e.getMessage(), e);
         }
     }
@@ -143,16 +145,19 @@ public class UserManagementService {
         return !role.equals("ADMIN") && !role.equals("STAFF");
     }
     private Integer createRoleSpecificRecord(CreateUserRequest request, Integer userId, String tenantDb) {
-
-        switch (request.getRole()) {
+        return switch (request.getRole()) {
             case "DOCTOR" -> createDoctorRecord(request.getDoctorDetails(), userId, tenantDb);
             case "NURSE" -> createNurseRecord(request.getNurseDetails(), userId, tenantDb);
             case "PATIENT" -> createPatientRecord(request.getPatientDetails(), userId, tenantDb);
             case "PHARMACIST" -> createPharmacistRecord(request.getPharmacistDetails(), userId, tenantDb);
             case "LAB_SCIENTIST" -> createLabScientistRecord(request.getLabScientistDetails(), userId, tenantDb);
-            default -> log.warn("No role-specific table for role: {}", request.getRole());
-        }
+            default -> {
+                log.warn("No role-specific table for role: {}", request.getRole());
+                yield null;
+            }
+        };
     }
+
     /**
      * Create doctor record
      */
@@ -200,11 +205,11 @@ public class UserManagementService {
     /**
      * Create nurse record
      */
-    private void createNurseRecord(CreateUserRequest.NurseDetailsRequest details, Integer userId, String tenantDb) {
+    private Integer createNurseRecord(CreateUserRequest.NurseDetailsRequest details, Integer userId, String tenantDb) {
 
         if (details == null) {
             log.warn("Nurse details not provided for user: {}", userId);
-            return;
+            return null;
         }
 
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
@@ -230,8 +235,14 @@ public class UserManagementService {
             stmt.setString(7, details.getShiftHours());
             stmt.setInt(8, details.getYearsOfExperience());
 
-            stmt.executeUpdate();
-            log.info("✅ Nurse record created for user: {}", userId);
+            ResultSet rs= stmt.executeQuery();
+            if (rs.next()) {
+                Integer nurseId = rs.getInt("id");
+                log.info("Nurse record created in tenant DB with ID: {}", nurseId);
+                return nurseId;
+            }
+            throw new SQLException("Nurse record insertion failed — no ID returned");
+            //log.info("✅ Nurse record created for user: {}", userId);
 
         } catch (SQLException e) {
             log.error("❌ Failed to create nurse record", e);
@@ -241,11 +252,11 @@ public class UserManagementService {
     /**
      * Create patient record
      */
-    private void createPatientRecord(CreateUserRequest.PatientDetailsRequest details, Integer userId, String tenantDb) {
+    private Integer createPatientRecord(CreateUserRequest.PatientDetailsRequest details, Integer userId, String tenantDb) {
 
         if (details == null) {
             log.warn("Patient details not provided for user: {}", userId);
-            return;
+            return null;
         }
 
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
@@ -286,20 +297,25 @@ public class UserManagementService {
             stmt.setString(18, details.getEmergencyContactPhone());
             stmt.setString(19, details.getAllergies());
             stmt.setString(20, details.getChronicConditions());
-            stmt.executeUpdate();
-            log.info("✅ Patient record created for user: {}", userId);
+            ResultSet rs= stmt.executeQuery();
+            if (rs.next()) {
+                Integer patientId = rs.getInt("id");
+                log.info("Patient record created in tenant DB with ID: {}", patientId);
+                return patientId;
+            }
+            throw new SQLException("Patient record insertion failed — no ID returned");
 
         } catch (SQLException e) {
             log.error("❌ Failed to create patient record", e);
             throw new RuntimeException("Patient record creation failed: " + e.getMessage());
         }
     }
-    private void createPharmacistRecord(CreateUserRequest.PharmacistDetailsRequest details,
+    private Integer createPharmacistRecord(CreateUserRequest.PharmacistDetailsRequest details,
                                         Integer userId,
                                         String tenantDb) {
         if (details == null) {
             log.warn("Pharmacist details not provided for user: {}", userId);
-            return;
+            return null;
         }
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
@@ -324,10 +340,14 @@ public class UserManagementService {
         stmt.setObject(7, details.getYearsOfExperience());
         stmt.setString(8, details.getLicenseAuthority());
 
-        stmt.executeUpdate();
-        log.info("✅ Pharmacist record created for user: {}",
+        ResultSet rs= stmt.executeQuery();
+        if (rs.next()) {
+            Integer pharmacistId = rs.getInt("id");
+            log.info("Create pharmacist record for user with ID: {}", pharmacistId);
+            return pharmacistId;
+        }
+        throw new SQLException("Pharamacist record insertion failed — no ID returned");
 
-        userId);
 
     } catch (SQLException e) {
         log.error("❌ Failed to create pharmacist record"
@@ -336,12 +356,12 @@ public class UserManagementService {
         + e.getMessage());
     }
     }
-    private void createLabScientistRecord(CreateUserRequest.LabScientistDetailsRequest details,
+    private Integer createLabScientistRecord(CreateUserRequest.LabScientistDetailsRequest details,
                                           Integer userId,
                                           String tenantDb) {
         if (details == null) {
             log.warn("LabScientist details not provided for user: {}", userId);
-            return;
+            return null;
         }
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
@@ -364,8 +384,13 @@ public class UserManagementService {
             stmt.setString(7, details.getLicenseAuthority());
             stmt.setObject(8, details.getYearsOfExperience());
 
-            stmt.executeUpdate();
-            log.info("✅ Lab scientist record created for user: {}", userId);
+            ResultSet rs= stmt.executeQuery();
+            if (rs.next()) {
+                Integer labScientistId = rs.getInt("id");
+                log.info("Created labScientist record for user with ID: {}", labScientistId);
+                return labScientistId;
+            }
+            throw new SQLException("Pharmacist record insertion failed — no ID returned");
 
         } catch (SQLException e) {
             log.error("❌ Failed to create lab scientist record", e);
@@ -639,7 +664,6 @@ public class UserManagementService {
             throw new RuntimeException("Database update failed: " + e.getMessage());
         }
     }
-
 
     private PatientDto updateUserInTenantDb(UpdateRequest request, Integer id, String tenantDb) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost,tenantDbPort,tenantDb);
