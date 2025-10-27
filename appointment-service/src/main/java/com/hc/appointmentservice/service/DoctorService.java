@@ -1,5 +1,6 @@
 package com.hc.appointmentservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hc.appointmentservice.dto.DoctorDTO;
@@ -52,8 +53,10 @@ public class DoctorService {
                 """;
         try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ObjectMapper mapper = new ObjectMapper();
+            String availabilityJson = mapper.writeValueAsString(request.getAvailability());
 
-            stmt.setString(1, String.valueOf(request.getAvailability()));
+            stmt.setString(1, availabilityJson);
             stmt.setInt(2, id);
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected == 0) {
@@ -63,6 +66,8 @@ public class DoctorService {
         } catch (SQLException exception) {
             log.error("Error updating doctor appointment for id: {}", id, exception);
             throw new RuntimeException("Failed to update doctor availability: " + exception.getMessage(), exception);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -82,9 +87,9 @@ public class DoctorService {
         }
     }
 
-    public List<DoctorDTO> getAllDoctors() {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb",
-                tenantDbHost, tenantDbPort);
+    public List<DoctorDTO> getAllDoctors(String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, tenantDb);
 
         String sql = """
             SELECT 

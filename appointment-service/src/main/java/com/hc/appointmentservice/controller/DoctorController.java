@@ -47,9 +47,18 @@ public class DoctorController {
         }
     }
     @GetMapping()
-    public ResponseEntity<?> getAllDoctors(){
+    public ResponseEntity<?> getAllDoctors(@RequestHeader("Authorization")String authHeader){
         try{
-            List<DoctorDTO> doctorDTO = doctorService.getAllDoctors();
+            String token = authHeader.substring(7);
+            Claims claims = jwtService.extractClaims(token);
+            String tenantDb = claims.get("tenant_db", String.class);
+            String tenant_role = claims.get("tenant_role", String.class);
+            if(!("ADMIN".equals(tenant_role))&& !("PATIENT".equals(tenant_role))){
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Only admins or users can see doctor lists");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+            }
+            List<DoctorDTO> doctorDTO = doctorService.getAllDoctors(tenantDb);
             return ResponseEntity.ok(Map.of("doctors", doctorDTO,
                                         "size",doctorDTO.size()));
         }catch (Exception e)

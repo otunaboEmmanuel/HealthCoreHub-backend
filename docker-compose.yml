@@ -242,11 +242,13 @@ services:
       - onboarding-service
       - auth-service
       - hospital-service
+      - appointment-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
       ONBOARDING_SERVICE_URL: http://onboarding-service:4000
       AUTH_SERVICE_URL: http://auth-service:4001
       HOSPITAL_SERVICE_URL: http://hospital-service:4002
+      APPOINTMENT_SERVICE_URL: http://hospital-service:4005
     ports:
       - "4004:4004"
     networks:
