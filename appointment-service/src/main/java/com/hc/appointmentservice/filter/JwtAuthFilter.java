@@ -1,7 +1,7 @@
-package com.hc.hospitalservice.filter;
+package com.hc.appointmentservice.filter;
 
-import com.hc.hospitalservice.config.TenantContext;
-import com.hc.hospitalservice.service.JwtService;
+import com.hc.appointmentservice.config.TenantContext;
+import com.hc.appointmentservice.service.JwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -50,3 +50,4 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
     }
 }
+
