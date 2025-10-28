@@ -154,7 +154,7 @@ public class UserManagementController {
                 error.put("error", "Only admins can create users");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
             }
-            Map<String, String> response = userManagementService.updateUser(id, tenantDb, request);
+            Map<String, String> response = userProfileService.updateUser(id, tenantDb, request);
             return ResponseEntity.ok(response);
         }catch (IllegalArgumentException e) {
             log.warn("⚠️ Validation error: {}", e.getMessage());

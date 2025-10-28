@@ -478,22 +478,7 @@ public class UserManagementService {
         }
     }
 
-    private String getHospitalNameFromTenantDb(Integer hospitalId) {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb", tenantDbHost, tenantDbPort);
-        String sql = "SELECT name FROM hopital  WHERE id = ? AND is_active = true";
-        try(Connection con = DriverManager.getConnection(tenantUrl);
-                            PreparedStatement stmt = con.prepareStatement(sql))  {
-            stmt.setInt(1,hospitalId);
-            ResultSet rs = stmt.executeQuery();
-            if(rs.next()){
-                return rs.getString("name");
-            }
-            return null;
-        }catch (SQLException e) {
-            log.error("Error fetching hospital info", e);
-            throw new RuntimeException(e);
-        }
-    }
+
 
     private String getTenantDbNameFromHospitalId(Integer hospitalId) {
 
@@ -671,109 +656,6 @@ public class UserManagementService {
         }
 
         return fullAddress.toString();
-    }
-    @Transactional(rollbackFor = Exception.class)
-    public Map<String, String> updateUser(Integer id, String tenantDb, UpdateRequest request) {
-        try {
-            if (!existsIdInTenantDb(id, tenantDb)) {
-                throw new IllegalArgumentException("User with this ID does not exist in this hospital");
-            }
-            if(request.getStatus().equalsIgnoreCase("REJECTED")) {
-                deleteUserInTenantDb(id, tenantDb);
-            }
-            PatientDto updatedUser = updateUserInTenantDb(request, id, tenantDb);
-
-            String hospitalName = getHospitalNameFromTenantDb(id);
-            emailService.sendEmail(request.getEmail(),request.getFirstName(), hospitalName);
-
-            Map<String, String> response = new HashMap<>();
-            response.put("status", "success");
-            response.put("message", "User updated successfully");
-            response.put("updatedStatus", updatedUser.getStatus());
-            response.put("userEmail", updatedUser.getEmail());
-            return response;
-
-        } catch (IllegalArgumentException e) {
-            log.warn(" Validation failed: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error(" Failed to update user in tenant DB", e);
-            throw new RuntimeException("Database update failed: " + e.getMessage());
-        }
-    }
-
-    private PatientDto updateUserInTenantDb(UpdateRequest request, Integer id, String tenantDb) {
-        //String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost,tenantDbPort,tenantDb);
-        String tenantUrl = String.format(
-                "jdbc:postgresql://%s:%s/%s?user=%s&password=%s",
-                tenantDbHost, tenantDbPort, tenantDb, tenantDbUsername, tenantDbPassword
-        );
-        String sql = """
-                UPDATE users
-                        SET status = ?, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = ?
-                        RETURNING id, first_name, middle_name, last_name, email, phone_number, role, status
-                """;
-        try(Connection con = DriverManager.getConnection(tenantUrl);
-                                PreparedStatement stmt = con.prepareStatement(sql)){
-            stmt.setString(1,request.getStatus());
-            stmt.setInt(2, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()){
-                return PatientDto.builder()
-                        .id(rs.getInt("id"))
-                        .firstName(rs.getString("first_name"))
-                        .middleName(rs.getString("middle_name"))
-                        .lastName(rs.getString("last_name"))
-                        .email(rs.getString("email"))
-                        .phoneNumber(rs.getString("phone_number"))
-                        .role(rs.getString("role"))
-                        .status(rs.getString("status"))
-                        .build();
-            } else {
-                throw new SQLException("Failed to update user status");
-            }
-
-        } catch (SQLException e) {
-            log.error(" Failed to fetch hospitals", e);
-            throw new RuntimeException("Failed to fetch hospitals");
-        }
-    }
-
-    private Boolean existsIdInTenantDb(Integer id, String tenantDb) {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
-        String sql = "SELECT 1 FROM users WHERE id = ?";
-        try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
-                                PreparedStatement stmt = con.prepareStatement(sql)){
-            stmt.setInt(1,id);
-            ResultSet rs = stmt.executeQuery();
-            return rs.next();
-        }catch (SQLException e) {
-            log.error("Error checking email", e);
-            return false;
-        }
-    }
-    private void deleteUserInTenantDb(Integer id, String tenantDb) {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
-        String sql = "DELETE FROM users WHERE id = ?";
-
-        try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-            int rowsAffected = stmt.executeUpdate();
-
-            if (rowsAffected == 0) {
-                log.warn("No user found with id={} in tenant {}", id, tenantDb);
-                throw new IllegalArgumentException("User with this ID not found or already deleted");
-            }
-
-            log.info(" Deleted user with id={} from tenant {}", id, tenantDb);
-
-        } catch (SQLException e) {
-            log.error(" Failed to delete user in tenant DB", e);
-            throw new RuntimeException("Error deleting user: " + e.getMessage());
-        }
     }
 
 }
