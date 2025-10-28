@@ -7,10 +7,13 @@ import com.hc.appointmentservice.service.JwtService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -24,17 +27,28 @@ public class AppointmentController {
     @PostMapping()
     public ResponseEntity<?> addAppointment(@RequestBody AppointmentDTO appointment,
                                             @RequestHeader("Authorization")String authHeader) {
-        try{
+        try {
             String token = authHeader.substring(7);
             String tenantDb = jwtService.extractTenantDb(token);
             String tenantRole = jwtService.extractTenantRole(token);
-            if(!tenantRole.equalsIgnoreCase("admin")&&!tenantRole.equalsIgnoreCase("patient")){
-                log.info("this role is not allowed to reach this endpoint {}", tenantRole);
+            if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 throw new RuntimeException("does not have access to this endpoint");
             }
-            Appointment appointment1= appointmentService.bookAppointment(appointment, tenantDb);
+            Appointment appointment1 = appointmentService.bookAppointment(appointment, tenantDb);
+            if (appointment1 == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("appointment not found");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "success",
+                    "appointment", appointment1));
+        }catch (IllegalArgumentException e) {
+            log.warn("Invalid appointment request: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
 
+        } catch (Exception e) {
+            log.error("Error occurred while adding appointment", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to book appointment"));
         }
-
     }
 }

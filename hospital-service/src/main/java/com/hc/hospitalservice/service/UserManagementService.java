@@ -694,23 +694,27 @@ public class UserManagementService {
             return response;
 
         } catch (IllegalArgumentException e) {
-            log.warn("⚠️ Validation failed: {}", e.getMessage());
+            log.warn(" Validation failed: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            log.error("❌ Failed to update user in tenant DB", e);
+            log.error(" Failed to update user in tenant DB", e);
             throw new RuntimeException("Database update failed: " + e.getMessage());
         }
     }
 
     private PatientDto updateUserInTenantDb(UpdateRequest request, Integer id, String tenantDb) {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost,tenantDbPort,tenantDb);
+        //String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost,tenantDbPort,tenantDb);
+        String tenantUrl = String.format(
+                "jdbc:postgresql://%s:%s/%s?user=%s&password=%s",
+                tenantDbHost, tenantDbPort, tenantDb, tenantDbUsername, tenantDbPassword
+        );
         String sql = """
                 UPDATE users
                         SET status = ?, updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?
                         RETURNING id, first_name, middle_name, last_name, email, phone_number, role, status
                 """;
-        try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+        try(Connection con = DriverManager.getConnection(tenantUrl);
                                 PreparedStatement stmt = con.prepareStatement(sql)){
             stmt.setString(1,request.getStatus());
             stmt.setInt(2, id);
@@ -731,7 +735,7 @@ public class UserManagementService {
             }
 
         } catch (SQLException e) {
-            log.error("❌ Failed to fetch hospitals", e);
+            log.error(" Failed to fetch hospitals", e);
             throw new RuntimeException("Failed to fetch hospitals");
         }
     }

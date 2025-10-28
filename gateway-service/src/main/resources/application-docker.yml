@@ -55,6 +55,13 @@ spring:
             - Path=/api/doctor/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
+
+        - id: appointment-service-booking
+          uri: http://appointment-service:4005
+          predicates:
+            - Path=/api/appointment/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
         # === AUTH SERVICE ROUTES ===
         - id: auth-service-login
           uri: http://auth-service:4001

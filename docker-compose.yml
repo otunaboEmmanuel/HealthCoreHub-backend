@@ -12,6 +12,8 @@ volumes:
     driver: local
   hospital_uploads:  # ← ADD THIS
     driver: local
+  appointment_postgres_data: #
+    driver: local
 
 # ============================================
 # NETWORKS
@@ -71,6 +73,28 @@ services:
       - 8.8.8.8
       - 8.8.4.4
 
+  appointment-db:
+    image: postgres:latest
+    container_name: appointment-service-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appointmentdb
+    ports:
+      - "5435:5432"
+    volumes:
+      - appointment_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - healthcare-network
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
   # ============================================
   # MICROSERVICES
   # ============================================
@@ -203,6 +227,7 @@ services:
     restart: always
     depends_on:
       - onboarding-db
+      - appointment-db
     environment:
       SPRING_PROFILES_ACTIVE: docker
       TENANT_DB_HOST: onboarding-db
@@ -248,7 +273,7 @@ services:
       ONBOARDING_SERVICE_URL: http://onboarding-service:4000
       AUTH_SERVICE_URL: http://auth-service:4001
       HOSPITAL_SERVICE_URL: http://hospital-service:4002
-      APPOINTMENT_SERVICE_URL: http://hospital-service:4005
+      APPOINTMENT_SERVICE_URL: http://appointment-service:4005
     ports:
       - "4004:4004"
     networks:

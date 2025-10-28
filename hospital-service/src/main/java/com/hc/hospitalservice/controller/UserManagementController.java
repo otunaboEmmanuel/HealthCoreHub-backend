@@ -83,7 +83,7 @@ public class UserManagementController {
 //            return ResponseEntity.ok(response);
 //
 //        } catch (Exception e) {
-//            log.error("❌ Error fetching users", e);
+//            log.error(" Error fetching users", e);
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 //                    .body(Map.of("error", "Failed to fetch users"));
 //        }
