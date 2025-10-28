@@ -1,7 +1,9 @@
 package com.hc.appointmentservice.controller;
 
 import com.hc.appointmentservice.dto.DoctorDTO;
+import com.hc.appointmentservice.dto.DoctorResponse;
 import com.hc.appointmentservice.dto.UpdateDoctorRequest;
+import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.service.DoctorService;
 import com.hc.appointmentservice.service.JwtService;
 import io.jsonwebtoken.Claims;
@@ -68,5 +70,19 @@ public class DoctorController {
             error.put("error", "Failed to get doctors: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
+    }
+    @GetMapping("{doctorId}")
+    public ResponseEntity<?> getAppointmentById(@PathVariable Integer doctorId,
+                                                @RequestHeader("Authorization")String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+            String tenantDb= jwtService.extractTenantDb(token);
+            String tenant_role = jwtService.extractTenantRole(token);
+            if(!("ADMIN".equals(tenant_role))&& !("DOCTOR".equals(tenant_role))){
+                log.error(" this role cant access endpoint {}",tenant_role);
+                throw new RuntimeException(" this role cant access endpoint "+tenant_role);
+            }
+            List<DoctorResponse> doctorResponses = doctorService.getAppointments(doctorId,tenantDb);
+        }catch
     }
 }

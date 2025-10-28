@@ -4,7 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hc.appointmentservice.dto.DoctorDTO;
+import com.hc.appointmentservice.dto.DoctorResponse;
 import com.hc.appointmentservice.dto.UpdateDoctorRequest;
+import com.hc.appointmentservice.dto.UserInfo;
+import com.hc.appointmentservice.entity.Appointment;
+import com.hc.appointmentservice.repository.AppointmentRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,9 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class DoctorService {
 
     @Value("${tenant.datasource.host}")
@@ -29,9 +37,12 @@ public class DoctorService {
     @Value("${tenant.datasource.password}")
     private String tenantDbPassword;
 
+    private final AppointmentRepository appointmentRepository;
+
     @Transactional(rollbackFor = Exception.class)
     public Map<String, String> setDoctorAvailability(Integer id, UpdateDoctorRequest request, String tenantDb) {
-        if (!checkIdExist(id, tenantDb)) {
+        String sql = "SELECT 1 FROM doctors WHERE id = ?";
+        if (!checkIdExist(id, tenantDb, sql)) {
             throw new IllegalArgumentException("Doctor with id " + id + " does not exist");
         }
 
@@ -71,10 +82,9 @@ public class DoctorService {
         }
     }
 
-    private boolean checkIdExist(Integer id, String tenantDb) {
+    private boolean checkIdExist(Integer id, String tenantDb, String sql) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
-        String sql = "SELECT 1 FROM doctors WHERE id = ?";
         try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
@@ -144,4 +154,48 @@ public class DoctorService {
             return Collections.singletonList(availabilityJson);  // Fallback
         }
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public List<DoctorResponse> getAppointments(Integer doctorId, String tenantDb) {
+        List<Appointment> appointments = appointmentRepository.findByDoctorId(doctorId);
+        if (appointments.isEmpty()) {
+            log.info("No doctor found with id {}", doctorId);
+            return Collections.emptyList();
+        }
+        return appointments.stream()
+                .map(appointment -> {
+                    UserInfo userInfo = getUserInfo(tenantDb,appointment.getUserId());
+                    return DoctorResponse.builder()
+                            .firstName(userInfo.getFirstName())
+                            .lastName(userInfo.getLastName())
+                            .reason(appointment.getReason())
+                            .date(appointment.getDate())
+                            .appointmentTime(appointment.getAppointmentTime())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+    }
+    private UserInfo getUserInfo(String tenantDb, Integer userId){
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, tenantDb);
+        String sql = "SELECT first_name, last_name FROM users WHERE id =?";
+        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+                                    PreparedStatement statement = conn.prepareStatement(sql) ){
+            statement.setInt(1,userId);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()){
+                return new UserInfo(
+                        rs.getString("first_name"),
+                        rs.getString("last_name")
+                );
+            }
+            return null;
+        }catch (SQLException e) {
+            log.error("Error fetching doctor appointment for id: {}", userId, e);
+            throw new RuntimeException("Database error while fetching  user", e);
+        }
+
+    }
+
+
 }
