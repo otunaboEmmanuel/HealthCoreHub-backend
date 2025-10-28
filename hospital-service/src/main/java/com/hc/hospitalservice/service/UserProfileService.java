@@ -2,6 +2,7 @@ package com.hc.hospitalservice.service;
 
 import com.hc.hospitalservice.dto.PatientDto;
 import com.hc.hospitalservice.dto.UserProfileDTO;
+import com.hc.hospitalservice.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -193,4 +194,6 @@ public class UserProfileService {
         }
 
     }
+
+
 }

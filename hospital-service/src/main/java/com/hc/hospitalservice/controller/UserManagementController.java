@@ -3,6 +3,7 @@ package com.hc.hospitalservice.controller;
 import com.hc.hospitalservice.dto.*;
 import com.hc.hospitalservice.service.JwtService;
 import com.hc.hospitalservice.service.UserManagementService;
+import com.hc.hospitalservice.service.UserProfileService;
 import io.jsonwebtoken.Claims;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class UserManagementController {
     private final UserManagementService userManagementService;
     private final JwtService jwtService;
+    private final UserProfileService userProfileService;
 
     /**
      * Create a new user (only admins can do this)
@@ -65,27 +67,27 @@ public class UserManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-    @GetMapping
-    public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String authHeader) {
-        try {
-            String token = authHeader.replace("Bearer ", "");
-            Claims claims = jwtService.extractClaims(token);
-            String tenantDb = claims.get("tenant_db", String.class);
-
-            // TODO: Implement get all users from tenant DB
-
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Get all users - to be implemented");
-            response.put("tenantDb", tenantDb);
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("❌ Error fetching users", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to fetch users"));
-        }
-    }
+//    @GetMapping
+//    public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String authHeader) {
+//        try {
+//            String token = authHeader.replace("Bearer ", "");
+//            Claims claims = jwtService.extractClaims(token);
+//            String tenantDb = claims.get("tenant_db", String.class);
+//
+//            List<UserProfileDTO> userProfileDTOS = userProfileService.getAllUsers(tenantDb);
+//
+//            Map<String, String> response = new HashMap<>();
+//            response.put("message", "Get all users - to be implemented");
+//            response.put("tenantDb", tenantDb);
+//
+//            return ResponseEntity.ok(response);
+//
+//        } catch (Exception e) {
+//            log.error("❌ Error fetching users", e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(Map.of("error", "Failed to fetch users"));
+//        }
+//    }
     @PostMapping("/register")
     public ResponseEntity<?> registerPatient(@Valid @RequestBody PatientRequest request) {
 

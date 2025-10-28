@@ -437,7 +437,7 @@ public class UserManagementService {
     @Transactional(rollbackFor = Exception.class)
     public UserResponse registerPatient(PatientRequest request) {
 
-        log.info("🧑‍🦱 Patient self-registration: {}", request.getEmail());
+        log.info(" Patient self-registration: {}", request.getEmail());
 
         try {
             // Step 1: Get hospital's tenant DB name
