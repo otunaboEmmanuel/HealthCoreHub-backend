@@ -59,7 +59,7 @@ public class AppointmentService {
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
             statement.setInt(1,userId);
             ResultSet rs = statement.executeQuery();
-            return rs.next();
+            return rs.next() && rs.getInt(1) >0;
         } catch (SQLException e) {
             log.error(e.getMessage());
             throw new RuntimeException(e);
