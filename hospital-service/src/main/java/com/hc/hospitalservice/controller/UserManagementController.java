@@ -149,7 +149,9 @@ public class UserManagementController {
         }
 
     }
-    @GetMapping("{userId}")
+    @GetMapping("{patientId}")
+
+
 
 
 }
