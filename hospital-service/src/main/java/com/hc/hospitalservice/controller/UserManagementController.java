@@ -149,8 +149,9 @@ public class UserManagementController {
         }
 
     }
+    //get hospital number from patientId
     @GetMapping("{patientId}")
-    public ResponseEntity<?> getPatient(@PathVariable Integer patientId, @RequestHeader("Authorization")String authHeader) {
+    public ResponseEntity<?> getHospitalNumber(@PathVariable Integer patientId, @RequestHeader("Authorization")String authHeader) {
         try{
             String token = authHeader.substring(7);
             String tenantDb = jwtService.extractTenantDb(token);
