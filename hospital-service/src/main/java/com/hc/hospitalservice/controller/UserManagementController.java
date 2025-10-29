@@ -67,27 +67,6 @@ public class UserManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-//    @GetMapping
-//    public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String authHeader) {
-//        try {
-//            String token = authHeader.replace("Bearer ", "");
-//            Claims claims = jwtService.extractClaims(token);
-//            String tenantDb = claims.get("tenant_db", String.class);
-//
-//            List<UserProfileDTO> userProfileDTOS = userProfileService.getAllUsers(tenantDb);
-//
-//            Map<String, String> response = new HashMap<>();
-//            response.put("message", "Get all users - to be implemented");
-//            response.put("tenantDb", tenantDb);
-//
-//            return ResponseEntity.ok(response);
-//
-//        } catch (Exception e) {
-//            log.error(" Error fetching users", e);
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(Map.of("error", "Failed to fetch users"));
-//        }
-//    }
     @PostMapping("/register")
     public ResponseEntity<?> registerPatient(@Valid @RequestBody PatientRequest request) {
 
@@ -170,6 +149,7 @@ public class UserManagementController {
         }
 
     }
-    @GetMapping()
+    @GetMapping("{userId}")
+
 
 }

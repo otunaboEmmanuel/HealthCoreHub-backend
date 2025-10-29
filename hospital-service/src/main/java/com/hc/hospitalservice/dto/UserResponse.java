@@ -15,6 +15,8 @@ public class UserResponse {
     private Integer userId;
     private Integer staffId;
     private String authUserId;
+    private Integer patientId;
+    private String hospitalNumber;
     private String email;
     private String role;
 }

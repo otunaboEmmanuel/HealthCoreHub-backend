@@ -459,7 +459,7 @@ public class UserManagementService {
             Integer tenantUserId = createPatientUserInTenantDb(request, tenantDb, authUserId);
             //create patient in the patientDb
             String hospitalNumber = Helper.generateRandomString();
-            createPatientInPatientDb(tenantUserId,tenantDb, hospitalNumber);
+            Integer patientId=createPatientInPatientDb(tenantUserId,tenantDb, hospitalNumber);
 
             log.info(" Patient registered successfully: {}", request.getEmail());
 
@@ -468,6 +468,8 @@ public class UserManagementService {
                     .message("Registration successful! Your account is pending approval.")
                     .userId(tenantUserId)
                     .authUserId(authUserId)
+                    .hospitalNumber(hospitalNumber)
+                    .patientId(patientId)
                     .email(request.getEmail())
                     .role("PATIENT")
                     .build();
@@ -482,7 +484,7 @@ public class UserManagementService {
         }
     }
 
-    private void createPatientInPatientDb(Integer tenantUserId, String tenantDb, String hospitalNumber) {
+    private Integer createPatientInPatientDb(Integer tenantUserId, String tenantDb, String hospitalNumber) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, tenantDb);
         String sql = """
                 INSERT INTO patients(
@@ -493,12 +495,12 @@ public class UserManagementService {
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
             statement.setInt(1,tenantUserId);
             statement.setString(2,hospitalNumber);
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows == 0) {
-                log.warn("Create patient failed, no rows affected");
-                throw new RuntimeException("Create patient failed, no rows affected");
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
             }
-            log.info("Create patient successfully: {}", hospitalNumber);
+            throw new SQLException("Patient not found with ID: " + hospitalNumber);
+
         }catch (SQLException e) {
             log.error("Create patient failed", e);
             throw new RuntimeException( e.getMessage(), e);
