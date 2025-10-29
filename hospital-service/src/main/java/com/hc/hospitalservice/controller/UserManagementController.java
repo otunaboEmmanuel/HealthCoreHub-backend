@@ -91,7 +91,7 @@ public class UserManagementController {
     @PostMapping("/register")
     public ResponseEntity<?> registerPatient(@Valid @RequestBody PatientRequest request) {
 
-        log.info("📝 Patient registration request: {}", request.getEmail());
+        log.info(" Patient registration request: {}", request.getEmail());
 
         try {
             UserResponse response = userManagementService.registerPatient(request);
@@ -99,7 +99,7 @@ public class UserManagementController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (IllegalArgumentException e) {
-            log.warn("⚠️ Validation error: {}", e.getMessage());
+            log.warn(" Validation error: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", e.getMessage()
@@ -170,5 +170,6 @@ public class UserManagementController {
         }
 
     }
+    @GetMapping()
 
 }

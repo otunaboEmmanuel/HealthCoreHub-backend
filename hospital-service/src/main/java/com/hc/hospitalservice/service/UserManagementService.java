@@ -1,6 +1,7 @@
 package com.hc.hospitalservice.service;
 
 import com.hc.hospitalservice.dto.*;
+import com.hc.hospitalservice.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -343,7 +344,7 @@ public class UserManagementService {
             throw new SQLException("Patient record insertion failed — no ID returned");
 
         } catch (SQLException e) {
-            log.error("❌ Failed to create patient record", e);
+            log.error(" Failed to create patient record", e);
             throw new RuntimeException("Patient record creation failed: " + e.getMessage());
         }
     }
@@ -387,7 +388,7 @@ public class UserManagementService {
 
 
     } catch (SQLException e) {
-        log.error("❌ Failed to create pharmacist record"
+        log.error(" Failed to create pharmacist record"
             , e);
         throw new RuntimeException("Pharmacist record creation failed: "
         + e.getMessage());
@@ -456,8 +457,11 @@ public class UserManagementService {
             String authUserId = registerPatientInAuthService(request, request.getHospitalId(), tenantDb);
 
             Integer tenantUserId = createPatientUserInTenantDb(request, tenantDb, authUserId);
+            //create patient in the patientDb
+            String hospitalNumber = Helper.generateRandomString();
+            createPatientInPatientDb(tenantUserId,tenantDb, hospitalNumber);
 
-            log.info("✅ Patient registered successfully: {}", request.getEmail());
+            log.info(" Patient registered successfully: {}", request.getEmail());
 
             return UserResponse.builder()
                     .success(true)
@@ -469,15 +473,37 @@ public class UserManagementService {
                     .build();
 
         } catch (IllegalArgumentException e) {
-            log.warn("⚠️ Registration failed: {}", e.getMessage());
+            log.warn(" Registration failed: {}", e.getMessage());
             throw e;
 
         } catch (Exception e) {
-            log.error("❌ Patient registration failed", e);
+            log.error(" Patient registration failed", e);
             throw new RuntimeException("Registration failed: " + e.getMessage(), e);
         }
     }
 
+    private void createPatientInPatientDb(Integer tenantUserId, String tenantDb, String hospitalNumber) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+                INSERT INTO patients(
+                user_id, hospital_number)
+                VALUES (?, ?)
+                """;
+        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+                                PreparedStatement statement = conn.prepareStatement(sql) ){
+            statement.setInt(1,tenantUserId);
+            statement.setString(2,hospitalNumber);
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                log.warn("Create patient failed, no rows affected");
+                throw new RuntimeException("Create patient failed, no rows affected");
+            }
+            log.info("Create patient successfully: {}", hospitalNumber);
+        }catch (SQLException e) {
+            log.error("Create patient failed", e);
+            throw new RuntimeException( e.getMessage(), e);
+        }
+    }
 
 
     private String getTenantDbNameFromHospitalId(Integer hospitalId) {

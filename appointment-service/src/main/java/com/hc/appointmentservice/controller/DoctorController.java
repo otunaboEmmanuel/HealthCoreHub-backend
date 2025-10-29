@@ -76,13 +76,13 @@ public class DoctorController {
                                                 @RequestHeader("Authorization")String authHeader) {
         try {
             String token = authHeader.substring(7);
-            String tenantDb= jwtService.extractTenantDb(token);
+            String tenantDb = jwtService.extractTenantDb(token);
             String tenant_role = jwtService.extractTenantRole(token);
-            if(!("ADMIN".equals(tenant_role))&& !("DOCTOR".equals(tenant_role))){
-                log.error(" this role cant access endpoint {}",tenant_role);
-                throw new RuntimeException(" this role cant access endpoint "+tenant_role);
+            if (!("ADMIN".equals(tenant_role)) && !("DOCTOR".equals(tenant_role))) {
+                log.error(" this role cant access endpoint {}", tenant_role);
+                throw new RuntimeException(" this role cant access endpoint " + tenant_role);
             }
-            List<DoctorResponse> doctorResponses = doctorService.getAppointments(doctorId,tenantDb);
+            List<DoctorResponse> doctorResponses = doctorService.getAppointments(doctorId, tenantDb);
             return ResponseEntity.ok(Map.of("doctors", doctorResponses));
         }catch (Exception e) {
             log.error(" Error getting doctors", e);
@@ -91,4 +91,5 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+    //updateStatus
 }
