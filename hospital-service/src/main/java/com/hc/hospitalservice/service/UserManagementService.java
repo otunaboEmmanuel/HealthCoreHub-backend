@@ -42,6 +42,8 @@ public class UserManagementService {
     private String tenantDbPassword;
     @Value("${file.upload.directory:/app/uploads}")
     private String uploadDirectory;
+    private final Helper helper;
+
 
     @Transactional(rollbackFor = Exception.class)
     public UserResponse createUser(CreateUserRequest request, String tenantDb, Integer hospitalId, MultipartFile file) {
@@ -686,6 +688,22 @@ public class UserManagementService {
         return fullAddress.toString();
     }
 
+    public Map<String, Object> getHospitalNumber(String tenantDb, Integer patientId) {
+        log.info("Getting hospital number from tenant DB: {}", tenantDb);
+        String hospitalNumber = getHospitalNumberFromTenantDb(tenantDb,patientId);
+    }
+
+    private String getHospitalNumberFromTenantDb(String tenantDb, Integer patientId)  {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+              SELECT hospital_number
+              FROM patients
+              WHERE patient_id = ?
+              """;
+        try( DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+      PreparedStatement statement =
+    }
 }
 
 

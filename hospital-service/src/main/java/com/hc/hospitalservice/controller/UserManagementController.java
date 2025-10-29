@@ -150,7 +150,19 @@ public class UserManagementController {
 
     }
     @GetMapping("{patientId}")
-
+    public ResponseEntity<?> getPatient(@PathVariable Integer patientId, @RequestHeader("Authorization")String authHeader) {
+        try{
+            String token = authHeader.substring(7);
+            String tenantDb = jwtService.extractTenantDb(token);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if(!"ADMIN".equals(tenantRole))
+            {
+                log.warn("this user is not admin");
+                throw new IllegalArgumentException("this user is not admin");
+            }
+            Map<String, Object> result = userManagementService.getHospitalNumber(tenantDb, patientId);
+        }
+    }
 
 
 
