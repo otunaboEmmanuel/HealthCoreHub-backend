@@ -83,6 +83,12 @@ public class DoctorController {
                 throw new RuntimeException(" this role cant access endpoint "+tenant_role);
             }
             List<DoctorResponse> doctorResponses = doctorService.getAppointments(doctorId,tenantDb);
-        }catch
+            return ResponseEntity.ok(Map.of("doctors", doctorResponses));
+        }catch (Exception e) {
+            log.error(" Error getting doctors", e);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to get doctors: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 }
