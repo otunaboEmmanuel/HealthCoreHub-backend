@@ -162,9 +162,11 @@ public class DoctorService {
             log.info("No doctor found with id {}", doctorId);
             return Collections.emptyList();
         }
+       Set<Integer> userIds = appointments.stream().map(Appointment::getUserId).collect(Collectors.toSet());
+        Map<Integer, UserInfo> userInfoMap = getUserInfo(tenantDb,userIds);
         return appointments.stream()
                 .map(appointment -> {
-                    UserInfo userInfo = getUserInfo(tenantDb,appointment.getUserId());
+                    UserInfo userInfo = userInfoMap.get(appointment.getUserId());
                     return DoctorResponse.builder()
                             .firstName(userInfo.getFirstName())
                             .lastName(userInfo.getLastName())
@@ -176,22 +178,30 @@ public class DoctorService {
                 .collect(Collectors.toList());
 
     }
-    private UserInfo getUserInfo(String tenantDb, Integer userId){
+    private Map<Integer, UserInfo> getUserInfo(String tenantDb, Set<Integer> userIds){
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, tenantDb);
-        String sql = "SELECT first_name, last_name FROM users WHERE id =?";
+        String placeHolder = String.join(",",Collections.nCopies(userIds.size(),"?"));
+        String sql = String.format("SELECT id, first_name, last_name FROM users WHERE id IN (%s)", placeHolder);
         try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
                                     PreparedStatement statement = conn.prepareStatement(sql) ){
-            statement.setInt(1,userId);
+           int index = 1;
+           for (Integer userId : userIds) {
+               statement.setInt(index++,userId);
+           }
+           Map<Integer, UserInfo> userInfo = new HashMap<>();
             ResultSet rs = statement.executeQuery();
-            if (rs.next()){
-                return new UserInfo(
-                        rs.getString("first_name"),
-                        rs.getString("last_name")
+            while (rs.next()) {
+                userInfo.put(
+                        rs.getInt("id"),
+                        new UserInfo(
+                                rs.getString("first_name"),
+                                rs.getString("last_name")
+                        )
                 );
             }
-            return null;
+            return userInfo;
         }catch (SQLException e) {
-            log.error("Error fetching doctor appointment for id: {}", userId, e);
+            log.error("Error fetching users: {}", e.getMessage(), e);
             throw new RuntimeException("Database error while fetching  user", e);
         }
 

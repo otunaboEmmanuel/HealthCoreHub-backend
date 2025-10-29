@@ -51,4 +51,6 @@ public class AppointmentController {
                     .body(Map.of("error", "Failed to book appointment"));
         }
     }
+
+    //update appointment
 }

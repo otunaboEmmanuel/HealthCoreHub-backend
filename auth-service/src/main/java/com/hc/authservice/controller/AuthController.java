@@ -35,13 +35,13 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (IllegalArgumentException e) {
-            log.warn("⚠️ Registration failed: {}", e.getMessage());
+            log.warn(" Registration failed: {}", e.getMessage());
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(error);
 
         } catch (Exception e) {
-            log.error("❌ Registration error", e);
+            log.error(" Registration error", e);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Registration failed");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

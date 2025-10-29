@@ -49,7 +49,7 @@ public class AuthService {
      */
     @Transactional
     public Map<String, Object> register(RegisterRequest request) {
-        log.info("📝 Registering user: {}", request.getEmail());
+        log.info(" Registering user: {}", request.getEmail());
 
         if (authUserRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("User with email '" + request.getEmail() + "' already exists");
@@ -68,7 +68,7 @@ public class AuthService {
                 .build();
 
         AuthUser savedUser = authUserRepository.save(authUser);
-        log.info("✅ User registered in auth service: {}", savedUser.getId());
+        log.info(" User registered in auth service: {}", savedUser.getId());
 
         Map<String, Object> response = new HashMap<>();
         response.put("userId", savedUser.getId().toString());

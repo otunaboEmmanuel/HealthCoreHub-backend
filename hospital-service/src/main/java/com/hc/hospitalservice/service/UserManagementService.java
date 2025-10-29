@@ -567,7 +567,7 @@ public class UserManagementService {
             throw new SQLException("Failed to create patient user");
 
         } catch (SQLException e) {
-            log.error("❌ Failed to create user in tenant DB", e);
+            log.error(" Failed to create user in tenant DB", e);
             throw new RuntimeException("Database error: " + e.getMessage());
         }
     }
@@ -632,11 +632,11 @@ public class UserManagementService {
 
                 hospitals.add(hospital);
             }
-            log.info("✅ Found {} active hospitals", hospitals.size());
+            log.info(" Found {} active hospitals", hospitals.size());
             return hospitals;
 
         } catch (SQLException e) {
-            log.error("❌ Failed to fetch hospitals", e);
+            log.error(" Failed to fetch hospitals", e);
             throw new RuntimeException("Failed to fetch hospitals");
         }
     }
