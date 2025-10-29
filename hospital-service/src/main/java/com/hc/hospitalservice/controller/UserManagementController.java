@@ -161,6 +161,12 @@ public class UserManagementController {
                 throw new IllegalArgumentException("this user is not admin");
             }
             Map<String, Object> result = userManagementService.getHospitalNumber(tenantDb, patientId);
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }catch (Exception e) {
+            log.error(" Error fetching hospital number", e);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to fetch hospital number: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 

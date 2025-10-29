@@ -32,11 +32,6 @@ public class Helper {
                 ThreadLocalRandom.current().nextLong(1_000_000_000L, 10_000_000_000L)
         );
     }
-    public Connection getTenantConnection(String tenantDb,String sql) throws SQLException {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
-                tenantDbHost, tenantDbPort, tenantDb);
-        Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
-        PreparedStatement statement = con.prepareStatement(sql);
-    }
+
 
 }

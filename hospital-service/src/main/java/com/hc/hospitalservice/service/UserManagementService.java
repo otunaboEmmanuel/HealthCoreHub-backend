@@ -691,6 +691,9 @@ public class UserManagementService {
     public Map<String, Object> getHospitalNumber(String tenantDb, Integer patientId) {
         log.info("Getting hospital number from tenant DB: {}", tenantDb);
         String hospitalNumber = getHospitalNumberFromTenantDb(tenantDb,patientId);
+        Map<String, Object> hospitalNumberMap = new HashMap<>();
+        hospitalNumberMap.put("hospitalNumber", hospitalNumber);
+        return hospitalNumberMap;
     }
 
     private String getHospitalNumberFromTenantDb(String tenantDb, Integer patientId)  {
@@ -701,8 +704,17 @@ public class UserManagementService {
               FROM patients
               WHERE patient_id = ?
               """;
-        try( DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
-      PreparedStatement statement =
+        try( Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+                PreparedStatement statement = conn.prepareStatement(sql)){
+                    ResultSet rs = statement.executeQuery();
+                    if(rs.next()){
+                        return rs.getString("hospital_number");
+                    }
+                    return null;
+        }catch (SQLException e){
+                    log.error(" Failed to fetch hospital number", e);
+                    throw new RuntimeException("Failed to fetch hospital number");
+        }
     }
 }
 
