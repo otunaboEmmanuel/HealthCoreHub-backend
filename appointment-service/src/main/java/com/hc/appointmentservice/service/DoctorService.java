@@ -8,6 +8,7 @@ import com.hc.appointmentservice.dto.DoctorResponse;
 import com.hc.appointmentservice.dto.PatientInfo;
 import com.hc.appointmentservice.dto.UpdateDoctorRequest;
 import com.hc.appointmentservice.entity.Appointment;
+import com.hc.appointmentservice.enums.Status;
 import com.hc.appointmentservice.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -215,4 +216,21 @@ public class DoctorService {
     }
 
 
+    public Map<String, Object> updateStatus(Map<String, String> request, Integer patientId) {
+        log.info("getting patient id {}", patientId);
+        Appointment appointment = appointmentRepository.findByPatientId(patientId).orElse(null);
+        if (appointment == null) {
+            log.warn("appointment not found for id {}", patientId);
+            Map<String, Object> result = new HashMap<>();
+            result.put("status", "error");
+            result.put("message", "No patient found with id " + patientId);
+            return result;
+        }
+        appointment.setStatus(Status.valueOf(request.get("status")));
+        appointmentRepository.save(appointment);
+        Map<String, Object> result = new HashMap<>();
+        result.put("status", "success");
+        result.put("message", "appointment updated");
+        return result;
+    }
 }

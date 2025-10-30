@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("api/doctor")
@@ -92,5 +93,24 @@ public class DoctorController {
         }
     }
     //updateStatus
-    @PutMapping("{}")
+    @PutMapping("{patientId}")
+    public ResponseEntity<?> updateStatus(@PathVariable Integer patientId,
+                                          @RequestHeader("Authorization")String authHeader,
+                                          @RequestBody Map<String, String> request) {
+        try{
+            String token = authHeader.substring(7);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if(!("DOCTOR".equals(tenantRole))){
+                log.error(" this role cant access endpoint {}", token);
+                throw new RuntimeException(" this role cant access endpoint " + token);
+            }
+            Map<String, Object> result = doctorService.updateStatus(request, patientId);
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }catch (Exception e) {
+            log.error(" Error getting patient", e);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to get patient: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
 }
