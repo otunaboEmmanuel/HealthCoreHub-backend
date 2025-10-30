@@ -5,8 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hc.appointmentservice.dto.DoctorDTO;
 import com.hc.appointmentservice.dto.DoctorResponse;
+import com.hc.appointmentservice.dto.PatientInfo;
 import com.hc.appointmentservice.dto.UpdateDoctorRequest;
-import com.hc.appointmentservice.dto.UserInfo;
 import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -163,13 +163,13 @@ public class DoctorService {
             return Collections.emptyList();
         }
        Set<Integer> patientIds = appointments.stream().map(Appointment::getPatientId).collect(Collectors.toSet());
-        Map<Integer, UserInfo> userInfoMap = getUserInfo(tenantDb,patientIds);
+        Map<Integer, PatientInfo> patientInfoMap = getUserInfo(tenantDb,patientIds);
         return appointments.stream()
                 .map(appointment -> {
-                    UserInfo userInfo = userInfoMap.get(appointment.getUserId());
+                    PatientInfo patientInfo= patientInfoMap.get(appointment.getPatientId());
                     return DoctorResponse.builder()
-                            .firstName(userInfo != null ? userInfo.getFirstName() : "Unknown")
-                            .lastName(userInfo != null ? userInfo.getLastName() : "")
+                            .firstName(patientInfo != null ? patientInfo.getFirstName() : "Unknown")
+                            .lastName(patientInfo != null ? patientInfo.getLastName() : "")
                             .reason(appointment.getReason())
                             .date(appointment.getDate())
                             .appointmentTime(appointment.getAppointmentTime())
@@ -177,22 +177,30 @@ public class DoctorService {
                 })
                 .collect(Collectors.toList());
     }
-    private Map<Integer, UserInfo> getUserInfo(String tenantDb, Set<Integer> patientIds) {
+    private Map<Integer, PatientInfo> getUserInfo(String tenantDb, Set<Integer> patientIds) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, tenantDb);
-        String placeHolder = String.join(",",Collections.nCopies(userIds.size(),"?"));
-        String sql = String.format("SELECT id, first_name, last_name FROM users WHERE id IN (%s)", placeHolder);
+        String placeHolder = String.join(",",Collections.nCopies(patientIds.size(),"?"));
+        String sql = String.format("""
+            SELECT 
+                p.id,
+                u.first_name,
+                u.last_name
+            FROM patients p
+            INNER JOIN users u ON p.user_id = u.id
+            WHERE p.id IN (%s)
+            """, placeHolder);
         try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
                                     PreparedStatement statement = conn.prepareStatement(sql) ){
            int index = 1;
-           for (Integer userId : userIds) {
-               statement.setInt(index++,userId);
+           for (Integer patientId : patientIds) {
+               statement.setInt(index++,patientId);
            }
-           Map<Integer, UserInfo> userInfo = new HashMap<>();
+           Map<Integer, PatientInfo> userInfo = new HashMap<>();
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 userInfo.put(
                         rs.getInt("id"),
-                        new UserInfo(
+                        new PatientInfo(
                                 rs.getString("first_name"),
                                 rs.getString("last_name")
                         )
