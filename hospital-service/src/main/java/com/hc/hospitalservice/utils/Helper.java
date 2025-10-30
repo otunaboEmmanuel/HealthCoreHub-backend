@@ -11,18 +11,8 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Component
+
 public class Helper {
-    @Value("${tenant.datasource.username}")
-    private String tenantDbUsername;
-
-    @Value("${tenant.datasource.password}")
-    private String tenantDbPassword;
-    @Value("${tenant.datasource.host}")
-    private String tenantDbHost;
-
-    @Value("${tenant.datasource.port}")
-    private String tenantDbPort;
     public static Long random() {
         return ThreadLocalRandom.current()
                 .nextLong(1_000_000_000L, 10_000_000_000L); // 10 billion is exclusive

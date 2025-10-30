@@ -85,7 +85,7 @@ public class UserManagementController {
             ));
 
         } catch (Exception e) {
-            log.error("❌ Registration error", e);
+            log.error(" Registration error", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "success", false,
                     "message", "Registration failed. Please try again later."
