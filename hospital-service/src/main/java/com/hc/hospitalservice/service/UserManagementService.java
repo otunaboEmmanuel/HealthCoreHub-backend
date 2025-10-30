@@ -42,7 +42,7 @@ public class UserManagementService {
     private String tenantDbPassword;
     @Value("${file.upload.directory:/app/uploads}")
     private String uploadDirectory;
-    private final Helper helper;
+
 
 
     @Transactional(rollbackFor = Exception.class)

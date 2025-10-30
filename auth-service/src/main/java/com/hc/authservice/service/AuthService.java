@@ -140,7 +140,7 @@ public class AuthService {
         // Save refresh token
         saveRefreshToken(authUser, refreshToken);
 
-        log.info("✅ Login successful for: {}", request.getEmail());
+        log.info(" Login successful for: {}", request.getEmail());
 
         return LoginResponse.builder()
                 .token(accessToken)

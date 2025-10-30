@@ -232,5 +232,6 @@ public class DoctorService {
         result.put("status", "success");
         result.put("message", "appointment updated");
         return result;
+        //supposed to send email(i forgot) extract email from user table from patient
     }
 }
