@@ -28,7 +28,7 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        log.info("📝 Registration request for: {}", request.getEmail());
+        log.info(" Registration request for: {}", request.getEmail());
 
         try {
             Map<String, Object> response = authService.register(request);
@@ -53,20 +53,20 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        log.info("🔐 Login request for: {}", request.getEmail());
+        log.info(" Login request for: {}", request.getEmail());
 
         try {
             LoginResponse response = authService.login(request);
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
-            log.warn("⚠️ Login failed: {}", e.getMessage());
+            log.warn(" Login failed: {}", e.getMessage());
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
 
         } catch (Exception e) {
-            log.error("❌ Login error", e);
+            log.error(" Login error", e);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Login failed");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

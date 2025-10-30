@@ -34,9 +34,9 @@ public class AppointmentService {
 
     @Transactional(rollbackFor = Exception.class)
     public Appointment bookAppointment(AppointmentDTO appointment, String tenantDb) {
-        if(!userExistsInTenant(tenantDb,appointment.getUserId())){
-            log.error("could not find not find id {} in users table",appointment.getUserId());
-            throw new RuntimeException("user with id " + appointment.getUserId() + " not exists");
+        if(!userExistsInTenant(tenantDb,appointment.getPatientId())){
+            log.error("could not find not find id {} in users table",appointment.getPatientId());
+            throw new RuntimeException("user with id " + appointment.getPatientId() + " not exists");
         }
         if(!doctorExists(tenantDb,appointment.getDoctorId())){
             log.error("doctor with id {} not exists",appointment.getDoctorId());
@@ -46,7 +46,7 @@ public class AppointmentService {
                 .appointmentTime(appointment.getAppointmentTime())
                 .date(appointment.getDate())
                 .doctorId(appointment.getDoctorId())
-                .userId(appointment.getUserId())
+                .patientId(appointment.getPatientId())
                 .reason(appointment.getReason())
                 .status(Status.PENDING)
                 .build();
@@ -54,7 +54,7 @@ public class AppointmentService {
     }
     private boolean userExistsInTenant(String tenantDb, Integer userId) {
         String tenantUrl=String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
-        String sql = "SELECT COUNT (*) FROM users WHERE id = ?";
+        String sql = "SELECT COUNT (*) FROM patients WHERE id = ?";
         try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
             statement.setInt(1,userId);

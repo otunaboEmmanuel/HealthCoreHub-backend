@@ -25,10 +25,10 @@ public class EmailService {
             message.setText(buildEmailContent(adminName, hospitalName, tenantDb, password));
 
             mailSender.send(message);
-            log.info("✅ Sent activation email to: {}", toEmail);
+            log.info(" Sent activation email to: {}", toEmail);
 
         } catch (Exception e) {
-            log.error("❌ Failed to send email to: {}", toEmail, e);
+            log.error(" Failed to send email to: {}", toEmail, e);
             throw new RuntimeException("Email sending failed", e);
         }
     }

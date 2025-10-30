@@ -19,7 +19,7 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Integer userId;
+    private Integer patientId;
     private Integer doctorId;
     private String reason;
     private LocalDate date;

@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
 import java.util.*;
-import java.util.function.Function;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -162,23 +162,22 @@ public class DoctorService {
             log.info("No doctor found with id {}", doctorId);
             return Collections.emptyList();
         }
-       Set<Integer> userIds = appointments.stream().map(Appointment::getUserId).collect(Collectors.toSet());
-        Map<Integer, UserInfo> userInfoMap = getUserInfo(tenantDb,userIds);
+       Set<Integer> patientIds = appointments.stream().map(Appointment::getPatientId).collect(Collectors.toSet());
+        Map<Integer, UserInfo> userInfoMap = getUserInfo(tenantDb,patientIds);
         return appointments.stream()
                 .map(appointment -> {
                     UserInfo userInfo = userInfoMap.get(appointment.getUserId());
                     return DoctorResponse.builder()
-                            .firstName(userInfo.getFirstName())
-                            .lastName(userInfo.getLastName())
+                            .firstName(userInfo != null ? userInfo.getFirstName() : "Unknown")
+                            .lastName(userInfo != null ? userInfo.getLastName() : "")
                             .reason(appointment.getReason())
                             .date(appointment.getDate())
                             .appointmentTime(appointment.getAppointmentTime())
                             .build();
                 })
                 .collect(Collectors.toList());
-
     }
-    private Map<Integer, UserInfo> getUserInfo(String tenantDb, Set<Integer> userIds){
+    private Map<Integer, UserInfo> getUserInfo(String tenantDb, Set<Integer> patientIds) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, tenantDb);
         String placeHolder = String.join(",",Collections.nCopies(userIds.size(),"?"));
         String sql = String.format("SELECT id, first_name, last_name FROM users WHERE id IN (%s)", placeHolder);

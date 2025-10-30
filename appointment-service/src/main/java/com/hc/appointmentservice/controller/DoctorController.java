@@ -92,4 +92,5 @@ public class DoctorController {
         }
     }
     //updateStatus
+    @PutMapping("{}")
 }

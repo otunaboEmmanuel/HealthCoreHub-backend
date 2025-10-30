@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 public class AppointmentDTO {
-    private Integer userId;
+    private Integer patientId;
     private Integer doctorId;
     private String reason;
     private LocalDate date;
