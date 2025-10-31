@@ -9,6 +9,7 @@ import com.hc.appointmentservice.enums.Status;
 import com.hc.appointmentservice.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -213,23 +214,27 @@ public class DoctorService {
 
     }
 
-
-    public Map<String, Object> updateStatus(Map<String, String> request, Integer patientId, String tenantDb) {
-        log.info("getting patient id {}", patientId);
-        Appointment appointment = appointmentRepository.findByPatientId(patientId).orElse(null);
+     @Transactional(rollbackFor = Exception.class)
+    public Map<String, Object> updateStatus(Map<String, String> request, Integer appointmentId, String tenantDb) {
+        log.info("getting patient id {}", appointmentId);
+        Appointment appointment = appointmentRepository.findById(appointmentId).orElse(null);
         if (appointment == null) {
-            log.warn("appointment not found for id {}", patientId);
+            log.warn("appointment not found for id {}", appointmentId);
             Map<String, Object> result = new HashMap<>();
             result.put("status", "error");
-            result.put("message", "No patient found with id " + patientId);
+            result.put("message", "No appointment found with id " + appointmentId);
             return result;
         }
-        appointment.setStatus(Status.valueOf(request.get("status")));
+        if(request.get("status") == null || request.get("status").isEmpty()) {
+            log.warn("bad request status");
+            throw new IllegalArgumentException("bad request status");
+        }
+        appointment.setStatus(Status.valueOf(request.get("status").toUpperCase()));
         appointmentRepository.save(appointment);
-        if(appointment.getStatus() == Status.COMPLETED) {
-            log.info("sending email to patient {}", patientId);
-            PatientInfo patientInfo = getPatientDetails(tenantDb);
-            DoctorInfo doctorInfo = getDoctorInfo(tenantDb);
+        if(appointment.getStatus() == Status.CONFIRMED) {
+            log.info("sending email to patient {}", appointmentId);
+            PatientInfo patientInfo = getPatientDetails(tenantDb,appointment.getPatientId());
+            DoctorInfo doctorInfo = getDoctorInfo(tenantDb, appointment.getDoctorId());
             String DocName = doctorInfo.getFirstName() + " " + doctorInfo.getLastName();
             emailService.sendSimpleMail(patientInfo.getEmail(),patientInfo.getFirstName(),appointment.getAppointmentTime(),DocName);
         }
@@ -240,15 +245,17 @@ public class DoctorService {
         //supposed to send email(i forgot) extract email from user table from patient
     }
 
-    private DoctorInfo getDoctorInfo(String tenantDb) {
+    private DoctorInfo getDoctorInfo(String tenantDb, Integer doctorId) {
          String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb); 
           String sql = """
                   SELECT u.last_name,u.first_name
                   FROM doctors d
                   INNER JOIN users u ON d.user_id = u.id
+                  WHERE d.id = ?
                   """ ;
           try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername, tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
+              statement.setInt(1, doctorId);
               ResultSet rs = statement.executeQuery();
               if (rs.next()){
                   return DoctorInfo.builder()
@@ -264,15 +271,17 @@ public class DoctorService {
           
     }
 
-    private PatientInfo getPatientDetails(String tenantDb) {
+    private PatientInfo getPatientDetails(String tenantDb, Integer patientId) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
         String sql = """
                 SELECT u.first_name,u.email
                 FROM patients p
                 INNER JOIN users u ON p.user_id = u.id
+                WHERE p.id = ?
                 """;
         try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
+            statement.setInt(1, patientId);
             ResultSet rs = statement.executeQuery();
             if(rs.next()){
                return PatientInfo.builder()

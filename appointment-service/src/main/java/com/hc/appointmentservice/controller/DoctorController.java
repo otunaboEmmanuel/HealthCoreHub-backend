@@ -93,8 +93,8 @@ public class DoctorController {
         }
     }
     //updateStatus
-    @PutMapping("{patientId}")
-    public ResponseEntity<?> updateStatus(@PathVariable Integer patientId,
+    @PutMapping("{appointmentId}")
+    public ResponseEntity<?> updateStatus(@PathVariable Integer appointmentId,
                                           @RequestHeader("Authorization")String authHeader,
                                           @RequestBody Map<String, String> request) {
         try{
@@ -105,7 +105,7 @@ public class DoctorController {
                 log.error(" this role cant access endpoint {}", token);
                 throw new RuntimeException(" this role cant access endpoint " + token);
             }
-            Map<String, Object> result = doctorService.updateStatus(request, patientId, tenantDb);
+            Map<String, Object> result = doctorService.updateStatus(request, appointmentId, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
         }catch (Exception e) {
             log.error(" Error getting patient", e);
