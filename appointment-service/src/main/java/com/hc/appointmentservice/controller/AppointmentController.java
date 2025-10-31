@@ -53,7 +53,7 @@ public class AppointmentController {
     }
 
     //update appointment
-    @PutMapping("patientId")
+    @PutMapping("{patientId}")
     public ResponseEntity<?> updateAppointment(@RequestHeader("Authorization")String authHeader,
                                                @RequestBody Map<String, String> request,
                                                @PathVariable Integer patientId) {
