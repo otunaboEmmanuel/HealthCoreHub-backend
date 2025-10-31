@@ -57,7 +57,7 @@ public class UserProfileController {
             return ResponseEntity.ok(profile);
 
         } catch (Exception e) {
-            log.error("❌ Error fetching profile", e);
+            log.error(" Error fetching profile", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to fetch profile"));
         }
@@ -72,7 +72,7 @@ public class UserProfileController {
             List<PatientDto> patients = userProfileService.getPendingPatients(tenantDb);
             return ResponseEntity.ok(patients);
         } catch (Exception e) {
-            log.error("❌ Error fetching profile", e);
+            log.error(" Error fetching profile", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to fetch patients"));
         }

@@ -8,11 +8,16 @@ import com.hc.appointmentservice.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -77,5 +82,25 @@ public class AppointmentService {
             log.error(" Error checking user existence in tenant {} ", tenantDb);
             throw new RuntimeException(e);
         }
+    }
+
+    public Map<String, Object> updateAppointment(Map<String, String> request, Integer patientId) {
+        Map<String, Object> response = new HashMap<>();
+        if(!appointmentRepository.existsByPatientId(patientId)){
+            log.error("could not find id {} in appointment table",patientId);
+            throw new RuntimeException("appointment with id " + patientId + " not exists");
+        }
+        Appointment appointment = appointmentRepository.findByPatientId(patientId).orElse(null);
+        if(appointment != null) {
+            appointment.setAppointmentTime(request.get("appointmentTime"));
+            appointment.setDate(LocalDate.parse(request.get("date")));
+            appointmentRepository.save(appointment);
+            response.put("status", "00");
+            response.put("message", "appointment updated successfully");
+            return response;
+        }
+        response.put("status", "error");
+        response.put("message", "appointment not found");
+        return response;
     }
 }

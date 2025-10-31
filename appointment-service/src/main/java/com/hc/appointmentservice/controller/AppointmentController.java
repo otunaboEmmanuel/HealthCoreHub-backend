@@ -53,4 +53,26 @@ public class AppointmentController {
     }
 
     //update appointment
+    @PutMapping("patientId")
+    public ResponseEntity<?> updateAppointment(@RequestHeader("Authorization")String authHeader,
+                                               @RequestBody Map<String, String> request,
+                                               @PathVariable Integer patientId) {
+        try {
+            String token = authHeader.substring(7);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
+                log.warn("Invalid appointment request: {}", token);
+                throw new RuntimeException("does not have access to this endpoint");
+            }
+            Map<String, Object> response = appointmentService.updateAppointment(request, patientId);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (IllegalArgumentException e) {
+            log.warn("Invalid appointment request: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }catch (Exception e) {
+            log.error("Error occurred while updating appointment", e);
+            throw  new RuntimeException("Error occurred while updating appointment");
+        }
+    }
 }
