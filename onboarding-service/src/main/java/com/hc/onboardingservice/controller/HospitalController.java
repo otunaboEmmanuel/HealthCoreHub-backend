@@ -35,7 +35,7 @@ public class HospitalController {
     public ResponseEntity<HospitalRegistrationResponse> registerHospital(
             @Valid @RequestBody HospitalRegistrationRequest request) {
 
-        log.info("📝 Received hospital registration request for: {}",
+        log.info(" Received hospital registration request for: {}",
                 request.getHospital().getName());
 
         try {
@@ -43,7 +43,7 @@ public class HospitalController {
             return new ResponseEntity<>(response, HttpStatus.CREATED);
 
         } catch (IllegalArgumentException e) {
-            log.warn("⚠️ Validation error: {}", e.getMessage());
+            log.warn(" Validation error: {}", e.getMessage());
             return ResponseEntity.badRequest().body(
                     HospitalRegistrationResponse.builder()
                             .code("01")
@@ -52,7 +52,7 @@ public class HospitalController {
             );
 
         } catch (Exception e) {
-            log.error("❌ Registration failed", e);
+            log.error(" Registration failed", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     HospitalRegistrationResponse.builder()
                             .code("99")

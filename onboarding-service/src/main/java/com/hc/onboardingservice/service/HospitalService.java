@@ -96,24 +96,24 @@ public class HospitalService {
             hospitalRepository.save(hospital);
 
             // 10. Send confirmation email
-            log.info("📧 Sending confirmation email");
+            log.info(" Sending confirmation email");
             sendConfirmationEmail(hospital, admin, request.getAdmin().getPassword());
 
             // 11. Build response
             HospitalRegistrationResponse response = buildSuccessResponse(hospital, admin, plan);
 
-            log.info("🎉 Hospital registration completed successfully for: {}", hospital.getName());
+            log.info(" Hospital registration completed successfully for: {}", hospital.getName());
             return response;
 
         } catch (Exception ex) {
-            log.error("❌ Error during hospital registration, rolling back...", ex);
+            log.error(" Error during hospital registration, rolling back...", ex);
 
             // Cleanup: Drop the tenant database if it was created
             try {
                 tenantDatabaseService.dropTenantDatabase(dbName, dbUser);
-                log.info("🧹 Cleaned up tenant database after failure");
+                log.info(" Cleaned up tenant database after failure");
             } catch (Exception cleanupEx) {
-                log.warn("⚠️ Could not cleanup tenant database", cleanupEx);
+                log.warn("Could not cleanup tenant database", cleanupEx);
             }
 
             throw new RuntimeException("Hospital registration failed: " + ex.getMessage(), ex);
@@ -210,14 +210,14 @@ public class HospitalService {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 Integer userId = rs.getInt("id");
-                log.info("✅ Created admin user in tenant DB with ID: {}", userId);
+                log.info("Created admin user in tenant DB with ID: {}", userId);
                 return userId;
             }
 
             throw new SQLException("Failed to create admin user in tenant database");
 
         } catch (SQLException e) {
-            log.error("❌ Error creating admin in tenant database. URL: {}", tenantUrl, e);
+            log.error(" Error creating admin in tenant database. URL: {}", tenantUrl, e);
             throw new RuntimeException("Failed to create admin user: " + e.getMessage(), e);
         }
     }
@@ -251,7 +251,7 @@ public class HospitalService {
                     rawPassword
             );
         } catch (Exception e) {
-            log.warn("⚠️ Failed to send confirmation email", e);
+            log.warn(" Failed to send confirmation email", e);
             // Don't fail the registration if email fails
         }
     }
@@ -314,11 +314,11 @@ public class HospitalService {
             );
 
             String authUserId = (String) response.getBody().get("userId");
-            log.info("✅ Admin registered in auth service: {}", authUserId);
+            log.info(" Admin registered in auth service: {}", authUserId);
             return authUserId;
 
         } catch (Exception e) {
-            log.error("❌ Failed to register admin in auth service", e);
+            log.error(" Failed to register admin in auth service", e);
             throw new RuntimeException("Auth service registration failed: " + e.getMessage());
         }
     }
