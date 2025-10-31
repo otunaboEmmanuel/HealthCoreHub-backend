@@ -39,6 +39,7 @@ public class DoctorService {
     private String tenantDbPassword;
 
     private final AppointmentRepository appointmentRepository;
+    private final EmailService emailService;
 
     @Transactional(rollbackFor = Exception.class)
     public Map<String, String> setDoctorAvailability(Integer id, UpdateDoctorRequest request, String tenantDb) {
@@ -182,14 +183,14 @@ public class DoctorService {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, tenantDb);
         String placeHolder = String.join(",",Collections.nCopies(patientIds.size(),"?"));
         String sql = String.format("""
-            SELECT 
+            SELECT\s
                 p.id,
                 u.first_name,
                 u.last_name
             FROM patients p
             INNER JOIN users u ON p.user_id = u.id
             WHERE p.id IN (%s)
-            """, placeHolder);
+           \s""", placeHolder);
         try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
                                     PreparedStatement statement = conn.prepareStatement(sql) ){
            int index = 1;
@@ -201,10 +202,10 @@ public class DoctorService {
             while (rs.next()) {
                 userInfo.put(
                         rs.getInt("id"),
-                        new PatientInfo(
-                                rs.getString("first_name"),
-                                rs.getString("last_name")
-                        )
+                        PatientInfo.builder()
+                                .firstName(rs.getString("first_name"))
+                                .lastName(rs.getString("last_name"))
+                                .build()
                 );
             }
             return userInfo;
@@ -228,10 +229,36 @@ public class DoctorService {
         }
         appointment.setStatus(Status.valueOf(request.get("status")));
         appointmentRepository.save(appointment);
+        if(appointment.getStatus() == Status.COMPLETED) {
+            log.info("sending email to patient {}", patientId);
+            emailService.sendSimpleMail();
+        }
         Map<String, Object> result = new HashMap<>();
         result.put("status", "success");
         result.put("message", "appointment updated");
         return result;
         //supposed to send email(i forgot) extract email from user table from patient
+    }
+    private PatientInfo getPatientDetails(String tenanDb, String firstName, String lastName) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenanDb, tenantDbHost, tenantDbPort);
+        String sql = """
+                SELECT u.first_name,u.email
+                FROM patients p
+                INNER JOIN users u ON p.user_id = u.id
+                """;
+        try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
+                                PreparedStatement statement = conn.prepareStatement(sql) ){
+            ResultSet rs = statement.executeQuery();
+            if(rs.next()){
+               return PatientInfo.builder()
+                        .firstName(rs.getString("first_name"))
+                        .email(rs.getString("email"))
+                        .build();
+            }
+            return null;
+        }catch (SQLException e){
+            log.error("Error fetching users: {}", e.getMessage(), e);
+            throw new RuntimeException("Database error while fetching  user", e);
+        }
     }
 }

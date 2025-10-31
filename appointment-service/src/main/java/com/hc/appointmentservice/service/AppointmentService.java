@@ -8,9 +8,6 @@ import com.hc.appointmentservice.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +32,6 @@ public class AppointmentService {
     @Value("${tenant.datasource.password}")
     private String tenantDbPassword;
     private final AppointmentRepository appointmentRepository;
-
 
     @Transactional(rollbackFor = Exception.class)
     public Appointment bookAppointment(AppointmentDTO appointment, String tenantDb) {
@@ -103,4 +99,6 @@ public class AppointmentService {
         response.put("message", "appointment not found");
         return response;
     }
+
+
 }
