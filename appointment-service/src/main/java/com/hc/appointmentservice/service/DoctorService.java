@@ -214,7 +214,7 @@ public class DoctorService {
 
     }
 
-     @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> updateStatus(Map<String, String> request, Integer appointmentId, String tenantDb) {
         log.info("getting patient id {}", appointmentId);
         Appointment appointment = appointmentRepository.findById(appointmentId).orElse(null);
@@ -245,8 +245,8 @@ public class DoctorService {
         //supposed to send email(i forgot) extract email from user table from patient
     }
 
-    private DoctorInfo getDoctorInfo(String tenantDb, Integer doctorId) {
-         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb); 
+    private DoctorInfo getDoctorInfo(String tenantDb, Integer doctorId)  {
+         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
           String sql = """
                   SELECT u.last_name,u.first_name
                   FROM doctors d
@@ -256,14 +256,15 @@ public class DoctorService {
           try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername, tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
               statement.setInt(1, doctorId);
-              ResultSet rs = statement.executeQuery();
+              try(ResultSet rs = statement.executeQuery()) {
               if (rs.next()){
                   return DoctorInfo.builder()
                           .firstName(rs.getString("first_name"))
                           .lastName(rs.getString("last_name"))
                           .build();
               }
-              return null;
+              throw new IllegalArgumentException("Doctor not found with id: " + doctorId);
+              }
           }catch (SQLException e) {
               log.error("Error fetching users: {}", e.getMessage(), e);
               throw new RuntimeException("Database error while fetching  doctor", e);
@@ -282,14 +283,15 @@ public class DoctorService {
         try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
             statement.setInt(1, patientId);
-            ResultSet rs = statement.executeQuery();
-            if(rs.next()){
-               return PatientInfo.builder()
-                        .firstName(rs.getString("first_name"))
-                        .email(rs.getString("email"))
-                        .build();
+            try(ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return PatientInfo.builder()
+                            .firstName(rs.getString("first_name"))
+                            .email(rs.getString("email"))
+                            .build();
+                }
+                throw new IllegalArgumentException("Doctor not found with id: " + patientId);
             }
-            return null;
         }catch (SQLException e){
             log.error("Error fetching users: {}", e.getMessage(), e);
             throw new RuntimeException("Database error while fetching  patient", e);
