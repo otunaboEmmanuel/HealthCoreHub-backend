@@ -198,6 +198,7 @@ public class UserProfileService {
                                 .email(rs.getString("email"))
                                 .phoneNumber(rs.getString("phone_number"))
                                 .role(rs.getString("role"))
+                                .hospitalNumber(rs.getString("hospital_number"))
                                 .status(rs.getString("status"))
                                 .build();
                         patientDtoList.add(patientDto);

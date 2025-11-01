@@ -566,16 +566,18 @@ public class UserManagementService {
 
             stmt.setInt(1, tenantUserId);
             stmt.setString(2, hospitalNumber);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Integer patientId = rs.getInt("id");
-                    log.info("✅ Patient created with ID: {} and hospital number: {}",
-                            patientId, hospitalNumber);
-                    return patientId;
+            boolean result = stmt.execute();
+            if(result) {
+                try (ResultSet rs = stmt.getResultSet()) {
+                    if (rs.next()) {
+                        Integer patientId = rs.getInt("id");
+                        log.info("✅ Patient created with ID: {} and hospital number: {}",
+                                patientId, hospitalNumber);
+                        return patientId;
+                    }
                 }
-                throw new SQLException("Failed to create patient record - no ID returned");
             }
+            throw new SQLException("Failed to create patient record - no ID returned");
         }
     }
 
