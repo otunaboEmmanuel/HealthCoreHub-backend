@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,11 +31,15 @@ public class UserManagementController {
     /**
      * Create a new user (only admins can do this)
      */
-    @PostMapping
+    @PostMapping(consumes = {
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            MediaType.APPLICATION_OCTET_STREAM_VALUE,
+            MediaType.APPLICATION_JSON_VALUE
+    })
     public ResponseEntity<?> createUser(
-            @RequestPart ("request") @Valid  CreateUserRequest request,
+            @RequestPart (value = "request") @Valid  CreateUserRequest request,
             @RequestHeader("Authorization") String authHeader,
-            @RequestPart("profile_picture")MultipartFile file) {
+            @RequestPart(value = "profile_picture", required = false)MultipartFile file) {
 
         try {
             // Extract JWT

@@ -105,11 +105,17 @@ spring:
             - Path=/api/profile/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
+            - PreserveHostHeader
 
       # Disable service discovery (direct URLs used)
       discovery:
         locator:
           enabled: false
+      server:
+        webflux:
+          httpclient:
+            max-initial-line-length: 8192
+            max-header-size: 16384
 
 # === LOGGING CONFIG ===
 logging:

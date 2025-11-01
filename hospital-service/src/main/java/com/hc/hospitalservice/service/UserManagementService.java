@@ -96,7 +96,7 @@ public class UserManagementService {
         try{
             File directory=new File(uploadDirectory);
             if(!directory.exists()){
-                directory.mkdir();
+                directory.mkdirs();
             }
 
             File outputFile=new File(uploadDirectory+fileName);
