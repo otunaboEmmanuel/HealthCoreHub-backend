@@ -283,7 +283,7 @@ public class UserManagementService {
 
             boolean hasResultSet = stmt.execute();
             if (hasResultSet) {
-                try(ResultSet rs = stmt.executeQuery()) {
+                try(ResultSet rs = stmt.getResultSet()) {
                     if (rs.next()) {
                         Integer nurseId = rs.getInt("id");
                         log.info("Nurse record created in tenant DB with ID: {}", nurseId);
@@ -293,7 +293,7 @@ public class UserManagementService {
             }
             throw new SQLException("Nurse record insertion failed — no ID returned");
         } catch (SQLException e) {
-            log.error("❌ Failed to create nurse record", e);
+            log.error(" Failed to create nurse record", e);
             throw new RuntimeException("Nurse record creation failed: " + e.getMessage());
         }
     }
@@ -345,14 +345,17 @@ public class UserManagementService {
             stmt.setString(18, details.getEmergencyContactPhone());
             stmt.setString(19, details.getAllergies());
             stmt.setString(20, details.getChronicConditions());
-            ResultSet rs= stmt.executeQuery();
-            if (rs.next()) {
-                Integer patientId = rs.getInt("id");
-                log.info("Patient record created in tenant DB with ID: {}", patientId);
-                return patientId;
+            boolean hasResultSet = stmt.execute();
+            if (hasResultSet) {
+                try(ResultSet rs = stmt.getResultSet()) {
+                    if (rs.next()) {
+                        Integer patientId = rs.getInt("id");
+                        log.info("Patient record created in tenant DB with ID: {}", patientId);
+                        return patientId;
+                    }
+                }
             }
-            throw new SQLException("Patient record insertion failed — no ID returned");
-
+            throw new SQLException("PatientId record insertion failed — no ID returned");
         } catch (SQLException e) {
             log.error(" Failed to create patient record", e);
             throw new RuntimeException("Patient record creation failed: " + e.getMessage());
@@ -387,12 +390,15 @@ public class UserManagementService {
         stmt.setString(6, details.getDepartment());
         stmt.setObject(7, details.getYearsOfExperience());
         stmt.setString(8, details.getLicenseAuthority());
-
-        ResultSet rs= stmt.executeQuery();
-        if (rs.next()) {
-            Integer pharmacistId = rs.getInt("id");
-            log.info("Create pharmacist record for user with ID: {}", pharmacistId);
-            return pharmacistId;
+        boolean hasResultSet = stmt.execute();
+        if (hasResultSet) {
+            try (ResultSet rs = stmt.getResultSet()) {
+                if (rs.next()) {
+                    Integer pharmacistId = rs.getInt("id");
+                    log.info("Create pharmacist record for user with ID: {}", pharmacistId);
+                    return pharmacistId;
+                }
+            }
         }
         throw new SQLException("Pharamacist record insertion failed — no ID returned");
 
@@ -432,16 +438,20 @@ public class UserManagementService {
             stmt.setString(7, details.getLicenseAuthority());
             stmt.setObject(8, details.getYearsOfExperience());
 
-            ResultSet rs= stmt.executeQuery();
-            if (rs.next()) {
-                Integer labScientistId = rs.getInt("id");
-                log.info("Created labScientist record for user with ID: {}", labScientistId);
-                return labScientistId;
-            }
-            throw new SQLException("Pharmacist record insertion failed — no ID returned");
+          boolean hasResultSet = stmt.execute();
+          if (hasResultSet) {
+              try (ResultSet rs = stmt.getResultSet()) {
+                  if (rs.next()) {
+                      Integer labScientistId = rs.getInt("id");
+                      log.info("lab scientist record created in user with ID: {}", labScientistId);
+                      return labScientistId;
+                  }
+              }
+          }
+          throw new SQLException("error getting lab scientist record");
 
         } catch (SQLException e) {
-            log.error("❌ Failed to create lab scientist record", e);
+            log.error(" Failed to create lab scientist record", e);
             throw new RuntimeException("Lab scientist record creation failed: " + e.getMessage());
         }
     }
