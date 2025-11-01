@@ -64,7 +64,7 @@ public class UserManagementService {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
             }
 
-            log.info("✅ User created successfully: {}", request.getEmail());
+            log.info(" User created successfully: {}", request.getEmail());
 
             return UserResponse.builder()
                     .success(true)
@@ -127,11 +127,11 @@ public class UserManagementService {
                     Map.class
             );
             String authUserId = (String) response.getBody().get("userId");
-            log.info("✅ User registered in auth service: {}", authUserId);
+            log.info(" User registered in auth service: {}", authUserId);
             return authUserId;
 
         } catch (Exception e) {
-            log.error("❌ Auth service registration failed", e);
+            log.error("Auth service registration failed", e);
             throw new RuntimeException("Auth registration failed: " + e.getMessage());
         }
     }
@@ -210,14 +210,16 @@ public class UserManagementService {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
 
-        String sql = """
+                String sql = """
             INSERT INTO doctors (
                 user_id, specialization, department, license_number,
                 license_issue_date, license_expiry_date, license_authority,
                 created_at
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            RETURNING id
             """;
+
         try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -229,13 +231,18 @@ public class UserManagementService {
             stmt.setDate(6, Date.valueOf(details.getLicenseExpiryDate()));
             stmt.setString(7, details.getLicenseAuthority());
 
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                Integer doctorId = rs.getInt("id");
-                log.info("Doctor record created in tenant DB with ID: {}", doctorId);
-                return doctorId;
+            boolean hasResultSet = stmt.execute();
+            if (hasResultSet) {
+                try (ResultSet rs = stmt.getResultSet()) {
+                    if (rs.next()) {
+                        Integer doctorId = rs.getInt("id");
+                        log.info(" Doctor record created in tenant DB with ID: {}", doctorId);
+                        return doctorId;
+                    }
+                }
             }
             throw new SQLException("Doctor record insertion failed — no ID returned");
+
         } catch (SQLException e) {
             log.error(" Failed to create doctor record", e);
             throw new RuntimeException("Doctor record creation failed: " + e.getMessage());
