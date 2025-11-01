@@ -33,23 +33,10 @@ public class UserManagementController {
     /**
      * Create a new user (only admins can do this)
      */
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping()
     public ResponseEntity<?> createUser(
-            @RequestPart (value = "request") @Valid  CreateUserRequest request,
-            @RequestHeader("Authorization") String authHeader,
-            @RequestPart(value = "profile_picture", required = false)MultipartFile file,
-            HttpServletRequest httpRequest) {
-        log.info("=== REQUEST DEBUG ===");
-        log.info("Content-Type: {}", httpRequest.getContentType());
-        log.info("Content-Length: {}", httpRequest.getContentLength());
-        log.info("File present: {}", file != null);
-        if (file != null) {
-            log.info("File name: {}", file.getOriginalFilename());
-            log.info("File size: {}", file.getSize());
-            log.info("File content-type: {}", file.getContentType());
-        }
-        log.info("Request data: {}", request);
-        log.info("===================");
+             @Valid @RequestBody CreateUserRequest request,
+            @RequestHeader("Authorization") String authHeader) {
 
         try {
             // Extract JWT
@@ -65,18 +52,18 @@ public class UserManagementController {
                 error.put("error", "Only admins can create users");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
             }
-            UserResponse response = userManagementService.createUser(request, tenantDb, hospitalId, file);
+            UserResponse response = userManagementService.createUser(request, tenantDb, hospitalId);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (IllegalArgumentException e) {
-            log.warn("⚠️ Validation error: {}", e.getMessage());
+            log.warn(" Validation error: {}", e.getMessage());
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(error);
 
         } catch (Exception e) {
-            log.error("❌ Error creating user", e);
+            log.error(" Error creating user", e);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to create user: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

@@ -46,7 +46,7 @@ public class UserManagementService {
 
 
     @Transactional(rollbackFor = Exception.class)
-    public UserResponse createUser(CreateUserRequest request, String tenantDb, Integer hospitalId, MultipartFile file) {
+    public UserResponse createUser(CreateUserRequest request, String tenantDb, Integer hospitalId) {
 
 
         log.info("👤 Creating user: {} with role: {}", request.getEmail(), request.getRole());
@@ -55,10 +55,10 @@ public class UserManagementService {
             // Step 1: Register in Auth Service
             String authUserId = registerInAuthService(request, hospitalId, tenantDb);
 
-            String profile_picture=saveFileToStorage(file);
+            //String profile_picture=saveFileToStorage(file);
 
             // Step 2: Create user in Tenant DB
-            Integer tenantUserId = createUserInTenantDb(request, tenantDb, authUserId, profile_picture);
+            Integer tenantUserId = createUserInTenantDb(request, tenantDb, authUserId);
             Integer staffId = null;
             if (shouldCreateRoleSpecificRecord(request.getRole())) {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
@@ -138,7 +138,7 @@ public class UserManagementService {
     /**
      * Create user in tenant database
      */
-    private Integer createUserInTenantDb(CreateUserRequest request, String tenantDb, String authUserId, String fileName) throws SQLException {
+    private Integer createUserInTenantDb(CreateUserRequest request, String tenantDb, String authUserId) throws SQLException {
 
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
@@ -147,7 +147,7 @@ public class UserManagementService {
         String sql = """
             INSERT INTO users (
                 first_name, middle_name, last_name, email, phone_number,
-                password, role, profile_picture, status, auth_user_id,
+                password, role,status, auth_user_id,
                 created_at, updated_at
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -163,7 +163,6 @@ public class UserManagementService {
             stmt.setString(5, request.getPhoneNumber());
             stmt.setString(6, hashedPassword);
             stmt.setString(7, request.getRole());
-            stmt.setString(8, fileName);
             stmt.setString(9, "ACTIVE");
             stmt.setObject(10, UUID.fromString(authUserId));
 
