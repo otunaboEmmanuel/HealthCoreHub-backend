@@ -281,15 +281,17 @@ public class UserManagementService {
             stmt.setString(7, details.getShiftHours());
             stmt.setInt(8, details.getYearsOfExperience());
 
-            ResultSet rs= stmt.executeQuery();
-            if (rs.next()) {
-                Integer nurseId = rs.getInt("id");
-                log.info("Nurse record created in tenant DB with ID: {}", nurseId);
-                return nurseId;
+            boolean hasResultSet = stmt.execute();
+            if (hasResultSet) {
+                try(ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        Integer nurseId = rs.getInt("id");
+                        log.info("Nurse record created in tenant DB with ID: {}", nurseId);
+                        return nurseId;
+                    }
+                }
             }
             throw new SQLException("Nurse record insertion failed — no ID returned");
-            //log.info("✅ Nurse record created for user: {}", userId);
-
         } catch (SQLException e) {
             log.error("❌ Failed to create nurse record", e);
             throw new RuntimeException("Nurse record creation failed: " + e.getMessage());
