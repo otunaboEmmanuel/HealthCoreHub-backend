@@ -171,7 +171,7 @@ public class UserProfileService {
 
         String sql = """
                 SELECT
-                    u.id,
+                    p.id,
                 u.first_name,
                 u.middle_name,
                 u.last_name,

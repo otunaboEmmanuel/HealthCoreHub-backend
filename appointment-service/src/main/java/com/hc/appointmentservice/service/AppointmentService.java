@@ -34,7 +34,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
 
     @Transactional(rollbackFor = Exception.class)
-    public Appointment bookAppointment(AppointmentDTO appointment, String tenantDb) {
+    public Appointment bookAppointment(AppointmentDTO appointment, String tenantDb, Integer patientId, Integer doctorId) {
         if(!userExistsInTenant(tenantDb,appointment.getPatientId())){
             log.error("could not find not find id {} in users table",appointment.getPatientId());
             throw new RuntimeException("user with id " + appointment.getPatientId() + " not exists");
@@ -53,9 +53,10 @@ public class AppointmentService {
                 .build();
          return appointmentRepository.save(appointment1);
     }
+
     private boolean userExistsInTenant(String tenantDb, Integer userId) {
         String tenantUrl=String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
-        String sql = "SELECT COUNT (*) FROM patients WHERE id = ?";
+        String sql = "SELECT COUNT (*) FROM patients WHERE id = ?";//and status = active
         try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
             statement.setInt(1,userId);

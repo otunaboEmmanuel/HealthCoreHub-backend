@@ -24,9 +24,10 @@ import java.util.Objects;
 public class AppointmentController {
     private final AppointmentService appointmentService;
     private final JwtService jwtService;;
-    @PostMapping()
+    @PostMapping("{patientId}/{doctorId}")
     public ResponseEntity<?> addAppointment(@RequestBody AppointmentDTO appointment,
-                                            @RequestHeader("Authorization")String authHeader) {
+                                            @RequestHeader("Authorization")String authHeader,
+                                            @PathVariable Integer patientId, Integer doctorId) {
         try {
             String token = authHeader.substring(7);
             String tenantDb = jwtService.extractTenantDb(token);
@@ -34,7 +35,7 @@ public class AppointmentController {
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 throw new RuntimeException("does not have access to this endpoint");
             }
-            Appointment appointment1 = appointmentService.bookAppointment(appointment, tenantDb);
+            Appointment appointment1 = appointmentService.bookAppointment(appointment, tenantDb, patientId, doctorId);
             if (appointment1 == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("appointment not found");
             }
