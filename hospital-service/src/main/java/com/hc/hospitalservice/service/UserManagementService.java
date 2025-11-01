@@ -458,7 +458,7 @@ public class UserManagementService {
     @Transactional(rollbackFor = Exception.class)
     public UserResponse registerPatient(PatientRequest request) {
 
-        log.info(" Patient self-registration: {}", request.getEmail());
+        log.info("👤 Patient self-registration: {}", request.getEmail());
 
         try {
             // Step 1: Get hospital's tenant DB name
@@ -476,12 +476,17 @@ public class UserManagementService {
             // Step 3: Register in Auth Service
             String authUserId = registerPatientInAuthService(request, request.getHospitalId(), tenantDb);
 
+            // Step 4: Create user in tenant DB
             Integer tenantUserId = createPatientUserInTenantDb(request, tenantDb, authUserId);
-            //create patient in the patientDb
-            String hospitalNumber = Helper.generateRandomString();
-            Integer patientId=createPatientInPatientDb(tenantUserId,tenantDb, hospitalNumber);
 
-            log.info(" Patient registered successfully: {}", request.getEmail());
+            // Step 5: Create patient with unique hospital number (with retry)
+            Integer patientId = createPatientWithUniqueHospitalNumber(tenantUserId, tenantDb);
+
+            // Get the actual hospital number that was used
+            String hospitalNumber = getPatientHospitalNumber(patientId, tenantDb);
+
+            log.info(" Patient registered successfully: {} with hospital number: {}",
+                    request.getEmail(), hospitalNumber);
 
             return UserResponse.builder()
                     .success(true)
@@ -504,31 +509,97 @@ public class UserManagementService {
         }
     }
 
-    private Integer createPatientInPatientDb(Integer tenantUserId, String tenantDb, String hospitalNumber) {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, tenantDb);
-        String sql = """
-                INSERT INTO patients(
-                user_id, hospital_number)
-                VALUES (?, ?)
-                RETURNING id;
-                """;
-        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
-                                PreparedStatement statement = conn.prepareStatement(sql) ){
-            statement.setInt(1,tenantUserId);
-            statement.setString(2,hospitalNumber);
-            boolean resultSet = statement.execute();
-            if (resultSet) {
-                try (ResultSet rs = statement.executeQuery()) {
-                    if (rs.next()) {
-                        return rs.getInt("id");
+    private Integer createPatientWithUniqueHospitalNumber(Integer tenantUserId, String tenantDb) {
+        int maxRetries = 5;
+        SQLException lastException = null;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            String hospitalNumber = Helper.generateRandomString();
+
+            log.info(" Creating patient with hospital number: {} (attempt {}/{})",
+                    hospitalNumber, attempt, maxRetries);
+
+            try {
+                return createPatientInPatientDbNoThrow(tenantUserId, tenantDb, hospitalNumber);
+
+            } catch (SQLException e) {
+                lastException = e;
+
+                // Check if it's a duplicate key error
+                if (e.getMessage().contains("duplicate key") &&
+                        e.getMessage().contains("patients_hospital_number_key")) {
+
+                    log.warn("⚠️ Duplicate hospital number: {}. Retrying... (attempt {}/{})",
+                            hospitalNumber, attempt, maxRetries);
+
+                    if (attempt < maxRetries) {
+                        continue; // Try again
                     }
+                } else {
+                    // Different SQL error, don't retry
+                    log.error(" SQL error creating patient", e);
+                    throw new RuntimeException("Database error while creating patient", e);
                 }
             }
-            throw new SQLException("Patient not found with ID: " + hospitalNumber);
+        }
 
-        }catch (SQLException e) {
-            log.error("Create patient failed", e);
-            throw new RuntimeException( e.getMessage(), e);
+        log.error(" Failed to create patient after {} attempts", maxRetries);
+        throw new RuntimeException(
+                "Failed to generate unique hospital number after " + maxRetries + " attempts",
+                lastException);
+    }
+
+    // Version that throws SQLException directly
+    private Integer createPatientInPatientDbNoThrow(Integer tenantUserId, String tenantDb,
+                                                    String hospitalNumber) throws SQLException {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, tenantDb);
+
+        String sql = """
+            INSERT INTO patients (user_id, hospital_number, created_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            RETURNING id
+            """;
+
+        try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, tenantUserId);
+            stmt.setString(2, hospitalNumber);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Integer patientId = rs.getInt("id");
+                    log.info("✅ Patient created with ID: {} and hospital number: {}",
+                            patientId, hospitalNumber);
+                    return patientId;
+                }
+                throw new SQLException("Failed to create patient record - no ID returned");
+            }
+        }
+    }
+
+    private String getPatientHospitalNumber(Integer patientId, String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, tenantDb);
+
+        String sql = "SELECT hospital_number FROM patients WHERE id = ?";
+
+        try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, patientId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("hospital_number");
+                }
+                throw new RuntimeException("Patient record not found after creation");
+            }
+
+        } catch (SQLException e) {
+            log.error(" Error fetching patient hospital number", e);
+            throw new RuntimeException("Failed to fetch hospital number", e);
         }
     }
 
