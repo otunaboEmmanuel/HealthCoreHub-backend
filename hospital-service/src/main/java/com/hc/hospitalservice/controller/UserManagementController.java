@@ -5,6 +5,8 @@ import com.hc.hospitalservice.service.JwtService;
 import com.hc.hospitalservice.service.UserManagementService;
 import com.hc.hospitalservice.service.UserProfileService;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,15 +33,23 @@ public class UserManagementController {
     /**
      * Create a new user (only admins can do this)
      */
-    @PostMapping(consumes = {
-            MediaType.MULTIPART_FORM_DATA_VALUE,
-            MediaType.APPLICATION_OCTET_STREAM_VALUE,
-            MediaType.APPLICATION_JSON_VALUE
-    })
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createUser(
             @RequestPart (value = "request") @Valid  CreateUserRequest request,
             @RequestHeader("Authorization") String authHeader,
-            @RequestPart(value = "profile_picture", required = false)MultipartFile file) {
+            @RequestPart(value = "profile_picture", required = false)MultipartFile file,
+            HttpServletRequest httpRequest) {
+        log.info("=== REQUEST DEBUG ===");
+        log.info("Content-Type: {}", httpRequest.getContentType());
+        log.info("Content-Length: {}", httpRequest.getContentLength());
+        log.info("File present: {}", file != null);
+        if (file != null) {
+            log.info("File name: {}", file.getOriginalFilename());
+            log.info("File size: {}", file.getSize());
+            log.info("File content-type: {}", file.getContentType());
+        }
+        log.info("Request data: {}", request);
+        log.info("===================");
 
         try {
             // Extract JWT

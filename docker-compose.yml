@@ -202,8 +202,8 @@ services:
       FILE_UPLOAD_DIRECTORY: /app/uploads
     volumes: # ← ADD THIS SECTION
       - hospital_uploads:/app/uploads
-    expose:
-      - "4002"
+    ports:
+      - "4002:4002"
     networks:
       - healthcare-network
     dns:
