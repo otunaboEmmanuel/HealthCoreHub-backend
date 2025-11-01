@@ -25,6 +25,7 @@ import java.util.Objects;
 public class DoctorController {
     private final JwtService jwtService;
     private final DoctorService doctorService;
+    //update availability
     @PostMapping("appointment/{id}")
     public ResponseEntity<?> setAvailability(@PathVariable Integer id,
                                              @RequestHeader("Authorization") String authHeader,

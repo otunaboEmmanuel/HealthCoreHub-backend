@@ -132,13 +132,13 @@ public class UserManagementController {
             if (!"ADMIN".equals(tenantRole))
             {
                 Map<String, String> error = new HashMap<>();
-                error.put("error", "Only admins can create users");
+                error.put("error", "Only admins can update status");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
             }
             Map<String, String> response = userProfileService.updateUser(id, tenantDb, request);
             return ResponseEntity.ok(response);
         }catch (IllegalArgumentException e) {
-            log.warn("⚠️ Validation error: {}", e.getMessage());
+            log.warn(" Validation error: {}", e.getMessage());
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(error);
@@ -172,7 +172,19 @@ public class UserManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
-
+    @GetMapping()
+    public ResponseEntity<?> getPatients(@RequestHeader("Authorization") String authHeader) {
+        try{
+            String token = authHeader.substring(7);
+            String tenantDb = jwtService.extractTenantDb(token);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if(!"ADMIN".equals(tenantRole))
+            {
+                log.warn("only admin can access this");
+                throw new IllegalArgumentException("this user is not admin");
+            }
+            List<PatientDto> result = userManagementService.getPatients(tenantDb);
+        }
+    }
 
 }

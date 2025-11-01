@@ -194,7 +194,7 @@ public class UserProfileService {
             log.info("the patients with status pending are {}", patientDtoList);
             return patientDtoList;
         } catch (SQLException e) {
-            log.error("❌ Failed to fetch patients", e);
+            log.error(" Failed to fetch patients", e);
             throw new RuntimeException("Failed to fetch patients with status pending");
         }
 

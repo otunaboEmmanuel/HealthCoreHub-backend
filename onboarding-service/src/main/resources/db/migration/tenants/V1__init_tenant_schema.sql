@@ -86,7 +86,6 @@ CREATE TABLE IF NOT EXISTS hospital_staff (
 CREATE TABLE IF NOT EXISTS patients (
                                         id SERIAL PRIMARY KEY,
                                         user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    patient_id VARCHAR(50) UNIQUE NOT NULL,
     date_of_birth DATE,
     hospital_number VARCHAR(50) UNIQUE NOT NULL,
     gender VARCHAR(20),

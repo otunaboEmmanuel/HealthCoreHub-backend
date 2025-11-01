@@ -734,6 +734,60 @@ public class UserManagementService {
                     throw new RuntimeException("Failed to fetch hospital number");
         }
     }
+
+    public List<PatientDto> getPatients(String tenantDb) {
+        String tenantUrl = String.format(
+                "jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, tenantDb
+        );
+
+        List<PatientDto> patients = new ArrayList<>();
+
+        String sql = """
+        SELECT 
+            u.id,
+            u.first_name,
+            u.middle_name,
+            u.last_name,
+            u.email,
+            u.phone_number,
+            u.role,
+            u.status,
+            p.hospital_number
+        FROM patients p
+        INNER JOIN users u ON p.user_id = u.id
+        WHERE u.status = ?
+        """;
+
+        try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, "ACTIVE");
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    patients.add(PatientDto.builder()
+                            .id(rs.getInt("id"))
+                            .firstName(rs.getString("first_name"))
+                            .middleName(rs.getString("middle_name"))
+                            .lastName(rs.getString("last_name"))
+                            .email(rs.getString("email"))
+                            .phoneNumber(rs.getString("phone_number"))
+                            .role(rs.getString("role"))
+                            .status(rs.getString("status"))
+                            .hospitalNumber(rs.getString("hospital_number"))
+                            .build());
+                }
+            }
+
+        } catch (SQLException e) {
+            log.error("Error fetching patients from tenant DB {}: {}", tenantDb, e.getMessage(), e);
+            throw new RuntimeException("Database error while fetching patients", e);
+        }
+
+        return patients;
+    }
+
 }
 
 

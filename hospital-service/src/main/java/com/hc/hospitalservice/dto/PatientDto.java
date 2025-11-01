@@ -23,6 +23,7 @@ public class PatientDto {
     private String phoneNumber;
 
     private String role;
+    private String hospitalNumber;
 
     private String status;
 }
