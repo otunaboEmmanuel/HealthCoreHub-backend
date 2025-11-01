@@ -32,9 +32,9 @@ public class UserManagementController {
      */
     @PostMapping
     public ResponseEntity<?> createUser(
-            @Valid @RequestBody CreateUserRequest request,
+            @RequestPart ("request") @Valid  CreateUserRequest request,
             @RequestHeader("Authorization") String authHeader,
-            @RequestParam("profile_picture")MultipartFile file) {
+            @RequestPart("profile_picture")MultipartFile file) {
 
         try {
             // Extract JWT
