@@ -147,10 +147,10 @@ public class UserManagementService {
         String sql = """
             INSERT INTO users (
                 first_name, middle_name, last_name, email, phone_number,
-                password, role,status, auth_user_id,
+                password, role, status, auth_user_id,
                 created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING id
             """;
 
@@ -163,8 +163,8 @@ public class UserManagementService {
             stmt.setString(5, request.getPhoneNumber());
             stmt.setString(6, hashedPassword);
             stmt.setString(7, request.getRole());
-            stmt.setString(9, "ACTIVE");
-            stmt.setObject(10, UUID.fromString(authUserId));
+            stmt.setString(8, "ACTIVE");
+            stmt.setObject(9, UUID.fromString(authUserId));
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -176,7 +176,7 @@ public class UserManagementService {
             throw new SQLException("Failed to create user in tenant DB");
 
         } catch (SQLException e) {
-            log.error("❌ Tenant DB user creation failed", e);
+            log.error(" Tenant DB user creation failed", e);
             throw new RuntimeException("Tenant DB error: " + e.getMessage(), e);
         }
     }
