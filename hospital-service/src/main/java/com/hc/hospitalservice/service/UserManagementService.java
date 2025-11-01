@@ -510,14 +510,19 @@ public class UserManagementService {
                 INSERT INTO patients(
                 user_id, hospital_number)
                 VALUES (?, ?)
+                RETURNING id;
                 """;
         try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
             statement.setInt(1,tenantUserId);
             statement.setString(2,hospitalNumber);
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("id");
+            boolean resultSet = statement.execute();
+            if (resultSet) {
+                try (ResultSet rs = statement.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("id");
+                    }
+                }
             }
             throw new SQLException("Patient not found with ID: " + hospitalNumber);
 

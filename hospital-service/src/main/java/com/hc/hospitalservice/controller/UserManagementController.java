@@ -184,6 +184,12 @@ public class UserManagementController {
                 throw new IllegalArgumentException("this user is not admin");
             }
             List<PatientDto> result = userManagementService.getPatients(tenantDb);
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }catch (Exception e) {
+            log.error(" Error fetching patients", e);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to fetch patients: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 

@@ -170,86 +170,97 @@ public class UserProfileService {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
 
         String sql = """
-                    SELECT id,first_name,last_name,middle_name,
-                           email,phone_number,
-                           role,status FROM users WHERE status = ?""";
-        List<PatientDto> patientDtoList=new ArrayList<>();
-        try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
-                                PreparedStatement stmt = con.prepareStatement(sql)){
-            stmt.setString(1, "PENDING");
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()){
-                PatientDto patientDto=PatientDto.builder()
-                        .id(rs.getInt("id"))
-                        .firstName(rs.getString("first_name"))
-                        .lastName(rs.getString("last_name"))
-                        .middleName(rs.getString("middle_name"))
-                        .email(rs.getString("email"))
-                        .phoneNumber(rs.getString("phone_number"))
-                        .role(rs.getString("role"))
-                        .status(rs.getString("status"))
-                        .build();
-                patientDtoList.add(patientDto);
+                SELECT
+                    u.id,
+                u.first_name,
+                u.middle_name,
+                u.last_name,
+                u.email,
+                u.phone_number,
+                u.role,
+                u.status,
+                p.hospital_number
+                FROM patients p
+                INNER JOIN users u ON p.user_id = u.id
+                WHERE u.status = ?
+                """;
+                List<PatientDto> patientDtoList=new ArrayList<>();
+                try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+                                        PreparedStatement stmt = con.prepareStatement(sql)){
+                    stmt.setString(1, "PENDING");
+                    ResultSet rs = stmt.executeQuery();
+                    while (rs.next()){
+                        PatientDto patientDto=PatientDto.builder()
+                                .id(rs.getInt("id"))
+                                .firstName(rs.getString("first_name"))
+                                .lastName(rs.getString("last_name"))
+                                .middleName(rs.getString("middle_name"))
+                                .email(rs.getString("email"))
+                                .phoneNumber(rs.getString("phone_number"))
+                                .role(rs.getString("role"))
+                                .status(rs.getString("status"))
+                                .build();
+                        patientDtoList.add(patientDto);
+                    }
+                    log.info("the patients with status pending are {}", patientDtoList);
+                    return patientDtoList;
+                } catch (SQLException e) {
+                    log.error(" Failed to fetch patients", e);
+                    throw new RuntimeException("Failed to fetch patients with status pending");
+                }
+
             }
-            log.info("the patients with status pending are {}", patientDtoList);
-            return patientDtoList;
-        } catch (SQLException e) {
-            log.error(" Failed to fetch patients", e);
-            throw new RuntimeException("Failed to fetch patients with status pending");
-        }
 
-    }
+            @Transactional(rollbackFor = Exception.class)
+            public Map<String, String> updateUser(Integer id, String tenantDb, UpdateRequest request) {
+                try {
+                    if (!existsIdInTenantDb(id, tenantDb)) {
+                        throw new IllegalArgumentException("User with this ID does not exist in this hospital");
+                    }
+                    if(request.getStatus().equalsIgnoreCase("REJECTED")) {
+                        deleteUserInTenantDb(id, tenantDb);
+                    }
+                    PatientDto updatedUser = updateUserInTenantDb(request, id, tenantDb);
 
-    @Transactional(rollbackFor = Exception.class)
-    public Map<String, String> updateUser(Integer id, String tenantDb, UpdateRequest request) {
-        try {
-            if (!existsIdInTenantDb(id, tenantDb)) {
-                throw new IllegalArgumentException("User with this ID does not exist in this hospital");
+                    String hospitalName = getHospitalNameFromTenantDb(id);
+                    emailService.sendEmail(request.getEmail(),request.getFirstName(), hospitalName);
+
+                    Map<String, String> response = new HashMap<>();
+                    response.put("status", "success");
+                    response.put("message", "User updated successfully");
+                    response.put("updatedStatus", updatedUser.getStatus());
+                    response.put("userEmail", updatedUser.getEmail());
+                    return response;
+
+                } catch (IllegalArgumentException e) {
+                    log.warn(" Validation failed: {}", e.getMessage());
+                    throw e;
+                } catch (Exception e) {
+                    log.error(" Failed to update user in tenant DB", e);
+                    throw new RuntimeException("Database update failed: " + e.getMessage());
+                }
             }
-            if(request.getStatus().equalsIgnoreCase("REJECTED")) {
-                deleteUserInTenantDb(id, tenantDb);
+
+            private String getHospitalNameFromTenantDb(Integer id) {
+                String tenantUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb", tenantDbHost, tenantDbPort);
+                String sql = "SELECT name FROM hospital  WHERE id = ? AND is_active = true";
+                try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+                                            PreparedStatement statement = conn.prepareStatement(sql) ){
+                    statement.setInt(1,id);
+                    ResultSet rs = statement.executeQuery();
+                    if(rs.next()){
+                        return rs.getString("name");
+                    }
+                    return null;
+                } catch (SQLException e) {
+                    log.error(" Failed to fetch hospital name from DB", e);
+                    throw new RuntimeException(e);
+                }
             }
-            PatientDto updatedUser = updateUserInTenantDb(request, id, tenantDb);
 
-            String hospitalName = getHospitalNameFromTenantDb(id);
-            emailService.sendEmail(request.getEmail(),request.getFirstName(), hospitalName);
-
-            Map<String, String> response = new HashMap<>();
-            response.put("status", "success");
-            response.put("message", "User updated successfully");
-            response.put("updatedStatus", updatedUser.getStatus());
-            response.put("userEmail", updatedUser.getEmail());
-            return response;
-
-        } catch (IllegalArgumentException e) {
-            log.warn(" Validation failed: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error(" Failed to update user in tenant DB", e);
-            throw new RuntimeException("Database update failed: " + e.getMessage());
-        }
-    }
-
-    private String getHospitalNameFromTenantDb(Integer id) {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb", tenantDbHost, tenantDbPort);
-        String sql = "SELECT name FROM hospital  WHERE id = ? AND is_active = true";
-        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
-                                    PreparedStatement statement = conn.prepareStatement(sql) ){
-            statement.setInt(1,id);
-            ResultSet rs = statement.executeQuery();
-            if(rs.next()){
-                return rs.getString("name");
-            }
-            return null;
-        } catch (SQLException e) {
-            log.error(" Failed to fetch hospital name from DB", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    private PatientDto updateUserInTenantDb(UpdateRequest request, Integer id, String tenantDb) {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost,tenantDbPort,tenantDb);
-        String sql = """
+            private PatientDto updateUserInTenantDb(UpdateRequest request, Integer id, String tenantDb) {
+                String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost,tenantDbPort,tenantDb);
+                String sql = """
                 UPDATE users
                         SET status = ?, updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?
