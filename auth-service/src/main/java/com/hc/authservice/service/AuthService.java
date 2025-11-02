@@ -226,6 +226,7 @@ public class AuthService {
         response.put("tenant_db", claims.get("tenant_db"));
         response.put("global_role", claims.get("global_role"));
         response.put("tenant_role", claims.get("tenant_role"));
+        response.put("tenant_user_Id", claims.get("tenant_user_id"));
         response.put("tenant_status", claims.get("status"));
 
         return response;

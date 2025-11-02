@@ -215,4 +215,5 @@ public class UserManagementController {
         }
     }
 
+    //get mapping to get image, to do after we discuss with team
 }

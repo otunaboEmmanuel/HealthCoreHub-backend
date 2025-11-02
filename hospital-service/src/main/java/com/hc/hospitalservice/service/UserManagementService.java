@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -830,6 +831,7 @@ public class UserManagementService {
             u.email,
             u.phone_number,
             u.role,
+            u.created_at,
             u.status,
             p.hospital_number
         FROM patients p
@@ -850,6 +852,7 @@ public class UserManagementService {
                             .middleName(rs.getString("middle_name"))
                             .lastName(rs.getString("last_name"))
                             .email(rs.getString("email"))
+                                    .createdAt(rs.getObject("created_at", LocalDateTime.class))
                             .phoneNumber(rs.getString("phone_number"))
                             .role(rs.getString("role"))
                             .status(rs.getString("status"))
