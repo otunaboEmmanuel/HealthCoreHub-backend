@@ -69,6 +69,28 @@ public class UserManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+    @PutMapping("{userId}")
+    public ResponseEntity<?> updateProfilePhoto(@RequestParam(value = "profile_picture", required = false) MultipartFile file,
+                                                @PathVariable Integer userId,
+                                                @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+            String tenantDb = jwtService.extractTenantDb(token);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if (!"DOCTOR".equals(tenantRole) && !"ADMIN".equals(tenantRole)){
+                log.warn(" Unauthorized role : {}", token);
+                throw new IllegalArgumentException("Only doctors can set profile picture");
+            }
+            Map<String, Object> result = userManagementService.uploadProfilePicture(userId, file, tenantDb);
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }catch (IllegalArgumentException e) {
+            log.warn(" Validation error: {}", e.getMessage());
+            throw e;
+        }catch (Exception e) {
+            log.error(" Error updating profile picture ", e);
+            throw new IllegalArgumentException("Failed to update user profile picture: " + e.getMessage());
+        }
+    }
     @PostMapping("/register")
     public ResponseEntity<?> registerPatient(@Valid @RequestBody PatientRequest request) {
 

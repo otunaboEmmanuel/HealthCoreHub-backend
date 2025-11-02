@@ -686,7 +686,7 @@ public class UserManagementService {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 Integer userId = rs.getInt("id");
-                log.info("✅ Patient user created (PENDING): {}", userId);
+                log.info(" Patient user created (PENDING): {}", userId);
                 return userId;
             }
 
@@ -714,7 +714,7 @@ public class UserManagementService {
                     Map.class
             );
             String authUserId = (String) response.getBody().get("userId");
-            log.info("✅ User registered in auth service: {}", authUserId);
+            log.info(" User registered in auth service: {}", authUserId);
             return authUserId;
 
         } catch (Exception e) {
@@ -866,6 +866,37 @@ public class UserManagementService {
         return patients;
     }
 
+    public Map<String, Object> uploadProfilePicture(Integer userId, MultipartFile file, String tenantDb) {
+        log.info("uploding profile picture from tenant DB: {}", tenantDb);
+        String profile_picture = saveFileToStorage(file);
+        updateUserTenantDb(profile_picture, userId, tenantDb);
+        Map<String, Object> result = new HashMap<>();
+        result.put("profile_picture", profile_picture);
+        return result;
+    }
+
+    private void updateUserTenantDb(String profilePicture, Integer userId, String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+            UPDATE users
+            SET profile_picture = ?
+            WHERE id = ?
+       """;
+        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+                                        PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setString(1, profilePicture);
+            statement.setInt(2, userId);
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows > 0) {
+                log.info("User {} profile picture updated successfully", userId);
+            }
+            log.warn("user with id {} does not exist", userId);
+            throw new RuntimeException("user with id " + userId + " does not exist");
+        }catch (SQLException e){
+            log.error(" Failed to fetch user profile picture", e);
+            throw new RuntimeException("Failed to fetch user profile picture");
+        }
+    }
 }
 
 
