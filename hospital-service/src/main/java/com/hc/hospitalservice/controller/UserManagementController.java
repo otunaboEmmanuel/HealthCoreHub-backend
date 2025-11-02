@@ -69,7 +69,7 @@ public class UserManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-    @PutMapping("{userId}")
+    @PutMapping("{userId}/photo")
     public ResponseEntity<?> updateProfilePhoto(@RequestParam(value = "profile_picture", required = false) MultipartFile file,
                                                 @PathVariable Integer userId,
                                                 @RequestHeader("Authorization") String authHeader) {

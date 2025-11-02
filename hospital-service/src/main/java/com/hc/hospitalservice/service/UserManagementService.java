@@ -888,10 +888,12 @@ public class UserManagementService {
             statement.setInt(2, userId);
             int affectedRows = statement.executeUpdate();
             if (affectedRows > 0) {
-                log.info("User {} profile picture updated successfully", userId);
+                log.info(" User {} profile picture updated successfully", userId);
+            } else {
+                log.warn(" User with id {} does not exist in tenant {}", userId, tenantDb);
+                throw new RuntimeException("User with id " + userId + " does not exist");
             }
-            log.warn("user with id {} does not exist", userId);
-            throw new RuntimeException("user with id " + userId + " does not exist");
+
         }catch (SQLException e){
             log.error(" Failed to fetch user profile picture", e);
             throw new RuntimeException("Failed to fetch user profile picture");
