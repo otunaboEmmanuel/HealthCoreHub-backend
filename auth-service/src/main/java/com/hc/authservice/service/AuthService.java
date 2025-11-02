@@ -3,6 +3,7 @@ package com.hc.authservice.service;
 import com.hc.authservice.dto.LoginRequest;
 import com.hc.authservice.dto.LoginResponse;
 import com.hc.authservice.dto.RegisterRequest;
+import com.hc.authservice.dto.UserInfo;
 import com.hc.authservice.entity.AuthUser;
 import com.hc.authservice.entity.RefreshToken;
 import com.hc.authservice.repository.AuthUserRepository;
@@ -131,10 +132,18 @@ public class AuthService {
         authUserRepository.save(authUser);
 
         // Get tenant role (if user belongs to a hospital)
-        String tenantRole = getTenantRole(authUser);
+
+        UserInfo userInfo = getTenantRoleAndId(authUser);
+        if (userInfo == null) {
+            throw new RuntimeException("User not found in tenant DB: " + authUser.getEmail());
+        }
+
+        if (userInfo.getRole() == null) {
+            throw new RuntimeException("User has no assigned role in tenant DB: " + authUser.getEmail());
+        }
 
         // Generate tokens
-        String accessToken = jwtService.generateToken(authUser, tenantRole, tenantStatus);
+        String accessToken = jwtService.generateToken(authUser, userInfo.getRole(), tenantStatus, userInfo.getUserId());
         String refreshToken = jwtService.generateRefreshToken(authUser);
 
         // Save refresh token
@@ -151,7 +160,7 @@ public class AuthService {
     /**
      * Get user's role from their tenant database
      */
-    private String getTenantRole(AuthUser authUser) {
+    private UserInfo getTenantRoleAndId(AuthUser authUser) {
         if (authUser.getTenantDb() == null) {
             log.info("User has no tenant DB (likely super admin)");
             return null;
@@ -162,7 +171,7 @@ public class AuthService {
 
         log.info("Fetching tenant role from: {}", tenantUrl);
 
-        String sql = "SELECT role FROM users WHERE email = ?";
+        String sql = "SELECT role, id FROM users WHERE email = ?";
 
         try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -171,9 +180,10 @@ public class AuthService {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                String role = rs.getString("role");
-                log.info("Found tenant role: {}", role);
-                return role;
+               return UserInfo.builder()
+                       .role(rs.getString("role"))
+                       .userId(rs.getInt("id"))
+                       .build();
             }
 
             log.warn("No tenant role found for user: {}", authUser.getEmail());
