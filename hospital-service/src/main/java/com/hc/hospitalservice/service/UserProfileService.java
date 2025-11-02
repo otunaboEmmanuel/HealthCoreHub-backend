@@ -298,14 +298,14 @@ public class UserProfileService {
 
     private Boolean existsIdInTenantDb(Integer id, String tenantDb) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
-        String sql = "SELECT 1 FROM users WHERE id = ?";
+        String sql = "SELECT 1 FROM patients WHERE id = ?";
         try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
             PreparedStatement stmt = con.prepareStatement(sql)){
             stmt.setInt(1,id);
             ResultSet rs = stmt.executeQuery();
             return rs.next();
         }catch (SQLException e) {
-            log.error("Error checking email", e);
+            log.error("Error getting patient ", e);
             return false;
         }
     }
