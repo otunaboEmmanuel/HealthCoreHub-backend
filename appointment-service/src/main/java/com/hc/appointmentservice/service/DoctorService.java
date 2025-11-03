@@ -108,6 +108,7 @@ public class DoctorService {
                 u.profile_picture,
                 d.specialization,
                 d.availability,
+                d.id,
                 d.license_number
             FROM doctors d
             INNER JOIN users u ON d.user_id = u.id
@@ -123,6 +124,7 @@ public class DoctorService {
                 DoctorDTO doctorDTO = DoctorDTO.builder()
                         .firstName(rs.getString("first_name"))
                         .lastName(rs.getString("last_name"))
+                        .doctorId(rs.getInt("id"))
                         .profile_picture(rs.getString("profile_picture"))
                         .specialization(rs.getString("specialization"))
                         .license_number(rs.getString("license_number"))

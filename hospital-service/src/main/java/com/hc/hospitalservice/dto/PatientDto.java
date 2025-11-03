@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class PatientDto {
-    private Integer id;
+    private Integer patientId;
 
     private String firstName;
 
@@ -21,6 +21,7 @@ public class PatientDto {
     private String lastName;
 
     private String email;
+    private Integer userId;
 
     private String phoneNumber;
 

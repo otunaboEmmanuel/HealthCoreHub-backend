@@ -11,6 +11,7 @@ import java.util.List;
 public class DoctorDTO {
     private String firstName;
     private String lastName;
+    private Integer doctorId;
     private String specialization;
     private List<String> availability;
     private String profile_picture;

@@ -172,13 +172,14 @@ public class UserProfileService {
 
         String sql = """
                 SELECT
-                u.id,
+                p.id,
                 u.first_name,
                 u.middle_name,
                 u.last_name,
                 u.email,
                 u.phone_number,
                 u.role,
+                p.user_id,
                 u.created_at,
                 u.status,
                 p.hospital_number
@@ -193,7 +194,8 @@ public class UserProfileService {
                     ResultSet rs = stmt.executeQuery();
                     while (rs.next()){
                         PatientDto patientDto=PatientDto.builder()
-                                .id(rs.getInt("id"))
+                                .patientId(rs.getInt("id"))
+                                .userId(rs.getInt("user_id"))
                                 .firstName(rs.getString("first_name"))
                                 .lastName(rs.getString("last_name"))
                                 .middleName(rs.getString("middle_name"))
@@ -277,7 +279,7 @@ public class UserProfileService {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()){
                 return PatientDto.builder()
-                        .id(rs.getInt("id"))
+                        .userId(rs.getInt("id"))
                         .firstName(rs.getString("first_name"))
                         .middleName(rs.getString("middle_name"))
                         .lastName(rs.getString("last_name"))
