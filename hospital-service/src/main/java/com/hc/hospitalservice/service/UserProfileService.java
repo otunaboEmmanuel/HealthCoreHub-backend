@@ -172,7 +172,7 @@ public class UserProfileService {
 
         String sql = """
                 SELECT
-                    p.id,
+                u.id,
                 u.first_name,
                 u.middle_name,
                 u.last_name,
@@ -298,7 +298,7 @@ public class UserProfileService {
 
     private Boolean existsIdInTenantDb(Integer id, String tenantDb) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
-        String sql = "SELECT 1 FROM patients WHERE id = ?";
+        String sql = "SELECT 1 FROM users WHERE id = ?";
         try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
             PreparedStatement stmt = con.prepareStatement(sql)){
             stmt.setInt(1,id);

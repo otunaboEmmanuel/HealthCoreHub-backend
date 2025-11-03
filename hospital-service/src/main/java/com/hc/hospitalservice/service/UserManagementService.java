@@ -824,7 +824,7 @@ public class UserManagementService {
 
         String sql = """
         SELECT 
-            p.id,
+            u.id,
             u.first_name,
             u.middle_name,
             u.last_name,
@@ -852,7 +852,7 @@ public class UserManagementService {
                             .middleName(rs.getString("middle_name"))
                             .lastName(rs.getString("last_name"))
                             .email(rs.getString("email"))
-                                    .createdAt(rs.getObject("created_at", LocalDateTime.class))
+                            .createdAt(rs.getObject("created_at", LocalDateTime.class))
                             .phoneNumber(rs.getString("phone_number"))
                             .role(rs.getString("role"))
                             .status(rs.getString("status"))
