@@ -35,31 +35,31 @@ public class AppointmentService {
 
     @Transactional(rollbackFor = Exception.class)
     public Appointment bookAppointment(AppointmentDTO appointment, String tenantDb, Integer patientId, Integer doctorId) {
-        if(!userExistsInTenant(tenantDb,appointment.getPatientId())){
-            log.error("could not find not find id {} in users table",appointment.getPatientId());
-            throw new RuntimeException("user with id " + appointment.getPatientId() + " not exists");
+        if(!userExistsInTenant(tenantDb,patientId)){
+            log.error("could not find not find id {} in users table",patientId);
+            throw new RuntimeException("user with id " + patientId + " not exists");
         }
-        if(!doctorExists(tenantDb,appointment.getDoctorId())){
-            log.error("doctor with id {} not exists",appointment.getDoctorId());
-            throw new RuntimeException("doctor with id " + appointment.getDoctorId() + " not exists");
+        if(!doctorExists(tenantDb,doctorId)){
+            log.error("doctor with id {} not exists",doctorId);
+            throw new RuntimeException("doctor with id " + doctorId + " not exists");
         }
         Appointment appointment1 = Appointment.builder()
                 .appointmentTime(appointment.getAppointmentTime())
                 .date(appointment.getDate())
-                .doctorId(appointment.getDoctorId())
-                .patientId(appointment.getPatientId())
+                .doctorId(doctorId)
+                .patientId(patientId)
                 .reason(appointment.getReason())
                 .status(Status.PENDING)
                 .build();
          return appointmentRepository.save(appointment1);
     }
 
-    private boolean userExistsInTenant(String tenantDb, Integer userId) {
+    private boolean userExistsInTenant(String tenantDb, Integer patientId) {
         String tenantUrl=String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
         String sql = "SELECT COUNT (*) FROM patients WHERE id = ?";//and status = active
         try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql) ){
-            statement.setInt(1,userId);
+            statement.setInt(1,patientId);
             ResultSet rs = statement.executeQuery();
             return rs.next() && rs.getInt(1) >0;
         } catch (SQLException e) {
