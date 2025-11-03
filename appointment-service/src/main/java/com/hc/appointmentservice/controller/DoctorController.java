@@ -43,7 +43,13 @@ public class DoctorController {
             }
             Map<String, String> response = doctorService.setDoctorAvailability(id, request, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(response);
-        }catch (Exception e) {
+        }catch (IllegalArgumentException ex){
+            log.error("Invalid JWT Token", ex);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Invalid JWT Token");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+        catch (Exception e) {
             log.error(" Error creating user", e);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to create user: " + e.getMessage());
