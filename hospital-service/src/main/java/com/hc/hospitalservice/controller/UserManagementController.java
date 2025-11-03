@@ -207,7 +207,13 @@ public class UserManagementController {
             }
             List<PatientDto> result = userManagementService.getPatients(tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
-        }catch (Exception e) {
+        }catch (IllegalArgumentException e) {
+            log.warn("this user is not admin");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Only admins can access this");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+        }
+        catch (Exception e) {
             log.error(" Error fetching patients", e);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to fetch patients: " + e.getMessage());
