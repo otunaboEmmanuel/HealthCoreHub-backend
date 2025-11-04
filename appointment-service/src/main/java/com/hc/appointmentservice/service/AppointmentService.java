@@ -36,8 +36,8 @@ public class AppointmentService {
     @Transactional(rollbackFor = Exception.class)
     public Appointment bookAppointment(AppointmentDTO appointment, String tenantDb, Integer patientId, Integer doctorId) {
         if(!userExistsInTenant(tenantDb,patientId)){
-            log.error("could not find not find id {} in users table",patientId);
-            throw new RuntimeException("user with id " + patientId + " not exists");
+            log.error("could not find not find id {} in patients table",patientId);
+            throw new RuntimeException("patient with id " + patientId + " not exists");
         }
         if(!doctorExists(tenantDb,doctorId)){
             log.error("doctor with id {} not exists",doctorId);
