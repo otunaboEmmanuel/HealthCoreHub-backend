@@ -27,7 +27,7 @@ public class AppointmentController {
     @PostMapping("{patientId}/{doctorId}")
     public ResponseEntity<?> addAppointment(@RequestBody AppointmentDTO appointment,
                                             @RequestHeader("Authorization")String authHeader,
-                                            @PathVariable Integer patientId, Integer doctorId) {
+                                            @PathVariable Integer patientId, @PathVariable Integer doctorId) {
         try {
             String token = authHeader.substring(7);
             String tenantDb = jwtService.extractTenantDb(token);
@@ -49,7 +49,7 @@ public class AppointmentController {
         } catch (Exception e) {
             log.error("Error occurred while adding appointment", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to book appointment"));
+                    .body(Map.of("error", "Failed to book appointment, token might be expired"));
         }
     }
 

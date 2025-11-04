@@ -166,9 +166,9 @@ public class UserManagementController {
             return ResponseEntity.badRequest().body(error);
 
         } catch (Exception e) {
-            log.error(" Error creating user", e);
+            log.error(" Error update  user", e);
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to create user: " + e.getMessage());
+            error.put("error", "Failed to update user: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
 

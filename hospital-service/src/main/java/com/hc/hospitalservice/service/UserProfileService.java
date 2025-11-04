@@ -228,8 +228,8 @@ public class UserProfileService {
                     }
                     PatientDto updatedUser = updateUserInTenantDb(request, id, tenantDb);
 
-                    String hospitalName = getHospitalNameFromTenantDb(id);
-                    emailService.sendEmail(request.getEmail(),request.getFirstName(), hospitalName);
+//                    String hospitalName = getHospitalNameFromTenantDb(id);
+//                    emailService.sendEmail(request.getEmail(),request.getFirstName(), hospitalName);
 
                     Map<String, String> response = new HashMap<>();
                     response.put("status", "success");
