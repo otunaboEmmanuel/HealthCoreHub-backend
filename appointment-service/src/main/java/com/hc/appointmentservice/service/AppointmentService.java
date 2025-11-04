@@ -1,6 +1,7 @@
 package com.hc.appointmentservice.service;
 
 import com.hc.appointmentservice.dto.AppointmentDTO;
+import com.hc.appointmentservice.dto.PatientDto;
 import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.enums.Status;
 import com.hc.appointmentservice.repository.AppointmentRepository;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -102,7 +104,61 @@ public class AppointmentService {
     }
 
 
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> getPatientByEmail(String email, String tenantDb) {
+        log.info("get patient by email {}", email);
+        PatientDto patientDto = getTenantPatientByEmail(email, tenantDb);
+        Map<String, Object> response = new HashMap<>();
+        if(patientDto == null){
+            response.put("status", "error");
+        }
+        response.put("patient", patientDto);
+        return response;
+    }
+
+    private PatientDto getTenantPatientByEmail(String email, String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+                SELECT
+                p.id,
+                u.first_name,
+                u.middle_name,
+                u.last_name,
+                u.email,
+                u.phone_number,
+                u.role,
+                p.user_id,
+                u.created_at,
+                u.status,
+                p.hospital_number
+                FROM patients p
+                INNER JOIN users u ON p.user_id = u.id
+                WHERE u.email = ?
+                """;
+        try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+                                PreparedStatement stmt = conn.prepareStatement(sql) ){
+            stmt.setString(1,email);
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                return PatientDto.builder()
+                        .patientId(rs.getInt("id"))
+                        .userId(rs.getInt("user_id"))
+                        .firstName(rs.getString("first_name"))
+                        .middleName(rs.getString("middle_name"))
+                        .lastName(rs.getString("last_name"))
+                        .email(rs.getString("email"))
+                        .createdAt(rs.getObject("created_at", LocalDateTime.class))
+                        .phoneNumber(rs.getString("phone_number"))
+                        .role(rs.getString("role"))
+                        .status(rs.getString("status"))
+                        .hospitalNumber(rs.getString("hospital_number"))
+                        .build();
+            }
+            throw new RuntimeException("could not find patient by email " + email);
+        }catch (SQLException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
 
     }
 }

@@ -88,6 +88,14 @@ public class AppointmentController {
                 throw new RuntimeException("does not have access to this endpoint");
             }
             Map<String,Object> result = appointmentService.getPatientByEmail(email, tenantDb);
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }catch (IllegalArgumentException e) {
+            log.warn("Invalid appointment request: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }catch (Exception e) {
+            log.error("Error occurred while getting email", e);
+            throw  new RuntimeException("Error occurred while getting email");
         }
     }
 }
