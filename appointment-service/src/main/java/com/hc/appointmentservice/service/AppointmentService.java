@@ -102,4 +102,7 @@ public class AppointmentService {
     }
 
 
+    public Map<String, Object> getPatientByEmail(String email, String tenantDb) {
+
+    }
 }

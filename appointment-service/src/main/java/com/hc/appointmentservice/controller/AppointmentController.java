@@ -76,4 +76,18 @@ public class AppointmentController {
             throw  new RuntimeException("Error occurred while updating appointment");
         }
     }
+    //get particular patient by email for appointment booking
+    @GetMapping("{email}")
+    public ResponseEntity<?> getAppointment(@PathVariable String email, @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+            String tenantDb = jwtService.extractTenantDb(token);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
+                log.warn("Invalid appointment request: {}", token);
+                throw new RuntimeException("does not have access to this endpoint");
+            }
+            Map<String,Object> result = appointmentService.getPatientByEmail(email, tenantDb);
+        }
+    }
 }
