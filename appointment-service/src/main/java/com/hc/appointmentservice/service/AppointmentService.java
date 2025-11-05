@@ -16,6 +16,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -162,14 +163,12 @@ public class AppointmentService {
 
     }
 
-    public Map<String, Object> getAppointmentByPatient(Integer patientId) {
-        Appointment appointment = appointmentRepository.findByPatientId(patientId).orElse(null);
-        if(appointment == null){
+    public List<Appointment> getAppointmentByPatient(Integer patientId) {
+        List<Appointment> appointment = appointmentRepository.findAllByPatientId(patientId);
+        if(appointment.isEmpty()){
             log.error("appointment with id {} not found", patientId);
             throw new RuntimeException("appointment with id " + patientId + " not found");
         }
-        Map<String, Object> response = new HashMap<>();
-        response.put("patient", appointment);
-        return response;
+        return appointment;
     }
 }

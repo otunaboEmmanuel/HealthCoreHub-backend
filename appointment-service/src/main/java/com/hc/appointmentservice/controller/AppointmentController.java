@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -107,7 +108,7 @@ public class AppointmentController {
                 log.warn("this token can't access this endpoint: {}", token);
                 throw new RuntimeException("does not have access to this endpoint");
             }
-            Map<String, Object> result = appointmentService.getAppointmentByPatient(patientId);
+            List<Appointment> result = appointmentService.getAppointmentByPatient(patientId);
             return ResponseEntity.status(HttpStatus.OK).body(result);
         }catch (IllegalArgumentException e) {
             log.warn("Invalid appointment request: {}", e.getMessage());

@@ -13,4 +13,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment,Integer
 
     boolean existsByPatientId(Integer patientId);
     Optional<Appointment> findByPatientId(Integer patientId);
+    List<Appointment> findAllByPatientId(Integer patientId);
 }
