@@ -36,7 +36,7 @@ public class UserProfileController {
             return ResponseEntity.ok(profile);
 
         } catch (Exception e) {
-            log.error("❌ Error fetching profile", e);
+            log.error(" Error fetching profile", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to fetch profile"));
         }

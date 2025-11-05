@@ -98,4 +98,16 @@ public class AppointmentController {
             throw  new RuntimeException("Error occurred while getting email");
         }
     }
+    @GetMapping("{patientId}")
+    public ResponseEntity<?> getAppointmentByPatientId(@PathVariable Integer patientId, @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
+                log.warn("this token can't access this endpoint: {}", token);
+                throw new RuntimeException("does not have access to this endpoint");
+            }
+            Map<String, Object> result = appointmentService.getAppointmentByPatient(patientId);
+        }
+    }
 }
