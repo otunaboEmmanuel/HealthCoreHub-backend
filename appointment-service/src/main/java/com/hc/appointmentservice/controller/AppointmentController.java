@@ -113,7 +113,7 @@ public class AppointmentController {
         }catch (IllegalArgumentException e) {
             log.warn("Invalid appointment request: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of("error", "No appointments found for patient id " + patientId));
         }catch (Exception e) {
             log.error("Error occurred while getting appointment for patient", e);
             throw  new RuntimeException("Error occurred while getting appointment");

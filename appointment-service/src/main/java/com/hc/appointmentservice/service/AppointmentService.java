@@ -166,7 +166,7 @@ public class AppointmentService {
     public List<Appointment> getAppointmentByPatient(Integer patientId) {
         List<Appointment> appointment = appointmentRepository.findAllByPatientId(patientId);
         if(appointment.isEmpty()){
-            log.error("appointment with id {} not found", patientId);
+            log.error("no appointments with id {} not found", patientId);
             throw new RuntimeException("appointment with id " + patientId + " not found");
         }
         return appointment;
