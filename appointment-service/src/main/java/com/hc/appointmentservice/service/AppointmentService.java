@@ -161,4 +161,15 @@ public class AppointmentService {
         }
 
     }
+
+    public Map<String, Object> getAppointmentByPatient(Integer patientId) {
+        Appointment appointment = appointmentRepository.findByPatientId(patientId).orElse(null);
+        if(appointment == null){
+            log.error("appointment with id {} not found", patientId);
+            throw new RuntimeException("appointment with id " + patientId + " not found");
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("patient", appointment);
+        return response;
+    }
 }
