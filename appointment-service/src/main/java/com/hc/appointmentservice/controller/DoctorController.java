@@ -121,4 +121,25 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+    @GetMapping("{email}")
+    public ResponseEntity<?> getAppointment(@PathVariable String email, @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+            String tenantDb = jwtService.extractTenantDb(token);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("doctor")) {
+                log.warn("Invalid appointment request: {}", token);
+                throw new RuntimeException("does not have access to this endpoint");
+            }
+            DoctorDTO result = doctorService.getDoctorByEmail(email, tenantDb);
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }catch (IllegalArgumentException e) {
+            log.warn("Invalid appointment request: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }catch (Exception e) {
+            log.error("Error occurred while getting email", e);
+            throw  new RuntimeException("Error occurred while getting email");
+        }
+    }
 }

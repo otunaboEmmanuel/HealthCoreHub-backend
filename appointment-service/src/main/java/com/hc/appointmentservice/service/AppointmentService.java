@@ -141,7 +141,7 @@ public class AppointmentService {
                 WHERE u.email = ?
                 """;
         try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
-                                PreparedStatement stmt = conn.prepareStatement(sql) ){
+                                PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1,email);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){

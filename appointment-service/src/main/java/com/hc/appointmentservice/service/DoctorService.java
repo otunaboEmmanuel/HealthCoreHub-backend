@@ -299,4 +299,35 @@ public class DoctorService {
             throw new RuntimeException("Database error while fetching  patient", e);
         }
     }
+
+    public DoctorDTO getDoctorByEmail(String email, String tenantDb) {
+          String tenantUrl= String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+             String sql = """
+                     SELECT u.first_name,u.email,
+                     u.profile_picture,d.specialization,
+                     d.id, d.license_number FROM doctors d
+                     INNER JOIN users u ON d.user_id = u.id
+                     WHERE u.email = ?
+                     """;
+             try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+                               PreparedStatement statement = connection.prepareStatement(sql)) {
+                   statement.setString(1, email);
+                   ResultSet rs = statement.executeQuery();
+                 if(rs.next()){
+                     return DoctorDTO.builder()
+                             .lastName(rs.getString("last_name"))
+                             .firstName(rs.getString("first_name"))
+                             .profile_picture(rs.getString("profile_picture"))
+                             .doctorId(rs.getInt("id"))
+                             .license_number(rs.getString("license_number"))
+                              .availability(parseAvailability(rs.getString("availability")))  // ← Parse JSON
+                             .build();
+                 }
+                 throw new IllegalArgumentException("Doctor not found with id: " + rs.getInt("id"));
+
+             } catch (SQLException e) {
+                 log.error("Error fetching users: {}", e.getMessage(), e);
+                 throw new RuntimeException("Database error while fetching  doctor", e);
+             }
+    }
 }
