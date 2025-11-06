@@ -23,6 +23,7 @@ public class Appointment {
     private Integer doctorId;
     private String reason;
     private LocalDate date;
+    @Column(unique = true)
     private String appointmentTime;
     @Enumerated(EnumType.STRING)
     private Status status;
