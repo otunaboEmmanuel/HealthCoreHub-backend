@@ -4,6 +4,7 @@ import com.hc.appointmentservice.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,4 +15,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment,Integer
     boolean existsByPatientId(Integer patientId);
     Optional<Appointment> findByPatientId(Integer patientId);
     List<Appointment> findAllByPatientId(Integer patientId);
+    Optional<Appointment>findByAppointmentTime(String appointmentTime);
+    Optional<Appointment> findByDate(LocalDate date);
 }

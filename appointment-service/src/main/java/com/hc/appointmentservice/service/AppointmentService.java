@@ -46,6 +46,10 @@ public class AppointmentService {
             log.error("doctor with id {} not exists",doctorId);
             throw new RuntimeException("doctor with id " + doctorId + " not exists");
         }
+        if(appointmentRepository.findByAppointmentTime(appointment.getAppointmentTime()).isPresent()){
+            log.warn("appointment time already exists");
+            throw new RuntimeException("appointment time already exists");
+        }
         Appointment appointment1 = Appointment.builder()
                 .appointmentTime(appointment.getAppointmentTime())
                 .date(appointment.getDate())
