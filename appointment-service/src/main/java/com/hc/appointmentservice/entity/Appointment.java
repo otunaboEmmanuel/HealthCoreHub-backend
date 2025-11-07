@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "appointment")
+@Table(name = "appointment",uniqueConstraints = {@UniqueConstraint(columnNames = {"doctorId", "date", "appointmentTime"})})
 public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,6 @@ public class Appointment {
     private Integer doctorId;
     private String reason;
     private LocalDate date;
-    @Column(unique = true)
     private String appointmentTime;
     @Enumerated(EnumType.STRING)
     private Status status;
