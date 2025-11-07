@@ -304,7 +304,7 @@ public class DoctorService {
           String tenantUrl= String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
              String sql = """
                      SELECT u.first_name,u.email,
-                     u.profile_picture,d.specialization,
+                     u.profile_picture,u.last_name,d.specialization,
                      d.id, d.license_number FROM doctors d
                      INNER JOIN users u ON d.user_id = u.id
                      WHERE u.email = ?

@@ -96,7 +96,7 @@ public class AppointmentController {
             throw  new RuntimeException("Error occurred while getting email");
         }
     }
-    @GetMapping("{patientId}")
+    @GetMapping("patient/{patientId}")
     public ResponseEntity<?> getAppointmentByPatientId(@PathVariable Integer patientId, @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.substring(7);

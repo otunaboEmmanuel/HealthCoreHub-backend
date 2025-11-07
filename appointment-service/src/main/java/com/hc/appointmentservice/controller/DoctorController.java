@@ -121,7 +121,7 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-    @GetMapping("{email}")
+    @GetMapping("profile/{email}")
     public ResponseEntity<?> getAppointment(@PathVariable String email, @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.substring(7);
