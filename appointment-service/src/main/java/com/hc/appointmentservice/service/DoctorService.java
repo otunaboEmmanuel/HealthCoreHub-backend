@@ -305,7 +305,7 @@ public class DoctorService {
              String sql = """
                      SELECT u.first_name,u.email,
                      u.profile_picture,u.last_name,d.specialization,
-                     d.id, d.license_number FROM doctors d
+                     d.id, d.license_number, d.availability FROM doctors d
                      INNER JOIN users u ON d.user_id = u.id
                      WHERE u.email = ?
                      """;
