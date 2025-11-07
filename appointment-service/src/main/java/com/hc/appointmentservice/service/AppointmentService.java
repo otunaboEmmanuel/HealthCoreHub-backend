@@ -1,6 +1,8 @@
 package com.hc.appointmentservice.service;
 
 import com.hc.appointmentservice.dto.AppointmentDTO;
+import com.hc.appointmentservice.dto.DoctorInfo;
+import com.hc.appointmentservice.dto.DoctorResponse;
 import com.hc.appointmentservice.dto.PatientDto;
 import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.enums.Status;
@@ -15,9 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -167,12 +168,61 @@ public class AppointmentService {
 
     }
 
-    public List<Appointment> getAppointmentByPatient(Integer patientId) {
-        List<Appointment> appointment = appointmentRepository.findAllByPatientId(patientId);
-        if(appointment.isEmpty()){
-            log.error("no appointments with id {} not found", patientId);
-            throw new RuntimeException("appointment with id " + patientId + " not found");
-        }
-        return appointment;
-    }
+    public List<DoctorResponse> getAppointmentByPatient(Integer patientId, String tenantDb) {
+        List<Appointment> appointments = appointmentRepository.findAllByPatientId(patientId);
+        Set<Integer> doctorIds = appointments.stream().map(Appointment::getDoctorId).collect(Collectors.toSet());
+        Map<Integer, DoctorInfo> doctorInfoMap = getDoctorInfo(tenantDb, doctorIds);
+        return appointments.stream().map(appointment -> {
+            DoctorInfo doctorInfo = doctorInfoMap.get(appointment.getDoctorId());
+            if(doctorInfo == null){
+                log.error("could not find doctor info for appointment {}", appointment.getId());
+                throw new RuntimeException("doctor info for appointment " + appointment.getId() + " not found");
+            }
+            return DoctorResponse.builder()
+                    .appointmentTime(appointment.getAppointmentTime())
+                    .lastName(doctorInfo.getLastName())
+                    .firstName(doctorInfo.getFirstName())
+                    .date(appointment.getDate())
+                    .reason(appointment.getReason())
+                    .build();
+        }).collect(Collectors.toList());
 }
+
+    private Map<Integer, DoctorInfo> getDoctorInfo(String tenantDb, Set<Integer> doctorIds) {
+        if(doctorIds == null || doctorIds.isEmpty()){
+            log.error("doctorIds is empty");
+            throw new RuntimeException("doctorIds is empty");
+        }
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String placeHolder = String.join(",", Collections.nCopies(doctorIds.size(), "?"));
+        String sql = String.format("""
+                SELECT u.first_name,
+                u.last_name,
+                d.id FROM doctors d\s
+                INNER JOIN users u ON d.user_id = u.id
+                WHERE d.id IN (%s)
+               \s""",placeHolder);
+        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername, tenantDbPassword);
+                                PreparedStatement statement = conn.prepareStatement(sql)){
+           int  i = 1;
+           for(Integer doctorId : doctorIds){
+               statement.setInt(i++,doctorId);
+           }
+           Map<Integer, DoctorInfo> doctorInfoMap = new HashMap<>();
+           ResultSet rs = statement.executeQuery();
+           while(rs.next()){
+               doctorInfoMap.put(
+                       rs.getInt("id"),
+                       DoctorInfo.builder()
+                               .lastName(rs.getString("last_name"))
+                               .firstName(rs.getString("first_name"))
+                               .build()
+               );
+           }
+           return doctorInfoMap;
+        }catch (SQLException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException("Database error while fetching  doctors", e);
+        }
+    }
+    }

@@ -1,6 +1,7 @@
 package com.hc.appointmentservice.controller;
 
 import com.hc.appointmentservice.dto.AppointmentDTO;
+import com.hc.appointmentservice.dto.DoctorResponse;
 import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.service.AppointmentService;
 import com.hc.appointmentservice.service.JwtService;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,15 +41,10 @@ public class AppointmentController {
             }
             return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "success",
                     "appointment", appointment1));
-        }catch (IllegalArgumentException e) {
-            log.warn("Invalid appointment request: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-
-        } catch (Exception e) {
-            log.error("Error occurred while adding appointment", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to book appointment, token might be expired"));
+        }catch (Exception e){
+            Map<String,Object> map = new HashMap<>();
+            map.put("message", "this appointment time is not available");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(map);
         }
     }
 
@@ -100,12 +97,13 @@ public class AppointmentController {
     public ResponseEntity<?> getAppointmentByPatientId(@PathVariable Integer patientId, @RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.substring(7);
+            String tenantDb = jwtService.extractTenantDb(token);
             String tenantRole = jwtService.extractTenantRole(token);
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 log.warn("this token can't access this endpoint: {}", token);
                 throw new RuntimeException("does not have access to this endpoint");
             }
-            List<Appointment> result = appointmentService.getAppointmentByPatient(patientId);
+            List<DoctorResponse> result = appointmentService.getAppointmentByPatient(patientId, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
         }catch (IllegalArgumentException e) {
             log.warn("Invalid appointment request: {}", e.getMessage());

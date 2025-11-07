@@ -171,7 +171,7 @@ public class DoctorService {
                     PatientInfo patientInfo= patientInfoMap.get(appointment.getPatientId());
                     return DoctorResponse.builder()
                             .firstName(patientInfo != null ? patientInfo.getFirstName() : "Unknown")
-                            .lastName(patientInfo != null ? patientInfo.getLastName() : "")
+                            .lastName(patientInfo != null ? patientInfo.getLastName() : "Unknown")
                             .reason(appointment.getReason())
                             .date(appointment.getDate())
                             .appointmentTime(appointment.getAppointmentTime())
