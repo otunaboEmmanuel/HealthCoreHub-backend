@@ -185,6 +185,7 @@ public class AppointmentService {
                     .date(appointment.getDate())
                     .status(String.valueOf(appointment.getStatus()))
                     .profile_picture(doctorInfo.getProfile_picture())
+                    .specialization(doctorInfo.getSpecialization())
                     .reason(appointment.getReason())
                     .build();
         }).collect(Collectors.toList());
@@ -201,6 +202,7 @@ public class AppointmentService {
                 SELECT u.first_name,
                 u.last_name,
                 u.profile_picture,
+                d.specialization,
                 d.id FROM doctors d\s
                 INNER JOIN users u ON d.user_id = u.id
                 WHERE d.id IN (%s)
@@ -220,6 +222,7 @@ public class AppointmentService {
                                .lastName(rs.getString("last_name"))
                                .firstName(rs.getString("first_name"))
                                .profile_picture(rs.getString("profile_picture"))
+                               .specialization(rs.getString("specialization"))
                                .build()
                );
            }

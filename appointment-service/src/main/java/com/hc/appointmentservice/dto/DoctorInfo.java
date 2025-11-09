@@ -13,4 +13,5 @@ public class DoctorInfo {
     private String firstName;
     private String lastName;
     private String profile_picture;
+    private String specialization;
 }

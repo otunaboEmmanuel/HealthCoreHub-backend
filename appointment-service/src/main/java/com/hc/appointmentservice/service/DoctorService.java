@@ -175,6 +175,7 @@ public class DoctorService {
                             .reason(appointment.getReason())
                             .date(appointment.getDate())
                             .profile_picture(patientInfo!=null ? patientInfo.getProfile_picture() : "Unknown")
+                            .specialization(patientInfo!=null ? patientInfo.getSpecialization() : "Unknown")
                             .status(String.valueOf(appointment.getStatus()))
                             .appointmentTime(appointment.getAppointmentTime())
                             .build();
