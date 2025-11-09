@@ -172,6 +172,7 @@ public class DoctorService {
                     return DoctorResponse.builder()
                             .firstName(patientInfo != null ? patientInfo.getFirstName() : "Unknown")
                             .lastName(patientInfo != null ? patientInfo.getLastName() : "Unknown")
+                            .appointmentId(appointment.getId())
                             .reason(appointment.getReason())
                             .date(appointment.getDate())
                             .status(String.valueOf(appointment.getStatus()))

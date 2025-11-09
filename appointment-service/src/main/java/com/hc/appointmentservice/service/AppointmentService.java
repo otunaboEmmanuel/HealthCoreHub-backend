@@ -181,6 +181,7 @@ public class AppointmentService {
             return DoctorResponse.builder()
                     .appointmentTime(appointment.getAppointmentTime())
                     .lastName(doctorInfo.getLastName())
+                    .appointmentId(appointment.getId())
                     .firstName(doctorInfo.getFirstName())
                     .date(appointment.getDate())
                     .status(String.valueOf(appointment.getStatus()))
