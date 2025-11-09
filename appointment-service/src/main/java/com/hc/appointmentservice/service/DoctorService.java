@@ -174,6 +174,8 @@ public class DoctorService {
                             .lastName(patientInfo != null ? patientInfo.getLastName() : "Unknown")
                             .reason(appointment.getReason())
                             .date(appointment.getDate())
+                            .profile_picture(patientInfo!=null ? patientInfo.getProfile_picture() : "Unknown")
+                            .specialization(patientInfo!=null ? patientInfo.getSpecialization() : "Unknown")
                             .status(String.valueOf(appointment.getStatus()))
                             .appointmentTime(appointment.getAppointmentTime())
                             .build();
@@ -208,6 +210,8 @@ public class DoctorService {
                         PatientInfo.builder()
                                 .firstName(rs.getString("first_name"))
                                 .lastName(rs.getString("last_name"))
+                                .profile_picture(rs.getString("profile_picture"))
+                                .specialization(rs.getString("specialization"))
                                 .build()
                 );
             }

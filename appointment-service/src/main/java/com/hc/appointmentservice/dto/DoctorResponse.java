@@ -19,5 +19,5 @@ public class DoctorResponse {
     private String appointmentTime;
     private String status;
     private String profile_picture;
-    private String specialty;
+    private String specialization;
 }
