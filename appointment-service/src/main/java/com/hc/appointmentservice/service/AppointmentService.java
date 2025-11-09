@@ -183,6 +183,7 @@ public class AppointmentService {
                     .lastName(doctorInfo.getLastName())
                     .firstName(doctorInfo.getFirstName())
                     .date(appointment.getDate())
+                    .status(String.valueOf(appointment.getStatus()))
                     .reason(appointment.getReason())
                     .build();
         }).collect(Collectors.toList());
