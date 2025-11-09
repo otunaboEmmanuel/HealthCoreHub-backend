@@ -299,7 +299,7 @@ public class HospitalService {
             Integer hospitalId,
             String tenantDb) {
 
-        Map<String, Object> authRequest = Map.of(
+        Map<String, Object>  authRequest = Map.of(
                 "email", adminInfo.getEmail(),
                 "password", adminInfo.getPassword(),
                 "hospitalId", hospitalId,
