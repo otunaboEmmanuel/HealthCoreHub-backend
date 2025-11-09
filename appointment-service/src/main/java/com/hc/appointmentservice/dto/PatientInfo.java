@@ -14,5 +14,4 @@ public class PatientInfo {
     private String lastName;
     private String email;
     private String profile_picture;
-    private String specialization;
 }

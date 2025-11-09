@@ -174,8 +174,6 @@ public class DoctorService {
                             .lastName(patientInfo != null ? patientInfo.getLastName() : "Unknown")
                             .reason(appointment.getReason())
                             .date(appointment.getDate())
-                            .profile_picture(patientInfo!=null ? patientInfo.getProfile_picture() : "Unknown")
-                            .specialization(patientInfo!=null ? patientInfo.getSpecialization() : "Unknown")
                             .status(String.valueOf(appointment.getStatus()))
                             .appointmentTime(appointment.getAppointmentTime())
                             .build();
@@ -189,8 +187,7 @@ public class DoctorService {
             SELECT\s
                 p.id,
                 u.first_name,
-                u.last_name,
-                u.profile_picture
+                u.last_name
             FROM patients p
             INNER JOIN users u ON p.user_id = u.id
             WHERE p.id IN (%s)
@@ -209,7 +206,6 @@ public class DoctorService {
                         PatientInfo.builder()
                                 .firstName(rs.getString("first_name"))
                                 .lastName(rs.getString("last_name"))
-                                .profile_picture(rs.getString("profile_picture"))
                                 .build()
                 );
             }
