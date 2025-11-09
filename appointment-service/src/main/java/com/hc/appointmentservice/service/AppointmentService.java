@@ -89,14 +89,15 @@ public class AppointmentService {
         }
     }
 
-    public Map<String, Object> updateAppointment(Map<String, String> request, Integer patientId) {
+    public Map<String, Object> updateAppointment(Map<String, String> request, Integer appointmentId) {
         Map<String, Object> response = new HashMap<>();
-        if(!appointmentRepository.existsByPatientId(patientId)){
-            log.error("could not find id {} in appointment table",patientId);
-            throw new RuntimeException("patient with id " + patientId + " not exists");
-        }
-        Appointment appointment = appointmentRepository.findByPatientId(patientId).orElse(null);
+        Appointment appointment = appointmentRepository.findById(appointmentId).orElse(null);
         if(appointment != null) {
+           if(!(appointment.getStatus() == Status.PENDING)) {
+               log.warn("Book new appointment");
+               response.put("message", "book new appointment");
+               return response;
+           }
             appointment.setAppointmentTime(request.get("appointmentTime"));
             appointment.setDate(LocalDate.parse(request.get("date")));
             appointmentRepository.save(appointment);

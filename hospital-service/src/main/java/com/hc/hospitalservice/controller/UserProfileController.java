@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -69,6 +70,14 @@ public class UserProfileController {
             String token = authHeader.replace("Bearer ", "");
             Claims claims = jwtService.extractClaims(token);
             String tenantDb = claims.get("tenant_db", String.class);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if(!"ADMIN".equals(tenantRole)&& !("DOCTOR".equals(tenantRole))&& !("NURSE".equals(tenantRole))){
+                log.error(" Error fetching profile");
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Only admin, nurse, doctor can access endpoint");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+            }
+
             List<PatientDto> patients = userProfileService.getPendingPatients(tenantDb);
             return ResponseEntity.ok(patients);
         } catch (Exception e) {

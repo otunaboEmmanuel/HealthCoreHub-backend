@@ -49,10 +49,10 @@ public class AppointmentController {
     }
 
     //update appointment
-    @PutMapping("{patientId}")
+    @PutMapping("{appointmentId}")
     public ResponseEntity<?> updateAppointment(@RequestHeader("Authorization")String authHeader,
                                                @RequestBody Map<String, String> request,
-                                               @PathVariable Integer patientId) {
+                                               @PathVariable Integer appointmentId) {
         try {
             String token = authHeader.substring(7);
             String tenantRole = jwtService.extractTenantRole(token);
@@ -60,7 +60,7 @@ public class AppointmentController {
                 log.warn("Invalid appointment request: {}", token);
                 throw new RuntimeException("does not have access to this endpoint");
             }
-            Map<String, Object> response = appointmentService.updateAppointment(request, patientId);
+            Map<String, Object> response = appointmentService.updateAppointment(request, appointmentId);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (IllegalArgumentException e) {
             log.warn("Invalid appointment request: {}", e.getMessage());
