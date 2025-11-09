@@ -46,7 +46,7 @@ public class UserManagementController {
             String tenantDb = claims.get("tenant_db", String.class);
             Integer hospitalId = claims.get("hospital_id", Integer.class);
             String tenantRole = claims.get("tenant_role", String.class);
-            if (!"ADMIN".equals(tenantRole))
+            if (!"ADMIN".equals(tenantRole)&& !("DOCTOR".equals(tenantRole)) && !("NURSE".equals(tenantRole)))
             {
                 Map<String, String> error = new HashMap<>();
                 error.put("error", "Only admins can create users");

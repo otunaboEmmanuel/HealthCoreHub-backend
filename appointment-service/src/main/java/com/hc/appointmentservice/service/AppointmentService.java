@@ -93,7 +93,7 @@ public class AppointmentService {
         Map<String, Object> response = new HashMap<>();
         if(!appointmentRepository.existsByPatientId(patientId)){
             log.error("could not find id {} in appointment table",patientId);
-            throw new RuntimeException("appointment with id " + patientId + " not exists");
+            throw new RuntimeException("patient with id " + patientId + " not exists");
         }
         Appointment appointment = appointmentRepository.findByPatientId(patientId).orElse(null);
         if(appointment != null) {

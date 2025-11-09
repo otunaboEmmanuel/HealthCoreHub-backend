@@ -31,7 +31,7 @@ public class EmailService {
                 you will have your appointment at %s with Dr %s
                 THANK YOU
                 Best regards,
-                The HealthCare Hub Team
+                The HealthCore Hub Team
                 """, firstName,appointmentTime,docName);
     }
 

@@ -108,7 +108,7 @@ public class DoctorController {
             String token = authHeader.substring(7);
             String tenantRole = jwtService.extractTenantRole(token);
             String tenantDb = jwtService.extractTenantDb(token);
-            if(!("DOCTOR".equals(tenantRole))){
+            if(!("DOCTOR".equals(tenantRole))&& !("ADMIN".equals(tenantRole))){
                 log.error(" this role cant access endpoint {}", token);
                 throw new RuntimeException(" this role cant access endpoint " + token);
             }
