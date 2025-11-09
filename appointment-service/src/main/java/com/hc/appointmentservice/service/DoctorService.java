@@ -175,7 +175,6 @@ public class DoctorService {
                             .reason(appointment.getReason())
                             .date(appointment.getDate())
                             .profile_picture(patientInfo!=null ? patientInfo.getProfile_picture() : "Unknown")
-                            .specialization(patientInfo!=null ? patientInfo.getSpecialization() : "Unknown")
                             .status(String.valueOf(appointment.getStatus()))
                             .appointmentTime(appointment.getAppointmentTime())
                             .build();
@@ -190,8 +189,7 @@ public class DoctorService {
                 p.id,
                 u.first_name,
                 u.last_name,
-                u.profile_picture,
-                d.specialization,
+                u.profile_picture
             FROM patients p
             INNER JOIN users u ON p.user_id = u.id
             WHERE p.id IN (%s)
@@ -211,7 +209,6 @@ public class DoctorService {
                                 .firstName(rs.getString("first_name"))
                                 .lastName(rs.getString("last_name"))
                                 .profile_picture(rs.getString("profile_picture"))
-                                .specialization(rs.getString("specialization"))
                                 .build()
                 );
             }
@@ -325,6 +322,7 @@ public class DoctorService {
                              .lastName(rs.getString("last_name"))
                              .firstName(rs.getString("first_name"))
                              .profile_picture(rs.getString("profile_picture"))
+                             .specialization(rs.getString("specialization"))
                              .doctorId(rs.getInt("id"))
                              .license_number(rs.getString("license_number"))
                               //.availability(parseAvailability(rs.getString("availability")))  // ← Parse JSON
