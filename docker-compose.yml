@@ -165,6 +165,7 @@ services:
       JWT_REFRESH_EXPIRATION: 604800000
     expose:
       - "4001"
+      - "9001"
     networks:
       - healthcare-network
     dns:
