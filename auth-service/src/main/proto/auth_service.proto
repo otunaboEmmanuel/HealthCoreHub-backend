@@ -1,1 +1,22 @@
 syntax = "proto3";
+option java_multiple_files = true;
+option java_package="com.hc.authservice.grpc";
+option java_outer_classname = "AuthServiceProto";
+
+service AuthService {
+  rpc RegisterAdmin (RegisterAdminRequest) returns (RegisterAdminResponse);
+}
+
+message RegisterAdminRequest {
+  string email = 1;
+  string password = 2;
+  int32 hospitalId = 3;
+  string tenantDb = 4;
+  string globalRole = 5;
+}
+
+message RegisterAdminResponse {
+  string user_id = 1;
+  string message = 2;
+  bool success = 3;
+}
