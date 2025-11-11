@@ -1,0 +1,9 @@
+GRPC localhost:9001/AuthService/RegisterAdmin
+
+{
+  "email": "doctor.emma@healthconnect.com",
+  "password": "SecurePass@2025",
+  "hospitalId": 2,
+  "tenantDb": "tenant_healthconnect",
+  "globalRole": "HOSPITAL_ADMIN"
+}

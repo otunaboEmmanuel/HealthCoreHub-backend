@@ -93,6 +93,7 @@ public class TenantDatabaseService {
             throw new RuntimeException("Failed to grant schema privileges: " + e.getMessage());
         }
     }
+  ;
 
     public void initializeTenantSchema(String dbName, String dbUser, String dbPassword) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",

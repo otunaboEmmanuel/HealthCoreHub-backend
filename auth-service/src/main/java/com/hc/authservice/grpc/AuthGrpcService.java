@@ -28,7 +28,7 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             );
             RegisterAdminResponse adminResponse = RegisterAdminResponse.newBuilder()
                     .setUserId(savedUser.getId().toString())
-                    .setMessage("User registered successfully")
+                    .setMessage("Admin registered successfully")
                     .setSuccess(true)
                     .build();
             responseObserver.onNext(adminResponse);
