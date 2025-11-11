@@ -229,6 +229,7 @@ services:
     depends_on:
       - onboarding-db
       - appointment-db
+      - auth-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
       TENANT_DB_HOST: onboarding-db
@@ -238,6 +239,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
+      GRPC_CLIENT_AUTH_SERVICE_ADDRESS: static://auth-service:9001
     expose:
       - "4005"
     networks:
