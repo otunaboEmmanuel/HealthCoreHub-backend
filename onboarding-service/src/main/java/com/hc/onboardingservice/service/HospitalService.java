@@ -1,5 +1,6 @@
 package com.hc.onboardingservice.service;
 
+import com.hc.onboardingservice.grpc.AuthServiceGrpcClient;
 import com.hc.onboardingservice.requests.HospitalRegistrationRequest;
 import com.hc.onboardingservice.dto.HospitalRegistrationResponse;
 import com.hc.onboardingservice.entity.Hospital;
@@ -34,6 +35,7 @@ public class HospitalService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final RestTemplate restTemplate;
+    private final AuthServiceGrpcClient authServiceGrpcClient;
 
     @Value("${tenant.datasource.host}")
     private String tenantDbHost;
@@ -299,28 +301,22 @@ public class HospitalService {
             Integer hospitalId,
             String tenantDb) {
 
-        Map<String, Object>  authRequest = Map.of(
-                "email", adminInfo.getEmail(),
-                "password", adminInfo.getPassword(),
-                "hospitalId", hospitalId,
-                "tenantDb", tenantDb,
-                "globalRole", "HOSPITAL_ADMIN"
-        );
+        log.info(" Registering admin in auth service via gRPC");
+
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    authServiceUrl + "/auth/register",
-                    authRequest,
-                    Map.class
+            // this returns the userId from the gRPC response
+            return authServiceGrpcClient.registerUser(
+                    adminInfo.getEmail(),
+                    adminInfo.getPassword(),
+                    hospitalId,
+                    tenantDb,
+                    "HOSPITAL_ADMIN"
             );
-
-            String authUserId = (String) response.getBody().get("userId");
-            log.info(" Admin registered in auth service: {}", authUserId);
-            return authUserId;
-
         } catch (Exception e) {
             log.error(" Failed to register admin in auth service", e);
             throw new RuntimeException("Auth service registration failed: " + e.getMessage());
         }
+    }
     }
 //    public Hospital updateHospital(Integer id, HospitalRegistrationRequest updateRequest) {
 //        Hospital hospital = hospitalRepository.findById(id).orElse(null);
@@ -335,4 +331,3 @@ public class HospitalService {
 //        hospital.setAddress(updateRequest.getHospital().getAddress());
 //        hospital.setAdmins(updateRequest.getAdmin().);
 //    }
-}
