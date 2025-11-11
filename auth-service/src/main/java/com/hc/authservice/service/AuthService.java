@@ -253,4 +253,25 @@ public class AuthService {
             log.error("Error fetching tenant user status", e);
         }return null;
     }
+
+    public AuthUser registerUser(String email, String password, int hospitalId, String tenantDb, String globalRole) {
+        log.info("register user from grpc server start with email {}", email);
+        if(authUserRepository.existsByEmail(email)) {
+            log.info("user already exists with email {}", email);
+            throw new IllegalArgumentException("user already exists");
+        }
+        AuthUser authUser = AuthUser.builder()
+                .email(email)
+                .passwordHash(passwordEncoder.encode(password))
+                .hospitalId(hospitalId)
+                .tenantDb(tenantDb)
+                .globalRole(globalRole)
+                .isActive(true)
+                .emailVerified(true)
+                .passwordChangedAt(LocalDateTime.now())
+                .build();
+        log.info("register user start with email {}", email);
+        authUserRepository.save(authUser);
+        return authUser;
+    }
 }
