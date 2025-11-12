@@ -142,4 +142,21 @@ public class DoctorController {
             throw  new RuntimeException("Error occurred while getting email");
         }
     }
+    @GetMapping("availability/{doctorId}")
+    public ResponseEntity<?> getAvailability(@PathVariable Integer doctorId, @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+            String tenantDb = jwtService.extractTenantDb(token);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("doctor")) {
+                log.warn("Invalid appointment request: {}", token);
+                throw new RuntimeException("does not have access to this endpoint");
+            }
+            Map<String, Object> response = doctorService.getAvailability(doctorId, tenantDb);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e) {
+            log.error("Error occurred while getting availability", e);
+            throw  new RuntimeException("Error occurred while getting availability");
+        }
+    }
 }

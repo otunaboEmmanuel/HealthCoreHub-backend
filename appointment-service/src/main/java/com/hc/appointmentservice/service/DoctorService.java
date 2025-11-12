@@ -333,4 +333,38 @@ public class DoctorService {
                  throw new RuntimeException("Database error while fetching  doctor", e);
              }
     }
-}
+
+    public Map<String, Object> getAvailability(Integer doctorId, String tenantDb) {
+        Map<String, Object> availability = new HashMap<>();
+        String sql = "SELECT 1 FROM doctors WHERE id = ?";
+        if(!checkIdExist(doctorId,tenantDb,sql)){
+            log.warn("Doctor not found with id: {}", doctorId);
+            throw new IllegalArgumentException("Doctor not found with id: " + doctorId);
+        }
+        DoctorDTO doctorDTO = getDoctorAvailabilityInTenantDb(doctorId, tenantDb);
+        availability.put("availability", doctorDTO.getAvailability());
+        return availability;
+
+    }
+
+    private DoctorDTO getDoctorAvailabilityInTenantDb(Integer doctorId, String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+                SELECT availability FROM doctors WHERE id = ?
+                """;
+        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername, tenantDbPassword);
+                                PreparedStatement statement = conn.prepareStatement(sql) ){
+            statement.setInt(1,doctorId);
+            ResultSet rs = statement.executeQuery();
+            if(rs.next()){
+                return DoctorDTO.builder()
+                        .availability(parseAvailability(rs.getString("availability")))
+                        .build();
+            }
+            throw new IllegalArgumentException("Doctor not found with id: " + doctorId);
+        }catch (SQLException e){
+            log.error("Error fetching availability in doctors: {}", e.getMessage(), e);
+            throw new RuntimeException("Database error while fetching  doctor", e);
+        }
+    }
+    }
