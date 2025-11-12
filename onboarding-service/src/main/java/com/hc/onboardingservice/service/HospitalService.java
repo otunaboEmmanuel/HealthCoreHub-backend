@@ -49,8 +49,8 @@ public class HospitalService {
     @Value("${tenant.datasource.password}")
     private String tenantDbPassword;
 
-    @Value("${auth.service.url}")
-    private String authServiceUrl;
+//    @Value("${auth.service.url}")
+//    private String authServiceUrl;
 
     @Transactional(rollbackFor = Exception.class)
     public HospitalRegistrationResponse registerHospital(HospitalRegistrationRequest request) {

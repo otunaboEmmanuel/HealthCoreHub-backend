@@ -15,6 +15,7 @@ public class DoctorResponse {
     private String firstName;
     private String lastName;
     private String reason;
+    private Integer doctorId;
     private LocalDate date;
     private Integer appointmentId;
     private String appointmentTime;

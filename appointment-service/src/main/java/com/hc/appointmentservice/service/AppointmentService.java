@@ -184,6 +184,7 @@ public class AppointmentService {
                     .lastName(doctorInfo.getLastName())
                     .appointmentId(appointment.getId())
                     .firstName(doctorInfo.getFirstName())
+                    .doctorId(doctorInfo.getDoctorId())
                     .date(appointment.getDate())
                     .status(String.valueOf(appointment.getStatus()))
                     .profile_picture(doctorInfo.getProfile_picture())
@@ -225,6 +226,7 @@ public class AppointmentService {
                                .firstName(rs.getString("first_name"))
                                .profile_picture(rs.getString("profile_picture"))
                                .specialization(rs.getString("specialization"))
+                               .doctorId(rs.getInt("id"))
                                .build()
                );
            }
