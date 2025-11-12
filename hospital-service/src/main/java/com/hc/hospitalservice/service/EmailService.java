@@ -38,8 +38,42 @@ public class EmailService {
                 the admin has confirmed your hospital information and you can now log in
                 
                 Best regards,
-                The HealthCare Hub Team
+                The HealthCore Hub Team
                 """,  firstName, hospitalName);
+    }
+    public void sendUserRegistrationEmail(String email, String role, String firstName, String hospitalName, String password) {
+        try{
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("User Registration Confirmation");
+            message.setText(buildUserRegistrationEmail(firstName, hospitalName, role, password));
+            javaMailSender.send(message);
+            log.info("Sending email: {}", email);
+    }catch (Exception e){
+            log.error("Error sending mail to email: {}", email, e);
+            throw new RuntimeException("error sending email", e);
+        }
+    }
+
+    private String buildUserRegistrationEmail(String firstName, String hospitalName, String role, String password) {
+        return String.format("""
+            Dear %s,
+            
+            Welcome to %s! 
+            
+            Your account has been successfully created with the role of *%s*.
+            
+            You can log in to your account using your registered email and the temporary password below:
+            
+            Temporary Password: %s
+            
+            Please log in and change your password immediately after your first sign-in for security reasons.
+            
+            If you have any issues accessing your account, feel free to reach out to our support team.
+            
+            Best regards,
+            The %s Team
+            """, firstName, hospitalName, role, password, hospitalName);
     }
 
 

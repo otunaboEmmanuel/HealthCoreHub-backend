@@ -48,9 +48,9 @@ public class TenantDatabaseService {
 
             if (!rs.next()) {
                 stmt.executeUpdate("CREATE DATABASE " + dbName);
-                log.info("✅ Created database '{}'", dbName);
+                log.info(" Created database '{}'", dbName);
             } else {
-                log.warn("⚠️ Database '{}' already exists", dbName);
+                log.warn(" Database '{}' already exists", dbName);
             }
 
             // Check if user exists

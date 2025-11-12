@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Properties;
 
 @Configuration
-public class AppConfig {
+public class  AppConfig {
 
     @Value("${spring.mail.host}")
     private String mailHost;

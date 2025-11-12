@@ -66,6 +66,7 @@ public class UserManagementService {
             }
 
             log.info(" User created successfully: {}", request.getEmail());
+            emailService.sendUserRegistrationEmail(request.getEmail(),request.getRole(),request.getFirstName(),);
 
             return UserResponse.builder()
                     .success(true)
@@ -81,6 +82,7 @@ public class UserManagementService {
             log.error("Failed to create user: {}", request.getEmail(), e);
             throw new RuntimeException("User creation failed: " + e.getMessage(), e);
         }
+        //TODO add email to send registration details
     }
 
     public String saveFileToStorage(MultipartFile file){
