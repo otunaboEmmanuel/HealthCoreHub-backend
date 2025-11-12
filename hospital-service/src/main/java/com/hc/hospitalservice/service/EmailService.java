@@ -59,7 +59,7 @@ public class EmailService {
         return String.format("""
             Dear %s,
             
-            Welcome to %s! 
+            Welcome to %s!
             
             Your account has been successfully created with the role of *%s*.
             
@@ -72,8 +72,8 @@ public class EmailService {
             If you have any issues accessing your account, feel free to reach out to our support team.
             
             Best regards,
-            The %s Team
-            """, firstName, hospitalName, role, password, hospitalName);
+            The HealthCore Hub Team
+            """, firstName, hospitalName, role, password);
     }
 
 

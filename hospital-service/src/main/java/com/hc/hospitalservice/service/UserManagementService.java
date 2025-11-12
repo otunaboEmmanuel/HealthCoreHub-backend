@@ -27,6 +27,7 @@ public class UserManagementService {
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
     private final EmailService emailService;
+    private final UserProfileService userProfileService;
     @Value("${auth.service.url}")
     private String authServiceUrl;
 
@@ -64,10 +65,9 @@ public class UserManagementService {
             if (shouldCreateRoleSpecificRecord(request.getRole())) {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
             }
-
+            String hospitalName= userProfileService.getHospitalNameFromTenantDb(tenantDb);
+            emailService.sendUserRegistrationEmail(request.getEmail(),request.getRole(),request.getFirstName(),hospitalName,request.getPassword());
             log.info(" User created successfully: {}", request.getEmail());
-            emailService.sendUserRegistrationEmail(request.getEmail(),request.getRole(),request.getFirstName(),);
-
             return UserResponse.builder()
                     .success(true)
                     .message("User created successfully")

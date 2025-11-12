@@ -228,14 +228,16 @@ public class UserProfileService {
                     }
                     PatientDto updatedUser = updateUserInTenantDb(request, id, tenantDb);
 
-//                    String hospitalName = getHospitalNameFromTenantDb(id);
-//                    emailService.sendEmail(request.getEmail(),request.getFirstName(), hospitalName);
+                    String hospitalName = getHospitalNameFromTenantDb(tenantDb);
+                    emailService.sendEmail(request.getEmail(),request.getFirstName(), hospitalName);
 
                     Map<String, String> response = new HashMap<>();
                     response.put("status", "success");
                     response.put("message", "User updated successfully");
                     response.put("updatedStatus", updatedUser.getStatus());
                     response.put("userEmail", updatedUser.getEmail());
+                    response.put("hospitalName", hospitalName);
+                    response.put("tenantDb", tenantDb);
                     return response;
 
                 } catch (IllegalArgumentException e) {
@@ -247,17 +249,17 @@ public class UserProfileService {
                 }
             }
 
-            private String getHospitalNameFromTenantDb(Integer id) {
+            public String getHospitalNameFromTenantDb(String tenantDb) {
                 String tenantUrl = String.format("jdbc:postgresql://%s:%s/onboardingdb", tenantDbHost, tenantDbPort);
-                String sql = "SELECT name FROM hospital  WHERE id = ? AND is_active = true";
+                String sql = "SELECT name FROM hospital  WHERE db_name = ? AND is_active = true";
                 try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
                                             PreparedStatement statement = conn.prepareStatement(sql) ){
-                    statement.setInt(1,id);
+                    statement.setString(1,tenantDb);
                     ResultSet rs = statement.executeQuery();
                     if(rs.next()){
                         return rs.getString("name");
                     }
-                    return null;
+                    throw new RuntimeException("Hospital name not found");
                 } catch (SQLException e) {
                     log.error(" Failed to fetch hospital name from DB", e);
                     throw new RuntimeException(e);
