@@ -156,7 +156,9 @@ public class DoctorController {
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e) {
             log.error("Error occurred while getting availability", e);
-            throw  new RuntimeException("Error occurred while getting availability");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to get doctors: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 }
