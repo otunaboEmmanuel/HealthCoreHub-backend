@@ -5,6 +5,8 @@ import com.hc.hospitalservice.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.*;
 import java.sql.Date;
 import java.time.LocalDateTime;
@@ -82,7 +85,7 @@ public class UserManagementService {
             log.error("Failed to create user: {}", request.getEmail(), e);
             throw new RuntimeException("User creation failed: " + e.getMessage(), e);
         }
-        //TODO add email to send registration details
+
     }
 
     public String saveFileToStorage(MultipartFile file){
@@ -875,6 +878,11 @@ public class UserManagementService {
 
     public Map<String, Object> uploadProfilePicture(Integer userId, MultipartFile file, String tenantDb) {
         log.info("uploding profile picture from tenant DB: {}", tenantDb);
+        String sql = "SELECT 1 FROM users WHERE id = ?";
+        if(!idExists(userId, tenantDb,sql)){
+            log.info("user id not exists in tenant DB: {}", tenantDb);
+            throw new RuntimeException("user id not exists in tenant DB");
+        }
         String profile_picture = saveFileToStorage(file);
         updateUserTenantDb(profile_picture, userId, tenantDb);
         Map<String, Object> result = new HashMap<>();
@@ -904,6 +912,75 @@ public class UserManagementService {
         }catch (SQLException e){
             log.error(" Failed to fetch user profile picture", e);
             throw new RuntimeException("Failed to fetch user profile picture");
+        }
+    }
+
+    public String getProfilePicture(String tenantDb, Integer userId) {
+        String sql = "SELECT 1 FROM users WHERE id = ?";
+        if(!idExists(userId,tenantDb,sql)){
+            log.warn("User with id {} does not exist in tenant {}", userId, tenantDb);
+            throw new RuntimeException("User with id " + userId + " does not exist");
+        }
+        return getProfilePictureFromTenantDb(tenantDb, userId);
+    }
+
+    private String getProfilePictureFromTenantDb(String tenantDb, Integer userId) {
+        String tenantUrl = String.format("dbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+            SELECT profile_picture
+            FROM users WHERE id = ?
+        """;
+        try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
+                                PreparedStatement statement = conn.prepareStatement(sql) ){
+            statement.setInt(1, userId);
+            ResultSet rs = statement.executeQuery();
+            if(rs.next()){
+                return rs.getString("profile_picture");
+            }
+            throw new RuntimeException("User with id " + userId + " does not exist in tenant DB");
+        }catch (SQLException e){
+            log.error(" Failed to fetch user profile picture", e);
+            throw new RuntimeException("Failed to fetch user profile picture");
+        }
+    }
+
+    private boolean idExists(Integer id, String tenantDb, String sql) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
+                tenantDbHost, tenantDbPort, tenantDb);
+        try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            log.error("Error checking if doctor exists with id: {}", id, e);
+            throw new RuntimeException("Database error while checking doctor existence", e);
+        }
+    }
+    public ResponseEntity<byte[]> getProfilePictureResponse(String filePath) {
+        File file = new File(uploadDirectory + filePath);
+
+        if (!file.exists() || !file.isFile()) {
+            log.warn("Profile picture not found at path: {}", file.getAbsolutePath());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        }
+
+        try {
+            byte[] imageData = Files.readAllBytes(file.toPath());
+            String contentType = Files.probeContentType(file.toPath());
+
+            log.info("Serving profile picture: {} [{} bytes]", file.getName(), imageData.length);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .contentType(MediaType.valueOf(contentType != null ? contentType : "application/octet-stream"))
+                    .body(imageData);
+
+        } catch (IOException e) {
+            log.error("Error reading profile picture: {}", file.getAbsolutePath(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
         }
     }
 }

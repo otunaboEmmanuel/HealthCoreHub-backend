@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,6 +91,27 @@ public class UserManagementController {
             log.error(" Error updating profile picture ", e);
             throw new IllegalArgumentException("Failed to update user profile picture: " + e.getMessage());
         }
+    }
+    @GetMapping("download-photo/{userId}")
+    public ResponseEntity<?> downloadProfilePhoto(@PathVariable Integer userId,
+                                                  @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+            String tenantDb = jwtService.extractTenantDb(token);
+            String tenantRole = jwtService.extractTenantRole(token);
+            if (!"DOCTOR".equals(tenantRole) && !"ADMIN".equals(tenantRole)){
+                log.warn(" Unauthorized role : {}", token);
+                throw new IllegalArgumentException("Only doctors and admin can set profile picture");
+            }
+            String profile_picture = userManagementService.getProfilePicture(tenantDb, userId);
+            return userManagementService.getProfilePictureResponse(profile_picture);
+        }catch (IllegalArgumentException e) {
+            log.warn(" Validation error: {}", e.getMessage());
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Only admins can download profile picture");
+            return ResponseEntity.badRequest().body(error);
+        }
+
     }
     @PostMapping("/register")
     public ResponseEntity<?> registerPatient(@Valid @RequestBody PatientRequest request) {

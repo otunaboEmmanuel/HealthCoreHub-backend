@@ -9,7 +9,6 @@ import com.hc.appointmentservice.enums.Status;
 import com.hc.appointmentservice.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +41,7 @@ public class DoctorService {
     @Transactional(rollbackFor = Exception.class)
     public Map<String, String> setDoctorAvailability(Integer id, UpdateDoctorRequest request, String tenantDb) {
         String sql = "SELECT 1 FROM doctors WHERE id = ?";
-        if (!checkIdExist(id, tenantDb, sql)) {
+        if (!idExists(id, tenantDb, sql)) {
             throw new IllegalArgumentException("Doctor with id " + id + " does not exist");
         }
 
@@ -82,7 +81,7 @@ public class DoctorService {
         }
     }
 
-    private boolean checkIdExist(Integer id, String tenantDb, String sql) {
+    private boolean idExists(Integer id, String tenantDb, String sql) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
         try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
@@ -337,7 +336,7 @@ public class DoctorService {
     public Map<String, Object> getAvailability(Integer doctorId, String tenantDb) {
         Map<String, Object> availability = new HashMap<>();
         String sql = "SELECT 1 FROM doctors WHERE id = ?";
-        if(!checkIdExist(doctorId,tenantDb,sql)){
+        if(!idExists(doctorId,tenantDb,sql)){
             log.warn("Doctor not found with id: {}", doctorId);
             throw new IllegalArgumentException("Doctor not found with id: " + doctorId);
         }
