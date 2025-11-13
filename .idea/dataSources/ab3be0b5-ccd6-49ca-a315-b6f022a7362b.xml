@@ -19,9 +19,9 @@
 16622||-9223372036854775808|T|G
 16622||10|T|G
 16622||16623|T|G</Grants>
-      <IntrospectionStateNumber>812</IntrospectionStateNumber>
+      <IntrospectionStateNumber>867</IntrospectionStateNumber>
       <ServerVersion>18.0</ServerVersion>
-      <StartupTime>1761672023</StartupTime>
+      <StartupTime>1763049442</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -61,7 +61,7 @@ false Africa/Bissau
 false Africa/Blantyre
 false Africa/Brazzaville
 false Africa/Bujumbura
-true Africa/Cairo
+false Africa/Cairo
 false Africa/Casablanca
 false Africa/Ceuta
 false Africa/Conakry
@@ -102,8 +102,8 @@ false Africa/Timbuktu
 false Africa/Tripoli
 false Africa/Tunis
 false Africa/Windhoek
-true America/Adak
-true America/Anchorage
+false America/Adak
+false America/Anchorage
 false America/Anguilla
 false America/Antigua
 false America/Araguaina
@@ -122,7 +122,7 @@ false America/Argentina/Ushuaia
 false America/Aruba
 false America/Asuncion
 false America/Atikokan
-true America/Atka
+false America/Atka
 false America/Bahia
 false America/Bahia_Banderas
 false America/Barbados
@@ -131,16 +131,16 @@ false America/Belize
 false America/Blanc-Sablon
 false America/Boa_Vista
 false America/Bogota
-true America/Boise
-true America/Cambridge_Bay
+false America/Boise
+false America/Cambridge_Bay
 false America/Campo_Grande
 false America/Cancun
 false America/Caracas
 false America/Cayenne
 false America/Cayman
-true America/Chicago
+false America/Chicago
 false America/Chihuahua
-true America/Ciudad_Juarez
+false America/Ciudad_Juarez
 false America/Coral_Harbour
 false America/Costa_Rica
 false America/Coyhaique
@@ -150,115 +150,115 @@ false America/Curacao
 false America/Danmarkshavn
 false America/Dawson
 false America/Dawson_Creek
-true America/Denver
-true America/Detroit
+false America/Denver
+false America/Detroit
 false America/Dominica
-true America/Edmonton
+false America/Edmonton
 false America/Eirunepe
 false America/El_Salvador
-true America/Ensenada
+false America/Ensenada
 false America/Fort_Nelson
 false America/Fortaleza
-true America/Glace_Bay
-true America/Goose_Bay
-true America/Grand_Turk
+false America/Glace_Bay
+false America/Goose_Bay
+false America/Grand_Turk
 false America/Grenada
 false America/Guadeloupe
 false America/Guatemala
 false America/Guayaquil
 false America/Guyana
-true America/Halifax
-true America/Havana
+false America/Halifax
+false America/Havana
 false America/Hermosillo
-true America/Indiana/Indianapolis
-true America/Indiana/Knox
-true America/Indiana/Marengo
-true America/Indiana/Petersburg
-true America/Indiana/Tell_City
-true America/Indiana/Vevay
-true America/Indiana/Vincennes
-true America/Indiana/Winamac
-true America/Inuvik
-true America/Iqaluit
+false America/Indiana/Indianapolis
+false America/Indiana/Knox
+false America/Indiana/Marengo
+false America/Indiana/Petersburg
+false America/Indiana/Tell_City
+false America/Indiana/Vevay
+false America/Indiana/Vincennes
+false America/Indiana/Winamac
+false America/Inuvik
+false America/Iqaluit
 false America/Jamaica
-true America/Juneau
-true America/Kentucky/Louisville
-true America/Kentucky/Monticello
+false America/Juneau
+false America/Kentucky/Louisville
+false America/Kentucky/Monticello
 false America/Kralendijk
 false America/La_Paz
 false America/Lima
-true America/Los_Angeles
+false America/Los_Angeles
 false America/Lower_Princes
 false America/Maceio
 false America/Managua
 false America/Manaus
 false America/Marigot
 false America/Martinique
-true America/Matamoros
+false America/Matamoros
 false America/Mazatlan
-true America/Menominee
+false America/Menominee
 false America/Merida
-true America/Metlakatla
+false America/Metlakatla
 false America/Mexico_City
-true America/Miquelon
-true America/Moncton
+false America/Miquelon
+false America/Moncton
 false America/Monterrey
 false America/Montevideo
-true America/Montreal
+false America/Montreal
 false America/Montserrat
-true America/Nassau
-true America/New_York
-true America/Nipigon
-true America/Nome
+false America/Nassau
+false America/New_York
+false America/Nipigon
+false America/Nome
 false America/Noronha
-true America/North_Dakota/Beulah
-true America/North_Dakota/Center
-true America/North_Dakota/New_Salem
+false America/North_Dakota/Beulah
+false America/North_Dakota/Center
+false America/North_Dakota/New_Salem
 false America/Nuuk
-true America/Ojinaga
+false America/Ojinaga
 false America/Panama
-true America/Pangnirtung
+false America/Pangnirtung
 false America/Paramaribo
 false America/Phoenix
-true America/Port-au-Prince
+false America/Port-au-Prince
 false America/Port_of_Spain
 false America/Porto_Acre
 false America/Porto_Velho
 false America/Puerto_Rico
 false America/Punta_Arenas
-true America/Rainy_River
-true America/Rankin_Inlet
+false America/Rainy_River
+false America/Rankin_Inlet
 false America/Recife
 false America/Regina
-true America/Resolute
+false America/Resolute
 false America/Rio_Branco
-true America/Santa_Isabel
+false America/Santa_Isabel
 false America/Santarem
 true America/Santiago
 false America/Santo_Domingo
 false America/Sao_Paulo
 false America/Scoresbysund
-true America/Shiprock
-true America/Sitka
+false America/Shiprock
+false America/Sitka
 false America/St_Barthelemy
-true America/St_Johns
+false America/St_Johns
 false America/St_Kitts
 false America/St_Lucia
 false America/St_Thomas
 false America/St_Vincent
 false America/Swift_Current
 false America/Tegucigalpa
-true America/Thule
-true America/Thunder_Bay
-true America/Tijuana
-true America/Toronto
+false America/Thule
+false America/Thunder_Bay
+false America/Tijuana
+false America/Toronto
 false America/Tortola
-true America/Vancouver
+false America/Vancouver
 false America/Virgin
 false America/Whitehorse
-true America/Winnipeg
-true America/Yakutat
-true America/Yellowknife
+false America/Winnipeg
+false America/Yakutat
+false America/Yellowknife
 false Antarctica/Casey
 false Antarctica/Davis
 false Antarctica/DumontDUrville
@@ -359,7 +359,7 @@ false Asia/Yangon
 false Asia/Yekaterinburg
 false Asia/Yerevan
 false Atlantic/Azores
-true Atlantic/Bermuda
+false Atlantic/Bermuda
 false Atlantic/Canary
 false Atlantic/Cape_Verde
 false Atlantic/Faroe
@@ -701,7 +701,7 @@ false YEKT
 false Z
 false ZULU
 false localtime
-true posixrules
+false posixrules
 </TimeZones>
     </root>
     <database id="2" parent="1" name="onboardingdb">
@@ -715,7 +715,7 @@ true posixrules
 13293||10|C|G
 13293||-9223372036854775808|U|G
 13293||10|U|G</Grants>
-      <IntrospectionStateNumber>812</IntrospectionStateNumber>
+      <IntrospectionStateNumber>867</IntrospectionStateNumber>
       <ObjectId>16384</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
@@ -4240,11 +4240,11 @@ true posixrules
       <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <LastIntrospectionL1Xid>812</LastIntrospectionL1Xid>
-      <LastIntrospectionL2Xid>812</LastIntrospectionL2Xid>
-      <LastIntrospectionL3Xid>812</LastIntrospectionL3Xid>
+      <LastIntrospectionL1Xid>867</LastIntrospectionL1Xid>
+      <LastIntrospectionL2Xid>867</LastIntrospectionL2Xid>
+      <LastIntrospectionL3Xid>867</LastIntrospectionL3Xid>
       <LastIntrospectionLevel>3</LastIntrospectionLevel>
-      <LastIntrospectionLocalTimestamp>2025-10-28.17:34:02</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-11-13.15:59:29</LastIntrospectionLocalTimestamp>
       <ObjectId>2200</ObjectId>
       <StateNumber>546</StateNumber>
       <OwnerName>pg_database_owner</OwnerName>
@@ -4380,13 +4380,7 @@ true posixrules
       <StateNumber>810</StateNumber>
       <UnderlyingIndexId>16808</UnderlyingIndexId>
     </key>
-    <check id="292" parent="279" name="hospital_status_check">
-      <ColNames>db_user</ColNames>
-      <ObjectId>16389</ObjectId>
-      <Predicate>(status)::text = ANY ((ARRAY[&apos;PENDING&apos;::character varying, &apos;ACTIVE&apos;::character varying, &apos;SUSPENDED&apos;::character varying])::text[])</Predicate>
-      <StateNumber>754</StateNumber>
-    </check>
-    <column id="293" parent="279" name="id">
+    <column id="292" parent="279" name="id">
       <IdentityKind>by-default</IdentityKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -4395,103 +4389,103 @@ true posixrules
       <SequenceId>16385</SequenceId>
       <TypeId>23</TypeId>
     </column>
-    <column id="294" parent="279" name="address">
+    <column id="293" parent="279" name="address">
       <Position>2</Position>
       <StateNumber>754</StateNumber>
       <StoredType>text|0s</StoredType>
       <TypeId>25</TypeId>
     </column>
-    <column id="295" parent="279" name="city">
+    <column id="294" parent="279" name="city">
       <Position>3</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="296" parent="279" name="country">
+    <column id="295" parent="279" name="country">
       <Position>4</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="297" parent="279" name="created_at">
+    <column id="296" parent="279" name="created_at">
       <Position>5</Position>
       <StateNumber>754</StateNumber>
       <StoredType>timestamp(6)|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="298" parent="279" name="db_name">
+    <column id="297" parent="279" name="db_name">
       <NotNull>1</NotNull>
       <Position>6</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="299" parent="279" name="db_password">
+    <column id="298" parent="279" name="db_password">
       <NotNull>1</NotNull>
       <Position>7</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="300" parent="279" name="db_user">
+    <column id="299" parent="279" name="db_user">
       <NotNull>1</NotNull>
       <Position>8</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="301" parent="279" name="email">
+    <column id="300" parent="279" name="email">
       <NotNull>1</NotNull>
       <Position>9</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="302" parent="279" name="hospital_type">
+    <column id="301" parent="279" name="hospital_type">
       <Position>10</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="303" parent="279" name="is_active">
+    <column id="302" parent="279" name="is_active">
       <Position>11</Position>
       <StateNumber>754</StateNumber>
       <StoredType>boolean|0s</StoredType>
       <TypeId>16</TypeId>
     </column>
-    <column id="304" parent="279" name="name">
+    <column id="303" parent="279" name="name">
       <NotNull>1</NotNull>
       <Position>12</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="305" parent="279" name="phone">
+    <column id="304" parent="279" name="phone">
       <Position>13</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="306" parent="279" name="state">
+    <column id="305" parent="279" name="state">
       <Position>14</Position>
       <StateNumber>754</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="307" parent="279" name="plan_id">
+    <column id="306" parent="279" name="plan_id">
       <Position>15</Position>
       <StateNumber>754</StateNumber>
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
-    <foreign-key id="308" parent="279" name="fk6nhtpuhkjo8nw2t43b4rrt16l">
+    <foreign-key id="307" parent="279" name="fk6nhtpuhkjo8nw2t43b4rrt16l">
       <ColNames>plan_id</ColNames>
       <ObjectId>16430</ObjectId>
       <StateNumber>763</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
       <RefTableId>16414</RefTableId>
     </foreign-key>
-    <index id="309" parent="279" name="hospital_pkey">
+    <index id="308" parent="279" name="hospital_pkey">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16397</ObjectId>
@@ -4500,7 +4494,7 @@ true posixrules
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <index id="310" parent="279" name="ukp19f5wuuuh5o4v9q94saqslu8">
+    <index id="309" parent="279" name="ukp19f5wuuuh5o4v9q94saqslu8">
       <ColNames>email</ColNames>
       <ObjectId>16424</ObjectId>
       <StateNumber>758</StateNumber>
@@ -4510,7 +4504,7 @@ true posixrules
       <CollationIds>100</CollationIds>
       <CollationParentNames>pg_catalog</CollationParentNames>
     </index>
-    <index id="311" parent="279" name="ukmg15n86jud2riqbr0ah93p7mw">
+    <index id="310" parent="279" name="ukmg15n86jud2riqbr0ah93p7mw">
       <ColNames>name</ColNames>
       <ObjectId>16426</ObjectId>
       <StateNumber>760</StateNumber>
@@ -4520,24 +4514,24 @@ true posixrules
       <CollationIds>100</CollationIds>
       <CollationParentNames>pg_catalog</CollationParentNames>
     </index>
-    <key id="312" parent="279" name="hospital_pkey">
+    <key id="311" parent="279" name="hospital_pkey">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16398</ObjectId>
       <Primary>1</Primary>
       <StateNumber>754</StateNumber>
       <UnderlyingIndexId>16397</UnderlyingIndexId>
     </key>
-    <key id="313" parent="279" name="ukp19f5wuuuh5o4v9q94saqslu8">
+    <key id="312" parent="279" name="ukp19f5wuuuh5o4v9q94saqslu8">
       <ObjectId>16425</ObjectId>
       <StateNumber>758</StateNumber>
       <UnderlyingIndexId>16424</UnderlyingIndexId>
     </key>
-    <key id="314" parent="279" name="ukmg15n86jud2riqbr0ah93p7mw">
+    <key id="313" parent="279" name="ukmg15n86jud2riqbr0ah93p7mw">
       <ObjectId>16427</ObjectId>
       <StateNumber>760</StateNumber>
       <UnderlyingIndexId>16426</UnderlyingIndexId>
     </key>
-    <column id="315" parent="280" name="id">
+    <column id="314" parent="280" name="id">
       <IdentityKind>by-default</IdentityKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -4546,79 +4540,79 @@ true posixrules
       <SequenceId>16399</SequenceId>
       <TypeId>23</TypeId>
     </column>
-    <column id="316" parent="280" name="created_at">
+    <column id="315" parent="280" name="created_at">
       <Position>2</Position>
       <StateNumber>755</StateNumber>
       <StoredType>timestamp(6)|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="317" parent="280" name="email">
+    <column id="316" parent="280" name="email">
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StateNumber>755</StateNumber>
       <StoredType>varchar(150)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="318" parent="280" name="first_name">
+    <column id="317" parent="280" name="first_name">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StateNumber>755</StateNumber>
       <StoredType>varchar(150)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="319" parent="280" name="admin_active">
+    <column id="318" parent="280" name="admin_active">
       <Position>5</Position>
       <StateNumber>755</StateNumber>
       <StoredType>boolean|0s</StoredType>
       <TypeId>16</TypeId>
     </column>
-    <column id="320" parent="280" name="last_name">
+    <column id="319" parent="280" name="last_name">
       <NotNull>1</NotNull>
       <Position>6</Position>
       <StateNumber>755</StateNumber>
       <StoredType>varchar(150)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="321" parent="280" name="password_hash">
+    <column id="320" parent="280" name="password_hash">
       <NotNull>1</NotNull>
       <Position>7</Position>
       <StateNumber>755</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="322" parent="280" name="phone">
+    <column id="321" parent="280" name="phone">
       <Position>8</Position>
       <StateNumber>755</StateNumber>
       <StoredType>varchar(20)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="323" parent="280" name="role">
+    <column id="322" parent="280" name="role">
       <Position>9</Position>
       <StateNumber>755</StateNumber>
       <StoredType>varchar(50)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="324" parent="280" name="tenant_user_id">
+    <column id="323" parent="280" name="tenant_user_id">
       <Position>10</Position>
       <StateNumber>755</StateNumber>
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
-    <column id="325" parent="280" name="hospital_id">
+    <column id="324" parent="280" name="hospital_id">
       <NotNull>1</NotNull>
       <Position>11</Position>
       <StateNumber>755</StateNumber>
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
-    <foreign-key id="326" parent="280" name="fkqkc2ib6aupq3l14d8m0o563mh">
+    <foreign-key id="325" parent="280" name="fkqkc2ib6aupq3l14d8m0o563mh">
       <ColNames>hospital_id</ColNames>
       <ObjectId>16435</ObjectId>
       <StateNumber>764</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
       <RefTableId>16386</RefTableId>
     </foreign-key>
-    <index id="327" parent="280" name="hospital_admins_pkey">
+    <index id="326" parent="280" name="hospital_admins_pkey">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16411</ObjectId>
@@ -4627,7 +4621,7 @@ true posixrules
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <index id="328" parent="280" name="ukj7rd4qrpjvx97s3jx8gudh2ub">
+    <index id="327" parent="280" name="ukj7rd4qrpjvx97s3jx8gudh2ub">
       <ColNames>email</ColNames>
       <ObjectId>16428</ObjectId>
       <StateNumber>762</StateNumber>
@@ -4637,19 +4631,19 @@ true posixrules
       <CollationIds>100</CollationIds>
       <CollationParentNames>pg_catalog</CollationParentNames>
     </index>
-    <key id="329" parent="280" name="hospital_admins_pkey">
+    <key id="328" parent="280" name="hospital_admins_pkey">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16412</ObjectId>
       <Primary>1</Primary>
       <StateNumber>755</StateNumber>
       <UnderlyingIndexId>16411</UnderlyingIndexId>
     </key>
-    <key id="330" parent="280" name="ukj7rd4qrpjvx97s3jx8gudh2ub">
+    <key id="329" parent="280" name="ukj7rd4qrpjvx97s3jx8gudh2ub">
       <ObjectId>16429</ObjectId>
       <StateNumber>762</StateNumber>
       <UnderlyingIndexId>16428</UnderlyingIndexId>
     </key>
-    <column id="331" parent="281" name="id">
+    <column id="330" parent="281" name="id">
       <IdentityKind>by-default</IdentityKind>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -4658,45 +4652,45 @@ true posixrules
       <SequenceId>16413</SequenceId>
       <TypeId>23</TypeId>
     </column>
-    <column id="332" parent="281" name="created_at">
+    <column id="331" parent="281" name="created_at">
       <Position>2</Position>
       <StateNumber>756</StateNumber>
       <StoredType>timestamp(6)|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="333" parent="281" name="description">
+    <column id="332" parent="281" name="description">
       <Position>3</Position>
       <StateNumber>756</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="334" parent="281" name="duration_days">
+    <column id="333" parent="281" name="duration_days">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StateNumber>756</StateNumber>
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
-    <column id="335" parent="281" name="features">
+    <column id="334" parent="281" name="features">
       <Position>5</Position>
       <StateNumber>756</StateNumber>
       <StoredType>jsonb|0s</StoredType>
       <TypeId>3802</TypeId>
     </column>
-    <column id="336" parent="281" name="name">
+    <column id="335" parent="281" name="name">
       <Position>6</Position>
       <StateNumber>756</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="337" parent="281" name="price">
+    <column id="336" parent="281" name="price">
       <NotNull>1</NotNull>
       <Position>7</Position>
       <StateNumber>756</StateNumber>
       <StoredType>double precision|0s</StoredType>
       <TypeId>701</TypeId>
     </column>
-    <index id="338" parent="281" name="plans_pkey">
+    <index id="337" parent="281" name="plans_pkey">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16422</ObjectId>
@@ -4705,7 +4699,7 @@ true posixrules
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="339" parent="281" name="plans_pkey">
+    <key id="338" parent="281" name="plans_pkey">
       <NameSurrogate>1</NameSurrogate>
       <ObjectId>16423</ObjectId>
       <Primary>1</Primary>

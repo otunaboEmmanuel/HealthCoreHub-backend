@@ -136,8 +136,8 @@ public class HospitalService {
         // "Grace Specialist Hospital" -> "tenant_grace_specialist_hospital"
         String sanitized = hospitalName.toLowerCase()
                 .replaceAll("[^a-z0-9\\s]", "")  // Remove special characters
-                .replaceAll("\\s+", "_")          // Replace spaces with underscores
-                .substring(0, Math.min(40, hospitalName.length()));  // Limit length
+                .replaceAll("\\s+", "_");         // Replace spaces with underscores
+        sanitized = sanitized.substring(0, Math.min(40, sanitized.length()));
 
         return "tenant_" + sanitized;
     }
