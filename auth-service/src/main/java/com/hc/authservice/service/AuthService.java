@@ -19,6 +19,7 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -266,11 +267,34 @@ public class AuthService {
                 .hospitalId(hospitalId)
                 .tenantDb(tenantDb)
                 .globalRole(globalRole)
+                .status("ACTIVE")
                 .isActive(true)
                 .emailVerified(true)
                 .passwordChangedAt(LocalDateTime.now())
                 .build();
         log.info("register user start with email {}", email);
+        authUserRepository.save(authUser);
+        return authUser;
+    }
+
+    public AuthUser registerStaff(String email, int hospitalId, String tenantDb, String globalRole) {
+        log.info("register staff from grpc server start with email {}", email);
+        if(authUserRepository.existsByEmail(email)) {
+            log.info("user already exists with email {}", email);
+            throw new IllegalArgumentException("user already exists");
+        }
+        AuthUser authUser = AuthUser.builder()
+                .activation_token(UUID.randomUUID().toString())
+                .token_expired(LocalDateTime.now().plusHours(24))
+                .passwordHash("")
+                .hospitalId(hospitalId)
+                .globalRole(globalRole)
+                .status("ACTIVE")
+                .isActive(true)
+                .emailVerified(false)
+                .tenantDb(tenantDb)
+                .build();
+        log.info("register staff start with email {}", email);
         authUserRepository.save(authUser);
         return authUser;
     }

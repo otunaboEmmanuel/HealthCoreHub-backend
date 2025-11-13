@@ -61,4 +61,13 @@ public class AuthUser {
 
     @Column(name = "password_changed_at")
     private LocalDateTime passwordChangedAt;
+
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "activation_token")
+    private String activation_token;
+
+    @Column(name = "token_expired")
+    private LocalDateTime token_expired;
 }

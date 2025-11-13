@@ -19,9 +19,8 @@
 16622||-9223372036854775808|T|G
 16622||10|T|G
 16622||16623|T|G</Grants>
-      <IntrospectionStateNumber>867</IntrospectionStateNumber>
       <ServerVersion>18.0</ServerVersion>
-      <StartupTime>1763049442</StartupTime>
+      <StartupTime>1763050087</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -715,7 +714,6 @@ false posixrules
 13293||10|C|G
 13293||-9223372036854775808|U|G
 13293||10|U|G</Grants>
-      <IntrospectionStateNumber>867</IntrospectionStateNumber>
       <ObjectId>16384</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
@@ -4240,9 +4238,6 @@ false posixrules
       <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <LastIntrospectionL1Xid>867</LastIntrospectionL1Xid>
-      <LastIntrospectionL2Xid>867</LastIntrospectionL2Xid>
-      <LastIntrospectionL3Xid>867</LastIntrospectionL3Xid>
       <LastIntrospectionLevel>3</LastIntrospectionLevel>
       <LastIntrospectionLocalTimestamp>2025-11-13.15:59:29</LastIntrospectionLocalTimestamp>
       <ObjectId>2200</ObjectId>

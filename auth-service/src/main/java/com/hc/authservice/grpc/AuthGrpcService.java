@@ -39,4 +39,27 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
         }
     }
 
+    @Override
+    public void registerStaff(StaffRequest request, StreamObserver<StaffResponse> responseObserver) {
+        try{
+            log.info("registerStaff start with email {}", request.getEmail());
+            AuthUser authUser = authService.registerStaff(
+                    request.getEmail(),
+                    request.getHospitalId(),
+                    request.getTenantDb(),
+                    request.getGlobalRole()
+            );
+            StaffResponse staffResponse = StaffResponse.newBuilder()
+                    .setUserId(authUser.getId().toString())
+                    .setMessage("user is temporarily registered  "+ authUser.getGlobalRole())
+                    .setSuccess(true)
+                    .setActivationCode(authUser.getActivation_token())
+                    .build();
+            responseObserver.onNext(staffResponse);
+            responseObserver.onCompleted();
+        }catch (Exception ex){
+            log.error("registerStaff error",ex);
+            responseObserver.onError(Status.INTERNAL.withDescription(ex.getMessage()).asRuntimeException());
+        }
+    }
 }
