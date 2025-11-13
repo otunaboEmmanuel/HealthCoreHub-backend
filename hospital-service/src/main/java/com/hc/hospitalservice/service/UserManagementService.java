@@ -82,7 +82,7 @@ public class UserManagementService {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
             }
             String hospitalName= userProfileService.getHospitalNameFromTenantDb(tenantDb);
-            emailService.sendUserRegistrationEmail(request.getEmail(),request.getRole(),request.getFirstName(),hospitalName,request.getPassword());
+            emailService.sendActivationEmail(request.getEmail(), hospitalName, activationToken, activationLink);
             log.info(" User created successfully: {}", request.getEmail());
             return UserResponse.builder()
                     .success(true)

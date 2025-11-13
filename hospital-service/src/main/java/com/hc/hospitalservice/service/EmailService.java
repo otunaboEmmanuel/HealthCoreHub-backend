@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Slf4j
 public class EmailService {
-    @Value("${MAIL_USERNAME}")
-    private String username;
 
     private final JavaMailSender javaMailSender;
     public void sendEmail(String email,
@@ -86,7 +84,7 @@ public class EmailService {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
+            helper.setFrom("noreply@gmail.com");
             helper.setTo(toEmail);
             helper.setSubject("Activate Your Healthcare Account");
 
