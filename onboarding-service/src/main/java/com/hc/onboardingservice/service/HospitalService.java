@@ -81,7 +81,7 @@ public class HospitalService {
             log.info("🔧 Initializing tenant schema");
             tenantDatabaseService.initializeTenantSchema(dbName, dbUser, dbPassword);
 
-            log.info("🔐 Registering admin in auth service");
+            log.info("🔐 Registering admin in auth service via grpc ");
             String authUserId = registerInAuthService(request.getAdmin(), hospital.getId(), dbName);
 
             // 7. Create admin user in tenant database

@@ -1,4 +1,4 @@
-GRPC localhost:9001/AuthService/RegisterAdmin
+GRPC localhost:9001/AuthService/RegisterUser
 
 {
   "email": "doctor.emma@healthconnect.com",

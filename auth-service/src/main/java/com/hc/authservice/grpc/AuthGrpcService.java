@@ -16,7 +16,7 @@ import java.util.Map;
 public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
     private final AuthService authService;
     @Override
-    public void registerAdmin(RegisterAdminRequest request, StreamObserver<RegisterAdminResponse> responseObserver) {
+    public void registerUser(RegisterUserRequest request, StreamObserver<RegisterUserResponse> responseObserver) {
         try{
             log.info("registerAdmin start with email {}", request.getEmail());
             AuthUser savedUser = authService.registerUser(
@@ -26,16 +26,17 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
                     request.getTenantDb(),
                     request.getGlobalRole()
             );
-            RegisterAdminResponse adminResponse = RegisterAdminResponse.newBuilder()
+            RegisterUserResponse userResponse = RegisterUserResponse.newBuilder()
                     .setUserId(savedUser.getId().toString())
-                    .setMessage("Admin registered successfully")
+                    .setMessage("user registered successfully with role "+ savedUser.getGlobalRole())
                     .setSuccess(true)
                     .build();
-            responseObserver.onNext(adminResponse);
+            responseObserver.onNext(userResponse);
             responseObserver.onCompleted();
         }catch (Exception ex){
-            log.error("registerAdmin error",ex);
+            log.error("registerUser error",ex);
             responseObserver.onError(Status.INTERNAL.withDescription(ex.getMessage()).asRuntimeException());
         }
     }
+
 }

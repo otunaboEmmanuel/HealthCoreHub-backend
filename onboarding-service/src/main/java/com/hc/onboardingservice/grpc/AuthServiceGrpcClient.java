@@ -1,8 +1,8 @@
 package com.hc.onboardingservice.grpc;
 
 import com.hc.authservice.grpc.AuthServiceGrpc;
-import com.hc.authservice.grpc.RegisterAdminRequest;
-import com.hc.authservice.grpc.RegisterAdminResponse;
+import com.hc.authservice.grpc.RegisterUserRequest;
+import com.hc.authservice.grpc.RegisterUserResponse;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ public class AuthServiceGrpcClient {
 
     public String registerUser(String email, String password, Integer hospitalId, String tenantDb, String globalRole) {
         try {
-                RegisterAdminRequest request = RegisterAdminRequest.newBuilder()
+                RegisterUserRequest request = RegisterUserRequest.newBuilder()
                     .setEmail(email)
                     .setPassword(password)
                     .setHospitalId(hospitalId)
@@ -27,7 +27,7 @@ public class AuthServiceGrpcClient {
 
             log.info(" Sending gRPC registration request for {}", email);
 
-            RegisterAdminResponse response = authServiceStub.registerAdmin(request);
+            RegisterUserResponse response = authServiceStub.registerUser(request);
 
             log.info(" gRPC user registered successfully: {}", response.getUserId());
 
