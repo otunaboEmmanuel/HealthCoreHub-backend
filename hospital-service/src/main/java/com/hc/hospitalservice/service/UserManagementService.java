@@ -1,6 +1,7 @@
 package com.hc.hospitalservice.service;
 
 import com.hc.hospitalservice.dto.*;
+import com.hc.hospitalservice.grpc.AuthServiceGrpcClient;
 import com.hc.hospitalservice.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class UserManagementService {
     private final RestTemplate restTemplate;
     private final EmailService emailService;
     private final UserProfileService userProfileService;
+    private final AuthServiceGrpcClient  authServiceGrpcClient;
     @Value("${auth.service.url}")
     private String authServiceUrl;
 
@@ -118,27 +120,14 @@ public class UserManagementService {
 
     private String registerInAuthService(CreateUserRequest request, Integer hospitalId, String tenantDb) {
 
-        Map<String, Object> authRequest = Map.of(
-                "email", request.getEmail(),
-                "password", request.getPassword(),
-                "hospitalId", hospitalId,
-                "tenantDb", tenantDb,
-                "globalRole", "HOSPITAL_USER"
-        );
-
-        try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    authServiceUrl + "/auth/register",
-                    authRequest,
-                    Map.class
-            );
-            String authUserId = (String) response.getBody().get("userId");
-            log.info(" User registered in auth service: {}", authUserId);
-            return authUserId;
-
-        } catch (Exception e) {
-            log.error("Auth service registration failed", e);
-            throw new RuntimeException("Auth registration failed: " + e.getMessage());
+        log.info(" Creating user: {} with role: {}", request.getEmail(), request.getRole());
+        try{
+            log.info("creating user via grpc ");
+            return authServiceGrpcClient.registerUser(request.getEmail(),
+                    request.getPassword(),hospitalId,tenantDb,"HOSPITAL_USER");
+        }catch(Exception e){
+            log.info("Error creating user via grpc ");
+            throw new RuntimeException("Auth service registration failed: " + e.getMessage());
         }
     }
     /**
