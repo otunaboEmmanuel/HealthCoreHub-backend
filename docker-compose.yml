@@ -109,6 +109,8 @@ services:
     container_name: onboarding-service
     restart: always
     depends_on:
+      auth-service:
+        condition: service_started
       onboarding-db:
         condition: service_healthy
     environment:
@@ -123,6 +125,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:4001
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
+      GRPC_CLIENT_AUTH_SERVICE_ADDRESS: static://auth-service:9001
     expose:
       - "4000"
     networks:
@@ -201,6 +204,7 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       FILE_UPLOAD_DIRECTORY: /app/uploads
+      GRPC_CLIENT_AUTH_SERVICE_ADDRESS: static://auth-service:9001
     volumes: # ← ADD THIS SECTION
       - hospital_uploads:/app/uploads/
     ports:
@@ -229,7 +233,6 @@ services:
     depends_on:
       - onboarding-db
       - appointment-db
-      - auth-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
       TENANT_DB_HOST: onboarding-db
@@ -239,7 +242,6 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
-      GRPC_CLIENT_AUTH_SERVICE_ADDRESS: static://auth-service:9001
     expose:
       - "4005"
     networks:
