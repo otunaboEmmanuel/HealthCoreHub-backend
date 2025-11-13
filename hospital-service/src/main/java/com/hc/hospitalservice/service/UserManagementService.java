@@ -49,6 +49,8 @@ public class UserManagementService {
     private String tenantDbPassword;
     @Value("${file.upload.directory:/app/uploads}/")
     private String uploadDirectory;
+    @Value("${frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
 
 
@@ -60,12 +62,21 @@ public class UserManagementService {
 
         try {
             // Step 1: Register in Auth Service
-            String authUserId = registerInAuthService(request, hospitalId, tenantDb);
+            Map<String,Object> grpcInfo = registerInAuthService(request, hospitalId, tenantDb);
+            String userIdStr = String.valueOf(grpcInfo.get("userId"));
+            if (userIdStr == null || userIdStr.equals("null")) {
+                throw new RuntimeException("gRPC did not return a valid userId");
+            }
+            String activationToken = grpcInfo.get("activationToken").toString();
+            if (activationToken == null || activationToken.equals("null")) {
+                throw new RuntimeException("gRPC did not return a valid activationToken");
+            }
 
-            //String profile_picture=saveFileToStorage(file);
-
+            //CREATING ACTIVATION LINK
+            String activationLink = String.format("%s/activate?token=%s",
+                    frontendUrl, activationToken);
             // Step 2: Create user in Tenant DB
-            Integer tenantUserId = createUserInTenantDb(request, tenantDb, authUserId);
+            Integer tenantUserId = createUserInTenantDb(request, tenantDb,userIdStr);
             Integer staffId = null;
             if (shouldCreateRoleSpecificRecord(request.getRole())) {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
@@ -77,7 +88,7 @@ public class UserManagementService {
                     .success(true)
                     .message("User created successfully")
                     .userId(tenantUserId)
-                    .authUserId(authUserId)
+                    .authUserId(userIdStr)
                     .staffId(staffId)
                     .email(request.getEmail())
                     .role(request.getRole())
@@ -118,13 +129,13 @@ public class UserManagementService {
         return fileName;
     }
 
-    private String registerInAuthService(CreateUserRequest request, Integer hospitalId, String tenantDb) {
+    private Map<String, Object> registerInAuthService(CreateUserRequest request, Integer hospitalId, String tenantDb) {
 
         log.info(" Creating user: {} with role: {}", request.getEmail(), request.getRole());
         try{
             log.info("creating user via grpc ");
-            return authServiceGrpcClient.registerUser(request.getEmail(),
-                    request.getPassword(),hospitalId,tenantDb,"HOSPITAL_USER");
+            return authServiceGrpcClient.registerStaff(request.getEmail(),
+                    hospitalId,tenantDb,"HOSPITAL_USER");
         }catch(Exception e){
             log.info("Error creating user via grpc ");
             throw new RuntimeException("Auth service registration failed: " + e.getMessage());

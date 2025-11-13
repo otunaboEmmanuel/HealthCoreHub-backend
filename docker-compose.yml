@@ -205,6 +205,7 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       FILE_UPLOAD_DIRECTORY: /app/uploads
       GRPC_CLIENT_AUTH_SERVICE_ADDRESS: static://auth-service:9001
+      FRONTEND_URL: http://localhost:3000
     volumes: # ← ADD THIS SECTION
       - hospital_uploads:/app/uploads/
     ports:

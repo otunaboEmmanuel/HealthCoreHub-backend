@@ -5,6 +5,7 @@ option java_outer_classname = "AuthServiceProto";
 
 service AuthService {
   rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
+  rpc RegisterStaff(StaffRequest) returns (StaffResponse);
 }
 
 message RegisterUserRequest{
@@ -18,4 +19,16 @@ message RegisterUserResponse{
   string user_id = 1;
   string message = 2;
   bool success = 3;
+}
+message StaffRequest{
+  string email = 1;
+  int32 hospitalId = 2;
+  string tenantDb = 3;
+  string globalRole = 4;
+}
+message StaffResponse{
+  string user_id = 1;
+  string message = 2;
+  bool success = 3;
+  string activation_code = 4;
 }

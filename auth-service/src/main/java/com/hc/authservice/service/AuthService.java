@@ -289,7 +289,7 @@ public class AuthService {
                 .passwordHash("")
                 .hospitalId(hospitalId)
                 .globalRole(globalRole)
-                .status("ACTIVE")
+                .status("PENDING")
                 .isActive(true)
                 .emailVerified(false)
                 .tenantDb(tenantDb)
