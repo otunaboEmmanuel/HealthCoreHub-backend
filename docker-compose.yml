@@ -202,7 +202,7 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       FILE_UPLOAD_DIRECTORY: /app/uploads
     volumes: # ← ADD THIS SECTION
-      - hospital_uploads:/app/uploads
+      - hospital_uploads:/app/uploads/
     ports:
       - "4002:4002"
     networks:

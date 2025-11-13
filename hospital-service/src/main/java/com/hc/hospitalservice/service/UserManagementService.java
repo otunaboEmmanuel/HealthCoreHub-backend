@@ -45,7 +45,7 @@ public class UserManagementService {
 
     @Value("${tenant.datasource.password}")
     private String tenantDbPassword;
-    @Value("${file.upload.directory:/app/uploads}")
+    @Value("${file.upload.directory:/app/uploads}/")
     private String uploadDirectory;
 
 
@@ -925,7 +925,7 @@ public class UserManagementService {
     }
 
     private String getProfilePictureFromTenantDb(String tenantDb, Integer userId) {
-        String tenantUrl = String.format("dbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
         String sql = """
             SELECT profile_picture
             FROM users WHERE id = ?
