@@ -53,7 +53,7 @@ public class UserManagementController {
                 error.put("error", "Only admins can create users");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
             }
-            UserResponse response = userManagementService.createUser(request, tenantDb, hospitalId);
+            Map<String,Object> response = userManagementService.createUser(request, tenantDb, hospitalId);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 

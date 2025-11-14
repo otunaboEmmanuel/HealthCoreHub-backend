@@ -55,7 +55,7 @@ public class UserManagementService {
 
 
     @Transactional(rollbackFor = Exception.class)
-    public UserResponse createUser(CreateUserRequest request, String tenantDb, Integer hospitalId) {
+    public Map<String, Object> createUser(CreateUserRequest request, String tenantDb, Integer hospitalId) {
 
 
         log.info("👤 Creating user: {} with role: {}", request.getEmail(), request.getRole());
@@ -90,15 +90,15 @@ public class UserManagementService {
             String hospitalName = userProfileService.getHospitalNameFromTenantDb(tenantDb);
             emailService.sendActivationEmail(request.getEmail(), hospitalName, activationToken, activationLink);
             log.info(" User created successfully: {}", request.getEmail());
-            return UserResponse.builder()
-                    .success(true)
-                    .message("User created successfully")
-                    .userId(tenantUserId)
-                    .authUserId(userIdStr)
-                    .staffId(staffId)
-                    .email(request.getEmail())
-                    .role(request.getRole())
-                    .build();
+            Map<String, Object> response = new HashMap<>();
+            response.put("userId", tenantUserId);
+            response.put("success", true);
+            response.put("message", "User created successfully");
+            response.put("staffId", staffId);
+            response.put("email", request.getEmail());
+            response.put("role", request.getRole());
+            response.put("authUserId", userIdStr);
+            return  response;
 
         } catch (Exception e) {
             log.error("Failed to create user: {}", request.getEmail(), e);
