@@ -174,9 +174,9 @@ public class UserManagementService {
             stmt.setString(3, request.getLastName());
             stmt.setString(4, request.getEmail());
             stmt.setString(5, request.getPhoneNumber());
-            stmt.setString(7, request.getRole());
-            stmt.setString(8, "ACTIVE");
-            stmt.setObject(9, UUID.fromString(authUserId));
+            stmt.setString(6, request.getRole());
+            stmt.setString(7, "ACTIVE");
+            stmt.setObject(8, UUID.fromString(authUserId));
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
