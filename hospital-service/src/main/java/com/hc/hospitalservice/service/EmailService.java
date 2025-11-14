@@ -131,7 +131,7 @@ public class EmailService {
                     </div>
                     <div class="content">
                         <p>Hello %s,</p>
-                        <p>You have been invited to join our healthcare platform as a <strong>%s</strong>.</p>
+                        <p>You have been invited to join our HealthCoreHub platform as a %s.</p>
                         <p>To activate your account and set your password, please click the button below:</p>
                         <p style="text-align: center;">
                             <a href="%s" class="button">Activate Account</a>
@@ -144,7 +144,7 @@ public class EmailService {
                         <p>If you did not expect this invitation, please ignore this email or contact your administrator.</p>
                     </div>
                     <div class="footer">
-                        <p>© 2025 Healthcare Hub. All rights reserved.</p>
+                        <p>© 2025 HealthCore Hub. All rights reserved.</p>
                         <p>This is an automated message. Please do not reply to this email.</p>
                     </div>
                 </div>

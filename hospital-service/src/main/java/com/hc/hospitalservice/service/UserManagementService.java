@@ -88,7 +88,7 @@ public class UserManagementService {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
             }
             String hospitalName = userProfileService.getHospitalNameFromTenantDb(tenantDb);
-            emailService.sendActivationEmail(request.getEmail(), hospitalName, activationToken, activationLink);
+            emailService.sendActivationEmail(request.getEmail(), request.getFirstName(), activationLink, request.getRole().toUpperCase());
             log.info(" User created successfully: {}", request.getEmail());
             Map<String, Object> response = new HashMap<>();
             response.put("userId", tenantUserId);
