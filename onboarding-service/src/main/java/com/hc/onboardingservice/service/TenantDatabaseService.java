@@ -110,10 +110,10 @@ public class TenantDatabaseService {
                     .load();
 
             flyway.migrate();
-            log.info("✅ Tenant schema initialized for '{}'", dbName);
+            log.info(" Tenant schema initialized for '{}'", dbName);
 
         } catch (Exception e) {
-            log.error("❌ Error initializing tenant schema", e);
+            log.error(" Error initializing tenant schema", e);
             throw new RuntimeException("Failed to initialize tenant schema: " + e.getMessage());
         }
     }

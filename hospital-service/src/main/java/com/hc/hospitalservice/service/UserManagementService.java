@@ -164,11 +164,11 @@ public class UserManagementService {
 
         String sql = """
             INSERT INTO users (
-                first_name, middle_name, last_name, email, phone_number,
+                first_name, middle_name, last_name, email, phone_number,password,
                 role, status, auth_user_id,
                 created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            VALUES (?, ?, ?, ?, ?, ?, ?,?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING id
             """;
 
@@ -179,9 +179,10 @@ public class UserManagementService {
             stmt.setString(3, request.getLastName());
             stmt.setString(4, request.getEmail());
             stmt.setString(5, request.getPhoneNumber());
-            stmt.setString(6, request.getRole());
-            stmt.setString(7, "ACTIVE");
-            stmt.setObject(8, UUID.fromString(authUserId));
+            stmt.setString(6,"");
+            stmt.setString(7, request.getRole());
+            stmt.setString(8, "PENDING");
+            stmt.setObject(9, UUID.fromString(authUserId));
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
