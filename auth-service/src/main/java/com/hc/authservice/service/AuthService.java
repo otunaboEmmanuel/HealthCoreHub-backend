@@ -285,8 +285,8 @@ public class AuthService {
         }
         AuthUser authUser = AuthUser.builder()
                 .email(email)
-                .activation_token(UUID.randomUUID().toString())
-                .token_expired(LocalDateTime.now().plusHours(24))
+                .activationToken(UUID.randomUUID().toString())
+                .tokenExpired(LocalDateTime.now().plusHours(24))
                 .passwordHash("")
                 .hospitalId(hospitalId)
                 .globalRole(globalRole)

@@ -4,6 +4,7 @@ import com.hc.authservice.dto.LoginRequest;
 import com.hc.authservice.dto.LoginResponse;
 import com.hc.authservice.dto.RegisterRequest;
 import com.hc.authservice.service.AuthService;
+import com.hc.authservice.service.UserActivationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserActivationService userActivationService;
 
     /**
      * Register a new user (called by other services)
@@ -100,5 +102,16 @@ public class AuthController {
         response.put("status", "UP");
         response.put("service", "auth-service");
         return ResponseEntity.ok(response);
+    }
+    @PostMapping("validate-token")
+    public ResponseEntity<?> validateUserToken(@RequestParam String token) {
+        try {
+            Map<String, Object> response = userActivationService.validateToken(token);
+            return ResponseEntity.ok(response);
+        }catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Invalid token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
     }
 }

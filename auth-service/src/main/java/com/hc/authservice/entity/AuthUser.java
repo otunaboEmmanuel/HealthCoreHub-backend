@@ -66,8 +66,8 @@ public class AuthUser {
     private String status;
 
     @Column(name = "activation_token")
-    private String activation_token;
+    private String activationToken;
 
     @Column(name = "token_expired")
-    private LocalDateTime token_expired;
+    private LocalDateTime tokenExpired;
 }
