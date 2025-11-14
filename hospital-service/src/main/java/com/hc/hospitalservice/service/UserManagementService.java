@@ -60,14 +60,15 @@ public class UserManagementService {
 
         log.info("👤 Creating user: {} with role: {}", request.getEmail(), request.getRole());
 
+        String userIdStr=null;
         try {
             // Step 1: Register in Auth Service
-            Map<String,Object> grpcInfo = registerInAuthService(request, hospitalId, tenantDb);
-            String userIdStr = String.valueOf(grpcInfo.get("userId"));
+            Map<String, String> grpcInfo = registerInAuthService(request, hospitalId, tenantDb);
+            userIdStr = grpcInfo.get("userId");
             if (userIdStr == null || userIdStr.equals("null")) {
                 throw new RuntimeException("gRPC did not return a valid userId");
             }
-            String activationToken = grpcInfo.get("activationToken").toString();
+            String activationToken = grpcInfo.get("activationCode");
             if (activationToken == null || activationToken.equals("null")) {
                 throw new RuntimeException("gRPC did not return a valid activationToken");
             }
@@ -76,12 +77,12 @@ public class UserManagementService {
             String activationLink = String.format("%s/activate?token=%s",
                     frontendUrl, activationToken);
             // Step 2: Create user in Tenant DB
-            Integer tenantUserId = createUserInTenantDb(request, tenantDb,userIdStr);
+            Integer tenantUserId = createUserInTenantDb(request, tenantDb, userIdStr);
             Integer staffId = null;
             if (shouldCreateRoleSpecificRecord(request.getRole())) {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
             }
-            String hospitalName= userProfileService.getHospitalNameFromTenantDb(tenantDb);
+            String hospitalName = userProfileService.getHospitalNameFromTenantDb(tenantDb);
             emailService.sendActivationEmail(request.getEmail(), hospitalName, activationToken, activationLink);
             log.info(" User created successfully: {}", request.getEmail());
             return UserResponse.builder()
@@ -96,9 +97,15 @@ public class UserManagementService {
 
         } catch (Exception e) {
             log.error("Failed to create user: {}", request.getEmail(), e);
+            if (userIdStr != null) {
+                try {
+                    authServiceGrpcClient.deleteUser(userIdStr);
+                } catch (Exception ex) {
+                    log.error("Failed to rollback auth-service user: {}", userIdStr, ex);
+                }
+            }
             throw new RuntimeException("User creation failed: " + e.getMessage(), e);
         }
-
     }
 
     public String saveFileToStorage(MultipartFile file){
@@ -129,7 +136,7 @@ public class UserManagementService {
         return fileName;
     }
 
-    private Map<String, Object> registerInAuthService(CreateUserRequest request, Integer hospitalId, String tenantDb) {
+    private Map<String, String> registerInAuthService(CreateUserRequest request, Integer hospitalId, String tenantDb) {
 
         log.info(" Creating user: {} with role: {}", request.getEmail(), request.getRole());
         try{

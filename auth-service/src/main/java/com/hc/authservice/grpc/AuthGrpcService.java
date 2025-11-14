@@ -62,4 +62,20 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             responseObserver.onError(Status.INTERNAL.withDescription(ex.getMessage()).asRuntimeException());
         }
     }
+
+    @Override
+    public void deleteUser(DeleteRequest request, StreamObserver<DeleteResponse> responseObserver) {
+        try{
+            log.info("deleting user with id {}", request.getUserId());
+            authService.deleteUser(request.getUserId());
+            DeleteResponse deleteResponse = DeleteResponse.newBuilder()
+                    .setSuccess(true)
+                    .setMessage("user deleted successfully").build();
+            responseObserver.onNext(deleteResponse);
+            responseObserver.onCompleted();
+        }catch (Exception ex){
+            log.error("deleteUser error",ex);
+            responseObserver.onError(Status.INTERNAL.withDescription(ex.getMessage()).asRuntimeException());
+        }
+    }
 }

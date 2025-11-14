@@ -299,4 +299,14 @@ public class AuthService {
         authUserRepository.save(authUser);
         return authUser;
     }
+
+    public void deleteUser(String userId) {
+        log.info("checking if user with id {} exists", userId);
+        if(!(authUserRepository.existsById(userId))) {
+            log.info("user doesn't exists with email {}", userId);
+            throw new IllegalArgumentException("user doesn't exists");
+        }
+        log.info("deleting user with id {}", userId);
+        authUserRepository.deleteById(userId);
+    }
 }

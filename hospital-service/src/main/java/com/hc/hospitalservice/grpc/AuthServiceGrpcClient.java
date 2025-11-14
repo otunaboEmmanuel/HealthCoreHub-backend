@@ -4,6 +4,8 @@ import com.hc.authservice.grpc.RegisterUserRequest;
 import com.hc.authservice.grpc.RegisterUserResponse;
 import com.hc.authservice.grpc.StaffRequest;
 import com.hc.authservice.grpc.StaffResponse;
+import com.hc.authservice.grpc.DeleteRequest;
+import com.hc.authservice.grpc.DeleteResponse;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +46,7 @@ public class AuthServiceGrpcClient {
             throw new RuntimeException("gRPC registration failed: " + e.getMessage(), e);
         }
     }
-    public Map<String, Object> registerStaff(String email, Integer hospitalId, String tenantDb, String globalRole) {
+    public Map<String, String> registerStaff(String email, Integer hospitalId, String tenantDb, String globalRole) {
         try {
             StaffRequest staffRequest = StaffRequest.newBuilder()
                     .setEmail(email)
@@ -55,13 +57,24 @@ public class AuthServiceGrpcClient {
             log.info(" Sending gRPC staff request for {}", email);
             StaffResponse staffResponse = authServiceStub.registerStaff(staffRequest);
             log.info(" gRPC staff registered successfully: {}", staffResponse.getUserId());
-            Map<String, Object> map = new HashMap<>();
+            Map<String, String> map = new HashMap<>();
             map.put("userId", staffResponse.getUserId());
             map.put("activationCode", staffResponse.getActivationCode());
             return map;
         }catch (StatusRuntimeException e){
             log.error(" gRPC request failed: {}", e.getStatus().getDescription());
             throw new RuntimeException("gRPC staff request failed: " + e.getMessage(), e);
+        }
+    }
+    public void deleteUser(String userId){
+        try{
+            DeleteRequest request = DeleteRequest.newBuilder().setUserId(userId).build();
+            log.info(" Sending gRPC delete request for {}", userId);
+             DeleteResponse response = authServiceStub.deleteUser(request);
+            log.info("deleting user with id {} successfully", userId );
+        }catch (Exception e){
+            log.error(" gRPC delete request failed: {}", e.getMessage());
+            throw new RuntimeException("delete user failed: " + e.getMessage(), e);
         }
     }
 }
