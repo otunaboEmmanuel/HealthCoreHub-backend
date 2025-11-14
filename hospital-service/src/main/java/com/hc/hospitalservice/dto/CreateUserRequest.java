@@ -29,9 +29,6 @@ public class CreateUserRequest {
 
     private String phoneNumber;
 
-    @NotBlank(message = "Password is required")
-    private String password;
-
     @NotBlank(message = "Role is required")
     private String role;  // DOCTOR, NURSE, PATIENT, PHARMACIST, LAB_SCIENTIST, STAFF
 

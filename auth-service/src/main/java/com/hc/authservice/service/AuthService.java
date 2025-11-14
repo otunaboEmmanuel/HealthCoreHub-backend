@@ -284,6 +284,7 @@ public class AuthService {
             throw new IllegalArgumentException("user already exists");
         }
         AuthUser authUser = AuthUser.builder()
+                .email(email)
                 .activation_token(UUID.randomUUID().toString())
                 .token_expired(LocalDateTime.now().plusHours(24))
                 .passwordHash("")

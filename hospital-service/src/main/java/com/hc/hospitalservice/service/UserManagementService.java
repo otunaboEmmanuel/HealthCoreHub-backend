@@ -148,15 +148,15 @@ public class UserManagementService {
 
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
-        String hashedPassword = passwordEncoder.encode(request.getPassword());
+        //String hashedPassword = passwordEncoder.encode(request.getPassword());
 
         String sql = """
             INSERT INTO users (
                 first_name, middle_name, last_name, email, phone_number,
-                password, role, status, auth_user_id,
+                role, status, auth_user_id,
                 created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING id
             """;
 
@@ -167,7 +167,6 @@ public class UserManagementService {
             stmt.setString(3, request.getLastName());
             stmt.setString(4, request.getEmail());
             stmt.setString(5, request.getPhoneNumber());
-            stmt.setString(6, hashedPassword);
             stmt.setString(7, request.getRole());
             stmt.setString(8, "ACTIVE");
             stmt.setObject(9, UUID.fromString(authUserId));
