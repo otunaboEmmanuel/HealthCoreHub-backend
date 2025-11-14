@@ -77,7 +77,12 @@ public class UserManagementService {
             String activationLink = String.format("%s/activate?token=%s",
                     frontendUrl, activationToken);
             // Step 2: Create user in Tenant DB
+
             Integer tenantUserId = createUserInTenantDb(request, tenantDb, userIdStr);
+            if (tenantUserId == null) {
+                log.info("deleting user with id {}", userIdStr);
+                authServiceGrpcClient.deleteUser(userIdStr);
+            }
             Integer staffId = null;
             if (shouldCreateRoleSpecificRecord(request.getRole())) {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
@@ -185,7 +190,7 @@ public class UserManagementService {
                 return userId;
             }
 
-            throw new SQLException("Failed to create user in tenant DB");
+            return null;
 
         } catch (SQLException e) {
             log.error(" Tenant DB user creation failed", e);
