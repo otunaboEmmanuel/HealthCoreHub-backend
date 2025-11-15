@@ -103,6 +103,7 @@ public class AuthController {
         response.put("service", "auth-service");
         return ResponseEntity.ok(response);
     }
+    //validate token from email request
     @PostMapping("validate-token")
     public ResponseEntity<?> validateUserToken(@RequestParam String token) {
         try {
@@ -113,5 +114,12 @@ public class AuthController {
             error.put("error", "Invalid token");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
+    }
+    @PostMapping("update-password")
+    public ResponseEntity<?> activateUser(@RequestBody Map<String, String> request) {
+        try{
+            Map<String, Object> result = userActivationService.activateUser(request.get("password"), request.get("token"));
+        }
+
     }
 }
