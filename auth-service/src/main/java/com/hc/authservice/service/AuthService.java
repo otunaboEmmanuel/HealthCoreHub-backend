@@ -258,6 +258,7 @@ public class AuthService {
             if (rs.next()) {
                 return rs.getString("status");
             }
+            throw new RuntimeException("No tenant status found for user: " + authUser.getEmail());
         } catch (SQLException e) {
             log.error("Error fetching tenant user status", e);
         }return null;
@@ -316,5 +317,41 @@ public class AuthService {
         }
         log.info("deleting user with id {}", userId);
         authUserRepository.deleteById(userId);
+    }
+
+    public Map<String, Object> refreshToken(String refreshToken, HttpServletResponse response) {
+        log.info(" Token refresh attempt");
+
+        // Validate refresh token
+        if (!jwtService.isRefreshToken(refreshToken)) {
+            throw new IllegalArgumentException("Invalid refresh token");
+        }
+
+        String userId = jwtService.extractUserId(refreshToken);
+        AuthUser user = authUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!user.getIsActive()) {
+            throw new IllegalArgumentException("Account is not active");
+        }
+        UserInfo userInfo = getTenantRoleAndId(user);
+        if (userInfo == null) {
+            throw new RuntimeException("User not found in tenant DB: " + user.getEmail());
+        }
+
+        if (userInfo.getRole() == null) {
+            throw new RuntimeException("User has no assigned role in tenant DB: " + user.getEmail());
+        }
+        String tenantStatus = getTenantUserStatus(user);
+
+        // Generate new access token
+        String newAccessToken = jwtService.generateToken(user, userInfo.getRole(), tenantStatus, userInfo.getUserId());
+        // Set new access token cookie (keep refresh token)
+        cookieService.setAccessTokenCookie(response, newAccessToken);
+        log.info(" Token refreshed for user: {}", user.getEmail());
+        Map<String,Object> responseMap = new HashMap<>();
+        responseMap.put("userId", user.getId());
+        responseMap.put("email", user.getEmail());
+        return responseMap;
     }
 }

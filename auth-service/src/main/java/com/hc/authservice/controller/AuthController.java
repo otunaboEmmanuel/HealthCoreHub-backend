@@ -62,7 +62,7 @@ public class AuthController {
         log.info(" Login request for: {}", request.getEmail());
 
         try {
-            LoginResponse result = authService.login(request,response);
+            Map<String,Object> result = authService.login(request,response);
             return ResponseEntity.ok(result);
 
         } catch (IllegalArgumentException e) {
@@ -135,14 +135,14 @@ public class AuthController {
 
     }
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refreshToken(
+    public ResponseEntity<?> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response) {
 
         String refreshToken = cookieService.getRefreshTokenFromCookie(request)
                 .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
 
-        LoginResponse loginResponse = authService.refreshToken(refreshToken, response);
+        Map<String,Object> loginResponse = authService.refreshToken(refreshToken, response);
         return ResponseEntity.ok(loginResponse);
     }
 }
