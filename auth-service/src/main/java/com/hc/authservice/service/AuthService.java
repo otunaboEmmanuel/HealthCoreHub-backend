@@ -8,6 +8,7 @@ import com.hc.authservice.entity.AuthUser;
 import com.hc.authservice.entity.RefreshToken;
 import com.hc.authservice.repository.AuthUserRepository;
 import com.hc.authservice.repository.RefreshTokenRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,7 @@ public class AuthService {
 
     @Value("${jwt.refresh-expiration}")
     private Long refreshExpiration;
+    private final CookieService cookieService;
 
     /**
      * Register a new user (called by onboarding-service or hospital-service)
@@ -84,7 +86,7 @@ public class AuthService {
      * User login
      */
     @Transactional
-    public LoginResponse login(LoginRequest request) {
+    public Map<String,Object> login(LoginRequest request, HttpServletResponse response) {
         log.info("🔐 Login attempt for: {}", request.getEmail());
 
         // Find user
@@ -149,13 +151,19 @@ public class AuthService {
 
         // Save refresh token
         saveRefreshToken(authUser, refreshToken);
+        // Set cookies
+        cookieService.setAccessTokenCookie(response, accessToken);
+        cookieService.setRefreshTokenCookie(response, refreshToken);
 
         log.info(" Login successful for: {}", request.getEmail());
-
-        return LoginResponse.builder()
-                .token(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        Map<String,Object> responseMap = new HashMap<>();
+        responseMap.put("userId", authUser.getId());
+        responseMap.put("email", authUser.getEmail());
+        return responseMap;
+    }
+    public void logout(HttpServletResponse response) {
+        cookieService.clearAuthCookies(response);
+        log.info("👋 User logged out - cookies cleared");
     }
 
     /**

@@ -4,7 +4,10 @@ import com.hc.authservice.dto.LoginRequest;
 import com.hc.authservice.dto.LoginResponse;
 import com.hc.authservice.dto.RegisterRequest;
 import com.hc.authservice.service.AuthService;
+import com.hc.authservice.service.CookieService;
 import com.hc.authservice.service.UserActivationService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +27,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserActivationService userActivationService;
+    private final CookieService cookieService;
 
     /**
      * Register a new user (called by other services)
@@ -54,12 +58,12 @@ public class AuthController {
      * User login
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
         log.info(" Login request for: {}", request.getEmail());
 
         try {
-            LoginResponse response = authService.login(request);
-            return ResponseEntity.ok(response);
+            LoginResponse result = authService.login(request,response);
+            return ResponseEntity.ok(result);
 
         } catch (IllegalArgumentException e) {
             log.warn(" Login failed: {}", e.getMessage());
@@ -129,5 +133,16 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
 
+    }
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        String refreshToken = cookieService.getRefreshTokenFromCookie(request)
+                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
+
+        LoginResponse loginResponse = authService.refreshToken(refreshToken, response);
+        return ResponseEntity.ok(loginResponse);
     }
 }
