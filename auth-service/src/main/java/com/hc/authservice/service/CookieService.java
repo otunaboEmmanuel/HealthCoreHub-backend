@@ -41,7 +41,7 @@ public class CookieService {
                 cookieProperties.getRefreshTokenMaxAge()
         );
         response.addCookie(cookie);
-        log.debug("🍪 Refresh token cookie set");
+        log.debug(" Refresh token cookie set");
     }
 
     /**
@@ -64,7 +64,7 @@ public class CookieService {
     public void clearAuthCookies(HttpServletResponse response) {
         clearCookie(response, cookieProperties.getAccessTokenName());
         clearCookie(response, cookieProperties.getRefreshTokenName());
-        log.info("🍪 Auth cookies cleared");
+        log.info(" Auth cookies cleared");
     }
 
     /**
