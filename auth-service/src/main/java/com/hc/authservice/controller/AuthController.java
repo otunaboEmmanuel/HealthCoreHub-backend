@@ -119,6 +119,13 @@ public class AuthController {
     public ResponseEntity<?> activateUser(@RequestBody Map<String, String> request) {
         try{
             Map<String, Object> result = userActivationService.activateUser(request.get("password"), request.get("token"));
+            return ResponseEntity.ok(result);
+        }catch (IllegalArgumentException e) {
+            log.warn(" Activation failed: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }catch (Exception e) {
+            log.error(" Activation failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
 
     }

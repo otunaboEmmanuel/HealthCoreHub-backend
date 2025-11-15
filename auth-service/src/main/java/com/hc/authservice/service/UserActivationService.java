@@ -68,7 +68,10 @@ public class UserActivationService {
         activateUserInTenantDb(authUser);
         authUserRepository.save(authUser);
         log.info("Activated user {}", authUser);
-
+        response.put("success", true);
+        response.put("message", "User has been activated successfully");
+        //figure out how to implement cookies and return for this user
+        return response;
     }
 
     private boolean validateToken(Map<String, Object> response, AuthUser authUser) {
