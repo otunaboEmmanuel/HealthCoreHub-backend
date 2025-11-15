@@ -318,7 +318,7 @@ public class AuthService {
         log.info("deleting user with id {}", userId);
         authUserRepository.deleteById(userId);
     }
-
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> refreshToken(String refreshToken, HttpServletResponse response) {
         log.info(" Token refresh attempt");
 
@@ -338,12 +338,8 @@ public class AuthService {
         if (userInfo == null) {
             throw new RuntimeException("User not found in tenant DB: " + user.getEmail());
         }
-
-        if (userInfo.getRole() == null) {
-            throw new RuntimeException("User has no assigned role in tenant DB: " + user.getEmail());
-        }
+        //get tenant status from tenantDb
         String tenantStatus = getTenantUserStatus(user);
-
         // Generate new access token
         String newAccessToken = jwtService.generateToken(user, userInfo.getRole(), tenantStatus, userInfo.getUserId());
         // Set new access token cookie (keep refresh token)

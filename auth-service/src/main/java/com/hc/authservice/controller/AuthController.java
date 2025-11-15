@@ -145,4 +145,15 @@ public class AuthController {
         Map<String,Object> loginResponse = authService.refreshToken(refreshToken, response);
         return ResponseEntity.ok(loginResponse);
     }
+    /**
+     * Logout - clears cookies
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletResponse response) {
+        authService.logout(response);
+        return ResponseEntity.ok(Map.of(
+                "success", "true",
+                "message", "Logged out successfully"
+        ));
+    }
 }
