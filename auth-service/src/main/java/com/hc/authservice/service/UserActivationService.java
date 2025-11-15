@@ -4,9 +4,15 @@ import com.hc.authservice.entity.AuthUser;
 import com.hc.authservice.repository.AuthUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +21,20 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class UserActivationService {
+    @Value("${tenant.datasource.host}")
+    private String tenantDbHost;
+
+    @Value("${tenant.datasource.port}")
+    private String tenantDbPort;
+    @Value("${tenant.datasource.username}")
+    private String tenantDbUsername;
+
+    @Value("${tenant.datasource.password}")
+    private String tenantDbPassword;
     private final AuthUserRepository authUserRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> validateToken(String token) {
         Map<String, Object> response = new HashMap<>();
        AuthUser authUser = authUserRepository.findByActivationToken(token).orElse(null);
@@ -47,6 +65,7 @@ public class UserActivationService {
         authUser.setActivationToken(null);
         authUser.setTokenExpired(null);
         authUser.setStatus("ACTIVE");
+        activateUserInTenantDb(authUser);
         authUserRepository.save(authUser);
         log.info("Activated user {}", authUser);
 
@@ -88,6 +107,22 @@ public class UserActivationService {
         }
     }
     private void activateUserInTenantDb(AuthUser authUser) {
-        String
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s:/%s",tenantDbHost, tenantDbPort, authUser.getTenantDb());
+        String sql = """
+                INSERT INTO users(password, updated_at) VALUES (?, CURRENT_TIMESTAMP)
+                """;
+        try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1,authUser.getPasswordHash());
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                log.warn("Query failed for activation for user {}", authUser.getId());
+                throw new RuntimeException("Query failed for activation for user " + authUser.getId());
+            }
+            log.info("Inserted password for user {}", authUser.getId());
+        }catch (SQLException e){
+            log.error("Error while inserting password for user {}", authUser.getId(), e);
+            throw new RuntimeException(e);
+        }
     }
 }
