@@ -37,16 +37,16 @@ public class AuthUser {
     private String globalRole;
 
     @Column(name = "is_active")
-    private Boolean isActive = true;
+    private Boolean isActive;
 
     @Column(name = "email_verified")
     private Boolean emailVerified ;
 
     @Column(name = "is_locked")
-    private Boolean isLocked = false;
+    private Boolean isLocked;
 
     @Column(name = "failed_login_attempts")
-    private Integer failedLoginAttempts = 0;
+    private Integer failedLoginAttempts;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

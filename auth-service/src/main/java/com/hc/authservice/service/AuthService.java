@@ -159,7 +159,9 @@ public class AuthService {
         Map<String,Object> responseMap = new HashMap<>();
         responseMap.put("userId", authUser.getId());
         responseMap.put("email", authUser.getEmail());
+        log.info("response is {}", responseMap);
         return responseMap;
+
     }
     public void logout(HttpServletResponse response) {
         cookieService.clearAuthCookies(response);
@@ -211,6 +213,7 @@ public class AuthService {
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(token)
+                .revoked(false)
                 .expiresAt(LocalDateTime.now().plusSeconds(refreshExpiration))
                 .build();
 
@@ -256,6 +259,8 @@ public class AuthService {
                 .globalRole(globalRole)
                 .status("ACTIVE")
                 .isActive(true)
+                .isLocked(false)
+                .failedLoginAttempts(0)
                 .emailVerified(true)
                 .passwordChangedAt(LocalDateTime.now())
                 .build();
@@ -279,7 +284,9 @@ public class AuthService {
                 .globalRole(globalRole)
                 .status("PENDING")
                 .isActive(true)
+                .isLocked(false)
                 .emailVerified(false)
+                .failedLoginAttempts(0)
                 .tenantDb(tenantDb)
                 .build();
         log.info("register staff start with email {}", email);
