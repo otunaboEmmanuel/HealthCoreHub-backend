@@ -110,13 +110,16 @@ public class UserActivationService {
         }
     }
     private void activateUserInTenantDb(AuthUser authUser) {
-        String tenantUrl = String.format("jdbc:postgresql://%s:%s:/%s",tenantDbHost, tenantDbPort, authUser.getTenantDb());
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, authUser.getTenantDb());
         String sql = """
-                INSERT INTO users(password, updated_at) VALUES (?, CURRENT_TIMESTAMP)
+                UPDATE users
+                    SET password = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE email = ?
                 """;
         try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1,authUser.getPasswordHash());
+            statement.setString(2,authUser.getEmail());
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
                 log.warn("Query failed for activation for user {}", authUser.getId());

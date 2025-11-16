@@ -180,6 +180,7 @@ public class AuthService {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, authUser.getTenantDb());
 
+
         log.info("Fetching tenant role from: {}", tenantUrl);
 
         String sql = "SELECT role, id FROM users WHERE email = ?";

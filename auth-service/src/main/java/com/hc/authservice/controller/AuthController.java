@@ -90,7 +90,7 @@ public class AuthController {
         response.put("service", "auth-service");
         return ResponseEntity.ok(response);
     }
-    //validate token from email request--->not tested ❌
+    //validate token from email request---> tested ✅
     @PostMapping("validate-token")
     public ResponseEntity<?> validateUserToken(@RequestParam String token) {
         try {
