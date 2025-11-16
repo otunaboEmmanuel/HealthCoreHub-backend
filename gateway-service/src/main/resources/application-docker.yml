@@ -73,30 +73,10 @@ spring:
         - id: auth-service-login
           uri: http://auth-service:4001
           predicates:
-            - Path=/auth/login
+            - Path=/auth/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
-        - id: auth-service-register
-          uri: http://auth-service:4001
-          predicates:
-            - Path=/auth/register
-          filters:
-            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
-
-        - id: auth-service-validate
-          uri: http://auth-service:4001
-          predicates:
-            - Path=/auth/validate
-          filters:
-            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
-
-        - id: auth-service-health
-          uri: http://auth-service:4001
-          predicates:
-            - Path=/auth/health
-          filters:
-            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
 
         # === HOSPITAL SERVICE ROUTES ===
         - id: hospital-service-users
