@@ -53,7 +53,7 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
                     .setUserId(authUser.getId().toString())
                     .setMessage("user is temporarily registered  "+ authUser.getGlobalRole())
                     .setSuccess(true)
-                    .setActivationCode(authUser.getActivation_token())
+                    .setActivationCode(authUser.getActivationToken())
                     .build();
             responseObserver.onNext(staffResponse);
             responseObserver.onCompleted();
