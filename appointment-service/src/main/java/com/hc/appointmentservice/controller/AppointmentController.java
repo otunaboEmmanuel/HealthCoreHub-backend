@@ -5,6 +5,8 @@ import com.hc.appointmentservice.dto.DoctorResponse;
 import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.service.AppointmentService;
 import com.hc.appointmentservice.service.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,12 +28,10 @@ public class AppointmentController {
     private final JwtService jwtService;;
     @PostMapping("{patientId}/{doctorId}")
     public ResponseEntity<?> addAppointment(@RequestBody AppointmentDTO appointment,
-                                            @RequestHeader("Authorization")String authHeader,
-                                            @PathVariable Integer patientId, @PathVariable Integer doctorId) {
+                                            @PathVariable Integer patientId, @PathVariable Integer doctorId, HttpServletRequest request) {
         try {
-            String token = authHeader.substring(7);
-            String tenantDb = jwtService.extractTenantDb(token);
-            String tenantRole = jwtService.extractTenantRole(token);
+            String tenantRole = request.getAttribute("tenantRole").toString();
+            String tenantDb = request.getAttribute("tenantDb").toString();
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 throw new RuntimeException("does not have access to this endpoint");
             }
@@ -50,14 +50,13 @@ public class AppointmentController {
 
     //update appointment
     @PutMapping("{appointmentId}")
-    public ResponseEntity<?> updateAppointment(@RequestHeader("Authorization")String authHeader,
+    public ResponseEntity<?> updateAppointment(
                                                @RequestBody Map<String, String> request,
-                                               @PathVariable Integer appointmentId) {
+                                               @PathVariable Integer appointmentId, HttpServletRequest servletRequest) {
         try {
-            String token = authHeader.substring(7);
-            String tenantRole = jwtService.extractTenantRole(token);
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
-                log.warn("Invalid appointment request: {}", token);
+                log.warn("Invalid appointment request for : {}", tenantRole);
                 throw new RuntimeException("does not have access to this endpoint");
             }
             Map<String, Object> response = appointmentService.updateAppointment(request, appointmentId);
@@ -73,13 +72,13 @@ public class AppointmentController {
     }
     //get particular patient by email for appointment booking
     @GetMapping("{email}")
-    public ResponseEntity<?> getAppointment(@PathVariable String email, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getAppointment(@PathVariable String email,HttpServletRequest servletRequest) {
         try {
-            String token = authHeader.substring(7);
-            String tenantDb = jwtService.extractTenantDb(token);
-            String tenantRole = jwtService.extractTenantRole(token);
+
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
-                log.warn("Invalid appointment request: {}", token);
+                log.warn("Invalid appointment request for: {}", tenantRole);
                 throw new RuntimeException("does not have access to this endpoint");
             }
             Map<String,Object> result = appointmentService.getPatientByEmail(email, tenantDb);
@@ -94,13 +93,12 @@ public class AppointmentController {
         }
     }
     @GetMapping("patient/{patientId}")
-    public ResponseEntity<?> getAppointmentByPatientId(@PathVariable Integer patientId, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getAppointmentByPatientId(@PathVariable Integer patientId, HttpServletRequest servletRequest) {
         try {
-            String token = authHeader.substring(7);
-            String tenantDb = jwtService.extractTenantDb(token);
-            String tenantRole = jwtService.extractTenantRole(token);
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
-                log.warn("this token can't access this endpoint: {}", token);
+                log.warn("this token can't access this endpoint: {}", tenantRole);
                 throw new RuntimeException("does not have access to this endpoint");
             }
             List<DoctorResponse> result = appointmentService.getAppointmentByPatient(patientId, tenantDb);
