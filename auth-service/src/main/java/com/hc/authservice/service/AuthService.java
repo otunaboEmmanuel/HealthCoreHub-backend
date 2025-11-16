@@ -310,12 +310,14 @@ public class AuthService {
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> refreshToken(String refreshToken, HttpServletResponse response) {
         log.info(" Token refresh attempt");
-
-        // Validate refresh token
-        if (!jwtService.isRefreshToken(refreshToken)) {
-            throw new IllegalArgumentException("Invalid refresh token");
+        Map<String,Object> responseMap = new HashMap<>();
+        //validate refresh token
+        RefreshToken refreshToken1 = refreshTokenRepository.findByToken(refreshToken).orElse(null);
+        if (refreshToken1 == null) {
+            log.info("refresh token not found");
+            responseMap.put("error", "Invalid refresh token");
+            return responseMap;
         }
-
         String userId = jwtService.extractUserId(refreshToken);
         AuthUser user = authUserRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -334,7 +336,6 @@ public class AuthService {
         // Set new access token cookie (keep refresh token)
         cookieService.setAccessTokenCookie(response, newAccessToken);
         log.info(" Token refreshed for user: {}", user.getEmail());
-        Map<String,Object> responseMap = new HashMap<>();
         responseMap.put("userId", user.getId());
         responseMap.put("success", true);
         responseMap.put("email", user.getEmail());
