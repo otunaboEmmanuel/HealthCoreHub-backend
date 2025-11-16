@@ -79,23 +79,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * Validate JWT token
-     */
-    @PostMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
-        try {
-            String token = authHeader.replace("Bearer ", "");
-            Map<String, Object> response = authService.validateToken(token);
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.warn("⚠️ Token validation failed: {}", e.getMessage());
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Invalid token");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        }
-    }
 
     /**
      * Health check

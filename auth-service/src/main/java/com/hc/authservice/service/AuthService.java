@@ -163,7 +163,7 @@ public class AuthService {
     }
     public void logout(HttpServletResponse response) {
         cookieService.clearAuthCookies(response);
-        log.info("👋 User logged out - cookies cleared");
+        log.info(" User logged out - cookies cleared");
     }
 
     /**
@@ -217,29 +217,7 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
     }
 
-    /**
-     * Validate token
-     */
-    public Map<String, Object> validateToken(String token) {
-        if (!jwtService.isTokenValid(token)) {
-            throw new IllegalArgumentException("Invalid token");
-        }
 
-        var claims = jwtService.extractClaims(token);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("valid", true);
-        response.put("email", claims.getSubject());
-        response.put("user_id", claims.get("user_id"));
-        response.put("hospital_id", claims.get("hospital_id"));
-        response.put("tenant_db", claims.get("tenant_db"));
-        response.put("global_role", claims.get("global_role"));
-        response.put("tenant_role", claims.get("tenant_role"));
-        response.put("tenant_user_Id", claims.get("tenant_user_id"));
-        response.put("tenant_status", claims.get("status"));
-
-        return response;
-    }
     private String getTenantUserStatus(AuthUser authUser) {
         if (authUser.getTenantDb() == null) {
             return null;
@@ -263,7 +241,7 @@ public class AuthService {
             log.error("Error fetching tenant user status", e);
         }return null;
     }
-
+    //grpc request to register admin for onboarding service
     public AuthUser registerUser(String email, String password, int hospitalId, String tenantDb, String globalRole) {
         log.info("register user from grpc server start with email {}", email);
         if(authUserRepository.existsByEmail(email)) {
@@ -285,7 +263,7 @@ public class AuthService {
         authUserRepository.save(authUser);
         return authUser;
     }
-
+    //grpc request to register users from onboarding service
     public AuthUser registerStaff(String email, int hospitalId, String tenantDb, String globalRole) {
         log.info("register staff from grpc server start with email {}", email);
         if(authUserRepository.existsByEmail(email)) {
@@ -308,7 +286,7 @@ public class AuthService {
         authUserRepository.save(authUser);
         return authUser;
     }
-
+    //grpc request to delete user upon failed instances in hospital service
     public void deleteUser(String userId) {
         log.info("checking if user with id {} exists", userId);
         if(!(authUserRepository.existsById(userId))) {
@@ -318,6 +296,7 @@ public class AuthService {
         log.info("deleting user with id {}", userId);
         authUserRepository.deleteById(userId);
     }
+    //creating refresh token after access token has expired
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> refreshToken(String refreshToken, HttpServletResponse response) {
         log.info(" Token refresh attempt");
@@ -347,6 +326,7 @@ public class AuthService {
         log.info(" Token refreshed for user: {}", user.getEmail());
         Map<String,Object> responseMap = new HashMap<>();
         responseMap.put("userId", user.getId());
+        responseMap.put("success", true);
         responseMap.put("email", user.getEmail());
         return responseMap;
     }
