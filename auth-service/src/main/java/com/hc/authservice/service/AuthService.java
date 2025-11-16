@@ -260,6 +260,7 @@ public class AuthService {
                 .tenantDb(tenantDb)
                 .globalRole(globalRole)
                 .status("ACTIVE")
+                .emailVerified(true)
                 .isActive(true)
                 .isLocked(false)
                 .failedLoginAttempts(0)

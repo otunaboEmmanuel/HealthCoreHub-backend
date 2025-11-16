@@ -102,7 +102,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
     }
-    //not tested too ❌
+    //tested ✅
     @PostMapping("activate")
     public ResponseEntity<?> activateUser(@RequestBody Map<String, String> request) {
         try{
