@@ -114,12 +114,13 @@ public class UserActivationService {
         String sql = """
                 UPDATE users
                     SET password = ?, updated_at = CURRENT_TIMESTAMP
-                    WHERE email = ?
+                    WHERE email = ?, status = ?
                 """;
         try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1,authUser.getPasswordHash());
             statement.setString(2,authUser.getEmail());
+            statement.setString(3,"ACTIVE");
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
                 log.warn("Query failed for activation for user {}", authUser.getId());

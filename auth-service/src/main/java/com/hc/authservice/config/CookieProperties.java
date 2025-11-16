@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "app.cookie")
 public class CookieProperties {
     private String domain; // .yourdomain.com for cross-subdomain
-    private boolean secure = true; // HTTPS only in production
+    private boolean secure = false; // HTTPS only in production
     private boolean httpOnly = true;
     private String sameSite = "None"; // For cross-domain
     private int accessTokenMaxAge = 86400; // 1 day in seconds
