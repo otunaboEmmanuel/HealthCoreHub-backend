@@ -215,6 +215,7 @@ public class AuthService {
                 .token(token)
                 .revoked(false)
                 .expiresAt(LocalDateTime.now().plusSeconds(refreshExpiration))
+                .createdAt(LocalDateTime.now())
                 .build();
 
         refreshTokenRepository.save(refreshToken);

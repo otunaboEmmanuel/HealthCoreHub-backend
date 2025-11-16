@@ -53,7 +53,7 @@ public class JwtService {
     public String generateRefreshToken(AuthUser user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("user_id", user.getId().toString());
-        claims.put("email", user.getEmail());
+       claims.put("email", user.getEmail());
         claims.put("token_type", "refresh");
         return Jwts.builder()
                 .subject(user.getEmail())

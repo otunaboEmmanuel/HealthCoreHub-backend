@@ -37,7 +37,7 @@ public class RefreshToken {
     @Column(name = "revoked")
     private Boolean revoked;
 
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiresAt);
-    }
+//    public boolean isExpired() {
+//        return LocalDateTime.now().isAfter(expiresAt);
+//    }
 }
