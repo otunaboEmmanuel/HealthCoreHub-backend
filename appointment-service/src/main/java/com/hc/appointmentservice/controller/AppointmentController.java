@@ -4,9 +4,7 @@ import com.hc.appointmentservice.dto.AppointmentDTO;
 import com.hc.appointmentservice.dto.DoctorResponse;
 import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.service.AppointmentService;
-import com.hc.appointmentservice.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,7 +23,7 @@ import java.util.Map;
 @Service
 public class AppointmentController {
     private final AppointmentService appointmentService;
-    private final JwtService jwtService;;
+
     @PostMapping("{patientId}/{doctorId}")
     public ResponseEntity<?> addAppointment(@RequestBody AppointmentDTO appointment,
                                             @PathVariable Integer patientId, @PathVariable Integer doctorId, HttpServletRequest request) {
@@ -84,7 +82,7 @@ public class AppointmentController {
             Map<String,Object> result = appointmentService.getPatientByEmail(email, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
         }catch (IllegalArgumentException e) {
-            log.warn("Invalid appointment request: {}", e.getMessage());
+            log.warn("Invalid email for request: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         }catch (Exception e) {
@@ -104,7 +102,7 @@ public class AppointmentController {
             List<DoctorResponse> result = appointmentService.getAppointmentByPatient(patientId, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
         }catch (IllegalArgumentException e) {
-            log.warn("Invalid appointment request: {}", e.getMessage());
+            log.warn("Invalid patientId: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "No appointments found for patient id " + patientId));
         }catch (Exception e) {

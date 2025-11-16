@@ -7,6 +7,7 @@ import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.service.DoctorService;
 import com.hc.appointmentservice.service.JwtService;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,14 +29,12 @@ public class DoctorController {
     //update availability
     @PostMapping("appointment/{id}")
     public ResponseEntity<?> setAvailability(@PathVariable Integer id,
-                                             @RequestHeader("Authorization") String authHeader,
+                                             HttpServletRequest servletRequest,
                                              @RequestBody UpdateDoctorRequest request) {
         try{
-            //Extract token
-            String token = authHeader.substring(7);
-            Claims claims = jwtService.extractClaims(token);
-            String tenantDb = claims.get("tenant_db", String.class);
-            String tenant_role = claims.get("tenant_role", String.class);
+
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenant_role = servletRequest.getAttribute("tenantRole").toString();
             if(!("ADMIN".equals(tenant_role)) && !("DOCTOR".equals(tenant_role))){
                 Map<String, String> error = new HashMap<>();
                 error.put("error", "Only admins or doctors can create appointments");
@@ -57,12 +56,11 @@ public class DoctorController {
         }
     }
     @GetMapping()
-    public ResponseEntity<?> getAllDoctors(@RequestHeader("Authorization")String authHeader){
+    public ResponseEntity<?> getAllDoctors(HttpServletRequest servletRequest) {
         try{
-            String token = authHeader.substring(7);
-            Claims claims = jwtService.extractClaims(token);
-            String tenantDb = claims.get("tenant_db", String.class);
-            String tenant_role = claims.get("tenant_role", String.class);
+
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenant_role = servletRequest.getAttribute("tenantRole").toString();
             if(!("ADMIN".equals(tenant_role))&& !("PATIENT".equals(tenant_role))){
                 Map<String, String> error = new HashMap<>();
                 error.put("error", "Only admins or users can see doctor lists");
@@ -81,11 +79,12 @@ public class DoctorController {
     }
     @GetMapping("{doctorId}")
     public ResponseEntity<?> getAppointmentById(@PathVariable Integer doctorId,
+                                                HttpServletRequest servletRequest,
                                                 @RequestHeader("Authorization")String authHeader) {
         try {
-            String token = authHeader.substring(7);
-            String tenantDb = jwtService.extractTenantDb(token);
-            String tenant_role = jwtService.extractTenantRole(token);
+
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenant_role = servletRequest.getAttribute("tenantRole").toString();
             if (!("ADMIN".equals(tenant_role)) && !("DOCTOR".equals(tenant_role))) {
                 log.error(" this role cant access endpoint {}", tenant_role);
                 throw new RuntimeException(" this role cant access endpoint " + tenant_role);
@@ -143,13 +142,12 @@ public class DoctorController {
         }
     }
     @GetMapping("availability/{doctorId}")
-    public ResponseEntity<?> getAvailability(@PathVariable Integer doctorId, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getAvailability(@PathVariable Integer doctorId, HttpServletRequest request) {
         try {
-            String token = authHeader.substring(7);
-            String tenantDb = jwtService.extractTenantDb(token);
-            String tenantRole = jwtService.extractTenantRole(token);
+            String tenantDb = request.getAttribute("tenantDb").toString();
+            String tenantRole = request.getAttribute("tenantRole").toString();
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("doctor") && !tenantRole.equalsIgnoreCase("patient")) {
-                log.warn("Invalid appointment request: {}", token);
+                log.warn("Invalid appointment request: {}", tenantRole);
                 throw new RuntimeException("does not have access to this endpoint");
             }
             Map<String, Object> response = doctorService.getAvailability(doctorId, tenantDb);
