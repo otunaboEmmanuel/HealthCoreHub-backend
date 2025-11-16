@@ -118,6 +118,7 @@ public class AuthService {
             // Increment failed attempts
             authUser.setFailedLoginAttempts(authUser.getFailedLoginAttempts() + 1);
 
+
             // Lock account after 5 failed attempts
             if (authUser.getFailedLoginAttempts() >= 5) {
                 authUser.setIsLocked(true);

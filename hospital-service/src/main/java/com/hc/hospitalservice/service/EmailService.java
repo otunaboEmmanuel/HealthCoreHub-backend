@@ -127,7 +127,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>Welcome to Healthcare Hub</h1>
+                        <h1>Welcome to HealthCore Hub</h1>
                     </div>
                     <div class="content">
                         <p>Hello %s,</p>

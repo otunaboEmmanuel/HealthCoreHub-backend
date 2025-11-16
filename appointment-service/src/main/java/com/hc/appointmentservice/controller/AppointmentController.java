@@ -48,8 +48,7 @@ public class AppointmentController {
 
     //update appointment
     @PutMapping("{appointmentId}")
-    public ResponseEntity<?> updateAppointment(
-                                               @RequestBody Map<String, String> request,
+    public ResponseEntity<?> updateAppointment(@RequestBody Map<String, String> request,
                                                @PathVariable Integer appointmentId, HttpServletRequest servletRequest) {
         try {
             String tenantRole = servletRequest.getAttribute("tenantRole").toString();

@@ -33,16 +33,19 @@ WORKDIR /app
 # Copy pom.xml first for better layer caching
 COPY pom.xml .
 
-# Download dependencies with better retry and connection handling
-RUN mvn dependency:resolve -B \
-    -Dmaven.wagon.http.retryHandler.count=5 \
-    -Dmaven.wagon.http.retryHandler.requestSentEnabled=true \
-    -Dmaven.artifact.threads=1 \
-    -Dhttp.keepAlive=false \
-    -Dmaven.wagon.http.pool=false \
-    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 \
-    || mvn dependency:resolve -B \
-    || true
+## Download dependencies with better retry and connection handling
+#RUN mvn dependency:resolve -B \
+#    -Dmaven.wagon.http.retryHandler.count=5 \
+#    -Dmaven.wagon.http.retryHandler.requestSentEnabled=true \
+#    -Dmaven.artifact.threads=1 \
+#    -Dhttp.keepAlive=false \
+#    -Dmaven.wagon.http.pool=false \
+#    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 \
+#    || mvn dependency:resolve -B \
+#    || true
+# Download all dependencies first
+RUN mvn -B dependency:go-offline
+
 
 # Copy source code
 COPY src ./src
