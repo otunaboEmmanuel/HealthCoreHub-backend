@@ -5,6 +5,7 @@ import com.hc.hospitalservice.dto.UserProfileDTO;
 import com.hc.hospitalservice.service.JwtService;
 import com.hc.hospitalservice.service.UserProfileService;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -46,12 +47,10 @@ public class UserProfileController {
     @GetMapping("/{email}")
     public ResponseEntity<?> getUserProfile(
             @PathVariable String email,
-            @RequestHeader("Authorization") String authHeader) {
+            HttpServletRequest request) {
 
         try {
-            String token = authHeader.replace("Bearer ", "");
-            Claims claims = jwtService.extractClaims(token);
-            String tenantDb = claims.get("tenant_db", String.class);
+            String tenantDb = request.getAttribute("tenantDb").toString();
 
             UserProfileDTO profile = userProfileService.getUserProfile(email, tenantDb);
 
@@ -65,12 +64,10 @@ public class UserProfileController {
     }
 
     @GetMapping("pending")
-    public ResponseEntity<?> getPendingProfile(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getPendingProfile(HttpServletRequest request) {
         try {
-            String token = authHeader.replace("Bearer ", "");
-            Claims claims = jwtService.extractClaims(token);
-            String tenantDb = claims.get("tenant_db", String.class);
-            String tenantRole = jwtService.extractTenantRole(token);
+            String tenantDb = request.getAttribute("tenantDb").toString();
+            String tenantRole = request.getAttribute("tenantRole").toString();
             if(!"ADMIN".equals(tenantRole)&& !("DOCTOR".equals(tenantRole))&& !("NURSE".equals(tenantRole))){
                 log.error(" Error fetching profile");
                 Map<String, String> error = new HashMap<>();
