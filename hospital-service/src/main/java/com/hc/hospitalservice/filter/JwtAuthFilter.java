@@ -52,6 +52,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     request.setAttribute("globalRole", claims.get("global_role"));
                     request.setAttribute("tenantUserId", claims.get("tenant_user_id"));
                     request.setAttribute("tenantDb", tenantDb);
+                    request.setAttribute("hospitalId", claims.get("hospital_id"));
 
                     log.debug("Tenant context set: {}", tenantDb);
                 }

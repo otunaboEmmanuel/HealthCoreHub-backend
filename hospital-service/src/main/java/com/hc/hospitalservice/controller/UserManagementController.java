@@ -37,16 +37,13 @@ public class UserManagementController {
     @PostMapping()
     public ResponseEntity<?> createUser(
              @Valid @RequestBody CreateUserRequest request,
-            @RequestHeader("Authorization") String authHeader) {
+            HttpServletRequest servletRequest) {
 
         try {
-            // Extract JWT
-            String token = authHeader.replace("Bearer ", "");
-            Claims claims = jwtService.extractClaims(token);
 
-            String tenantDb = claims.get("tenant_db", String.class);
-            Integer hospitalId = claims.get("hospital_id", Integer.class);
-            String tenantRole = claims.get("tenant_role", String.class);
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            Integer hospitalId = Integer.valueOf(servletRequest.getAttribute("hospitalId").toString());
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!"ADMIN".equals(tenantRole)&& !("DOCTOR".equals(tenantRole)) && !("NURSE".equals(tenantRole)))
             {
                 Map<String, String> error = new HashMap<>();
@@ -73,13 +70,12 @@ public class UserManagementController {
     @PutMapping("{userId}/photo")
     public ResponseEntity<?> updateProfilePhoto(@RequestParam(value = "profile_picture", required = false) MultipartFile file,
                                                 @PathVariable Integer userId,
-                                                @RequestHeader("Authorization") String authHeader) {
+                                                HttpServletRequest servletRequest) {
         try {
-            String token = authHeader.substring(7);
-            String tenantDb = jwtService.extractTenantDb(token);
-            String tenantRole = jwtService.extractTenantRole(token);
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!"DOCTOR".equals(tenantRole) && !"ADMIN".equals(tenantRole)){
-                log.warn(" Unauthorized role : {}", token);
+                log.warn(" Unauthorized role : {}", tenantRole);
                 throw new IllegalArgumentException("Only doctors can set profile picture");
             }
             Map<String, Object> result = userManagementService.uploadProfilePicture(userId, file, tenantDb);
@@ -94,13 +90,12 @@ public class UserManagementController {
     }
     @GetMapping("download-photo/{userId}")
     public ResponseEntity<?> downloadProfilePhoto(@PathVariable Integer userId,
-                                                  @RequestHeader("Authorization") String authHeader) {
+                                                  HttpServletRequest servletRequest) {
         try {
-            String token = authHeader.substring(7);
-            String tenantDb = jwtService.extractTenantDb(token);
-            String tenantRole = jwtService.extractTenantRole(token);
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!"DOCTOR".equals(tenantRole) && !"ADMIN".equals(tenantRole)){
-                log.warn(" Unauthorized role : {}", token);
+                log.warn(" Unauthorized role : {}", tenantRole);
                 throw new IllegalArgumentException("Only doctors and admin can set profile picture");
             }
             String profile_picture = userManagementService.getProfilePicture(tenantDb, userId);
@@ -167,12 +162,10 @@ public class UserManagementController {
     @PutMapping("{id}")
     public ResponseEntity<?> updateStatus(@PathVariable Integer id,
                                            @RequestBody UpdateRequest request,
-                                          @RequestHeader("Authorization") String authHeader) {
+                                          HttpServletRequest servletRequest) {
         try {
-            String token = authHeader.replace("Bearer ", "");
-            Claims claims = jwtService.extractClaims(token);
-            String tenantDb = claims.get("tenant_db", String.class);
-            String tenantRole = claims.get("tenant_role", String.class);
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!"ADMIN".equals(tenantRole))
             {
                 Map<String, String> error = new HashMap<>();
@@ -197,11 +190,10 @@ public class UserManagementController {
     }
     //get hospital number from patientId
     @GetMapping("{patientId}")
-    public ResponseEntity<?> getHospitalNumber(@PathVariable Integer patientId, @RequestHeader("Authorization")String authHeader) {
+    public ResponseEntity<?> getHospitalNumber(@PathVariable Integer patientId, HttpServletRequest servletRequest) {
         try{
-            String token = authHeader.substring(7);
-            String tenantDb = jwtService.extractTenantDb(token);
-            String tenantRole = jwtService.extractTenantRole(token);
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if(!"ADMIN".equals(tenantRole))
             {
                 log.warn("this user is not admin");
@@ -217,11 +209,10 @@ public class UserManagementController {
         }
     }
     @GetMapping()
-    public ResponseEntity<?> getPatients(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getPatients(HttpServletRequest servletRequest) {
         try{
-            String token = authHeader.substring(7);
-            String tenantDb = jwtService.extractTenantDb(token);
-            String tenantRole = jwtService.extractTenantRole(token);
+            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if(!"ADMIN".equals(tenantRole))
             {
                 log.warn("only admin can access this");
