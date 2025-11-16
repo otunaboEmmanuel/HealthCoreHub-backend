@@ -51,8 +51,8 @@ RUN mvn -B dependency:go-offline
 COPY src ./src
 
 # Build the application (try offline first, fallback to online)
-RUN mvn clean package -DskipTests -o 2>/dev/null || \
-    mvn clean package -DskipTests
+RUN mvn clean package -DskipTests
+#mvn clean package -DskipTests -o 2>/dev/null || \
 
 
 FROM eclipse-temurin:21-jre-jammy AS runner
