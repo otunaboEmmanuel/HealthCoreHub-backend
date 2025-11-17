@@ -31,102 +31,32 @@ public class BulkUserUploadService {
             throw new IllegalArgumentException("Unsupported file format");
         }
     }
-    private List<CreateUserRequest> parseExcel(MultipartFile file) throws IOException {
-        List<CreateUserRequest> users = new ArrayList<>();
-
-        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
-
-            // Process each sheet (one per role)
-            for (int sheetIndex = 0; sheetIndex < workbook.getNumberOfSheets(); sheetIndex++) {
-                Sheet sheet = workbook.getSheetAt(sheetIndex);
-                String sheetName = sheet.getSheetName().toUpperCase();
-
-                log.info(" Processing sheet: {}", sheetName);
-
-                // Determine role from sheet name
-                String role = determineRoleFromSheetName(sheetName);
-                if (role == null) {
-                    log.warn(" Skipping sheet: {} (unknown role)", sheetName);
-                    continue;
-                }
-
-                // First row is header
-                Row headerRow = sheet.getRow(0);
-                if (headerRow == null) continue;
-
-                Map<String, Integer> headerMap = mapExcelHeaders(headerRow);
-
-                // Process data rows
-                for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-                    Row row = sheet.getRow(rowIndex);
-                    if (row == null) continue;
-
-                    try {
-                        CreateUserRequest user = parseUserFromExcelRow(row, headerMap, role, rowIndex + 1);
-                        users.add(user);
-                    } catch (Exception e) {
-                        log.warn("⚠️ Skipping row {} in sheet {}: {}", rowIndex + 1, sheetName, e.getMessage());
-                    }
-                }
-            }
-        }
-
-        return users;
-    }
-    private String determineRoleFromSheetName(String sheetName) {
-        if (sheetName.contains("DOCTOR")) return "DOCTOR";
-        if (sheetName.contains("NURSE")) return "NURSE";
-        if (sheetName.contains("PATIENT")) return "PATIENT";
-        if (sheetName.contains("PHARMACIST")) return "PHARMACIST";
-        if (sheetName.contains("LAB")) return "LAB_SCIENTIST";
-        return null;
-    }
-    private CreateUserRequest parseUserFromExcelRow(Row row, Map<String, Integer> headers, String role, int rowNumber) {
-        CreateUserRequest request = new CreateUserRequest();
-
-        request.setFirstName(getCellStringValue(row, headers, "firstname"));
-        request.setMiddleName(getCellStringValue(row, headers, "middlename"));
-        request.setLastName(getCellStringValue(row, headers, "lastname"));
-        request.setEmail(getCellStringValue(row, headers, "email"));
-        request.setPhoneNumber(getCellStringValue(row, headers, "phonenumber"));
-        request.setRole(role);
-
-        // Parse role-specific details
-        parseRoleSpecificDetailsFromExcel(request, row, headers);
-
-        return request;
-    }
-
     private List<CreateUserRequest> parseCSV(MultipartFile file) throws IOException {
-        List<CreateUserRequest> users = new ArrayList<>();
-
+        List<CreateUserRequest> userRequests = new ArrayList<>();
         try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
             List<String[]> rows = reader.readAll();
-
-            if (rows.isEmpty()) {
-                throw new IllegalArgumentException("CSV file is empty");
+            if (rows.isEmpty()){
+                log.warn("Empty CSV file");
+                throw new IllegalArgumentException("Empty CSV file");
             }
-
             // First row is header
             String[] headers = rows.getFirst();
             Map<String, Integer> headerMap = mapHeaders(headers);
-
             // Process data rows
             for (int i = 1; i < rows.size(); i++) {
                 String[] row = rows.get(i);
                 try {
                     CreateUserRequest user = parseUserFromRow(row, headerMap, i + 1);
-                    users.add(user);
+                    userRequests.add(user);
                 } catch (Exception e) {
-                    log.warn(" Skipping row {}: {}", i + 1, e.getMessage());
+                    log.warn("️ Skipping row {}: {}", i + 1, e.getMessage());
                 }
             }
-
-        } catch (CsvException e) {
-            throw new IOException("Failed to parse CSV file", e);
+        }catch (CsvException e){
+            log.warn("CSV read error");
+            throw new IOException("CSV read error");
         }
-
-        return users;
+        return userRequests;
     }
 
     private CreateUserRequest parseUserFromRow(String[] row, Map<String, Integer> headers, int rowNumber) {
@@ -148,117 +78,12 @@ public class BulkUserUploadService {
         return request;
     }
 
-    private void parseRoleSpecificDetailsFromExcel(CreateUserRequest request, Row row, Map<String, Integer> headers) {
-        String role = request.getRole();
-
-        if ("DOCTOR".equals(role)) {
-            CreateUserRequest.DoctorDetailsRequest details = new CreateUserRequest.DoctorDetailsRequest();
-            details.setSpecialization(getCellStringValue(row, headers, "specialization"));
-            details.setDepartment(getCellStringValue(row, headers, "department"));
-            details.setLicenseNumber(getCellStringValue(row, headers, "licensenumber"));
-            details.setLicenseAuthority(getCellStringValue(row, headers, "licenseauthority"));
-            details.setLicenseIssueDate(getCellDateValue(row, headers, "licenseissuedate"));
-            details.setLicenseExpiryDate(getCellDateValue(row, headers, "licenseexpirydate"));
-            request.setDoctorDetails(details);
-        }
-        // Add other roles
-    }
-
-    private String getCellStringValue(Row row, Map<String, Integer> headers, String columnName) {
-        Integer index = headers.get(columnName.toLowerCase());
-        if (index == null) return null;
-
-        Cell cell = row.getCell(index);
-        if (cell == null) return null;
-
-        return switch (cell.getCellType()) {
-            case STRING -> cell.getStringCellValue().trim();
-            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
-            default -> null;
-        };
-    }
-
-    private LocalDate getCellDateValue(Row row, Map<String, Integer> headers, String columnName) {
-        Integer index = headers.get(columnName.toLowerCase());
-        if (index == null) return null;
-
-        Cell cell = row.getCell(index);
-        if (cell == null) return null;
-
-        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-            return cell.getLocalDateTimeCellValue().toLocalDate();
-        }
-        return null;
-    }
-
     private Map<String, Integer> mapHeaders(String[] headers) {
-        Map<String, Integer> map = new HashMap<>();
-        for (int i = 0; i < headers.length; i++) {
-            map.put(headers[i].trim().toLowerCase(), i);
+        Map<String, Integer> headerMap = new HashMap<>();
+        for(int i = 0; i<headers.length; i++){
+            headerMap.put(headers[i].trim().toLowerCase(), i);
         }
-        return map;
+        return headerMap;
     }
 
-    private Map<String, Integer> mapExcelHeaders(Row headerRow) {
-        Map<String, Integer> map = new HashMap<>();
-        for (Cell cell : headerRow) {
-            String header = cell.getStringCellValue().trim().toLowerCase();
-            map.put(header, cell.getColumnIndex());
-        }
-        return map;
-    }
-
-    private String getStringValue(String[] row, Map<String, Integer> headers, String columnName) {
-        Integer index = headers.get(columnName.toLowerCase());
-        if (index == null || index >= row.length) return null;
-        String value = row[index].trim();
-        return value.isEmpty() ? null : value;
-    }
-
-    private void parseRoleSpecificDetails(CreateUserRequest request, String[] row, Map<String, Integer> headers) {
-        String role = request.getRole();
-
-        if ("DOCTOR".equals(role)) {
-            CreateUserRequest.DoctorDetailsRequest details = new CreateUserRequest.DoctorDetailsRequest();
-            details.setSpecialization(getStringValue(row, headers, "specialization"));
-            details.setDepartment(getStringValue(row, headers, "department"));
-            details.setLicenseNumber(getStringValue(row, headers, "licensenumber"));
-            details.setLicenseAuthority(getStringValue(row, headers, "licenseauthority"));
-            details.setLicenseIssueDate(getDateValue(row, headers, "licenseissuedate"));
-            details.setLicenseExpiryDate(getDateValue(row, headers, "licenseexpirydate"));
-            request.setDoctorDetails(details);
-
-        } else if ("NURSE".equals(role)) {
-            CreateUserRequest.NurseDetailsRequest details = new CreateUserRequest.NurseDetailsRequest();
-            details.setSpecialization(getStringValue(row, headers, "specialization"));
-            details.setDepartment(getStringValue(row, headers, "department"));
-            details.setLicenseNumber(getStringValue(row, headers, "licensenumber"));
-            details.setShiftHours(getStringValue(row, headers, "shifthours"));
-            details.setYearsOfExperience(getIntValue(row, headers, "yearsofexperience"));
-            details.setLicenseIssueDate(getDateValue(row, headers, "licenseissuedate"));
-            details.setLicenseExpiryDate(getDateValue(row, headers, "licenseexpirydate"));
-            request.setNurseDetails(details);
-        }
-
-    }
-    private Integer getIntValue(String[] row, Map<String, Integer> headers, String columnName) {
-        String value = getStringValue(row, headers, columnName);
-        if (value == null) return null;
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
-    private LocalDate getDateValue(String[] row, Map<String, Integer> headers, String columnName) {
-        String value = getStringValue(row, headers, columnName);
-        if (value == null) return null;
-        try {
-            return LocalDate.parse(value);
-        } catch (Exception e) {
-            log.warn("Invalid date format: {}", value);
-            return null;
-        }
-    }
 }
