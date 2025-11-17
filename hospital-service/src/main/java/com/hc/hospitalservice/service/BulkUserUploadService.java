@@ -41,7 +41,7 @@ public class BulkUserUploadService {
                 Sheet sheet = workbook.getSheetAt(sheetIndex);
                 String sheetName = sheet.getSheetName().toUpperCase();
 
-                log.info("📄 Processing sheet: {}", sheetName);
+                log.info(" Processing sheet: {}", sheetName);
 
                 // Determine role from sheet name
                 String role = determineRoleFromSheetName(sheetName);
@@ -72,6 +72,14 @@ public class BulkUserUploadService {
         }
 
         return users;
+    }
+    private String determineRoleFromSheetName(String sheetName) {
+        if (sheetName.contains("DOCTOR")) return "DOCTOR";
+        if (sheetName.contains("NURSE")) return "NURSE";
+        if (sheetName.contains("PATIENT")) return "PATIENT";
+        if (sheetName.contains("PHARMACIST")) return "PHARMACIST";
+        if (sheetName.contains("LAB")) return "LAB_SCIENTIST";
+        return null;
     }
     private CreateUserRequest parseUserFromExcelRow(Row row, Map<String, Integer> headers, String role, int rowNumber) {
         CreateUserRequest request = new CreateUserRequest();
