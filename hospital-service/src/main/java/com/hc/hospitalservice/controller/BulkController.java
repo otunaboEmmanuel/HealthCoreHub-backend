@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -42,7 +43,7 @@ public class BulkController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "only csv and .xlsx files are supported"));
             }
             log.info(" Processing bulk upload: {} for hospital: {}", fileName, hospitalId);
-
+            Map<String, String> response = bulkUserUploadService.processBulkUpload(file, tenantDbName, hospitalId);
         }
     }
 }
