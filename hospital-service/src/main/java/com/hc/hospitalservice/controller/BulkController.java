@@ -27,13 +27,22 @@ public class BulkController {
         try{
             String tenantRole = request.getAttribute("tenantRole").toString();
             String tenantDbName = request.getAttribute("tenantDb").toString();
+            String hospitalId = request.getAttribute("hospitalId").toString();
             if(!tenantRole.equalsIgnoreCase("admin")){
                 log.info("to upload bulk upload files is not accessible to this user-role {}",tenantRole);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "You are not allowed to access this endpoint, contact hospital-admin"));
             }
             if(file.isEmpty()){
-
+                log.info("file is empty");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "file is empty"));
             }
+            String fileName = file.getOriginalFilename();
+            if (fileName == null||fileName.endsWith(".xlsx") && !fileName.contains(".csv")) {
+                log.info("only csv and .xlsx files are supported");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "only csv and .xlsx files are supported"));
+            }
+            log.info(" Processing bulk upload: {} for hospital: {}", fileName, hospitalId);
+
         }
     }
 }

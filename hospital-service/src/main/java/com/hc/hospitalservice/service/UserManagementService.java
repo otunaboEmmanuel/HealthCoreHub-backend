@@ -98,6 +98,8 @@ public class UserManagementService {
             response.put("email", request.getEmail());
             response.put("role", request.getRole());
             response.put("authUserId", userIdStr);
+            response.put("user",Map.of("email", request.getEmail()
+            ,"firstName", request.getFirstName()));
             return  response;
 
         } catch (Exception e) {
