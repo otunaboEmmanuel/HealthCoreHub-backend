@@ -58,6 +58,13 @@ public class BulkUserUploadService {
         }
         return userRequests;
     }
+    private Map<String, Integer> mapHeaders(String[] headers) {
+        Map<String, Integer> headerMap = new HashMap<>();
+        for(int i = 0; i<headers.length; i++){
+            headerMap.put(headers[i].trim().toLowerCase(), i);
+        }
+        return headerMap;
+    }
 
     private CreateUserRequest parseUserFromRow(String[] row, Map<String, Integer> headers, int rowNumber) {
         CreateUserRequest request = new CreateUserRequest();
@@ -77,13 +84,12 @@ public class BulkUserUploadService {
 
         return request;
     }
-
-    private Map<String, Integer> mapHeaders(String[] headers) {
-        Map<String, Integer> headerMap = new HashMap<>();
-        for(int i = 0; i<headers.length; i++){
-            headerMap.put(headers[i].trim().toLowerCase(), i);
-        }
-        return headerMap;
+    private String getStringValue(String[] row, Map<String, Integer> headers, String columnName) {
+        Integer index = headers.get(columnName.toLowerCase());
+        if (index == null || index >= row.length) return null;
+        String value = row[index].trim();
+        return value.isEmpty() ? null : value;
     }
+
 
 }
