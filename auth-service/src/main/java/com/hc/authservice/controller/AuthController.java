@@ -16,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/auth")
@@ -35,7 +37,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         log.info(" Registration request for: {}", request.getEmail());
-
         try {
             Map<String, Object> response = authService.register(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -53,6 +54,9 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+
+
+
 
     /**
      * User login
@@ -139,4 +143,5 @@ public class AuthController {
                 "message", "Logged out successfully"
         ));
     }
+
 }
