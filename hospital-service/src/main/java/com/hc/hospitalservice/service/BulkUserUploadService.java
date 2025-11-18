@@ -41,12 +41,12 @@ public class BulkUserUploadService {
                 Sheet sheet = workbook.getSheetAt(sheetIndex);
                 String sheetName = sheet.getSheetName().toUpperCase();
 
-                log.info("📄 Processing sheet: {}", sheetName);
+                log.info(" Processing sheet: {}", sheetName);
 
                 // Determine role from sheet name
                 String role = determineRoleFromSheetName(sheetName);
                 if (role == null) {
-                    log.warn("⚠️ Skipping sheet: {} (unknown role)", sheetName);
+                    log.warn(" Skipping sheet: {} (unknown role)", sheetName);
                     continue;
                 }
 
@@ -65,13 +65,87 @@ public class BulkUserUploadService {
                         CreateUserRequest user = parseUserFromExcelRow(row, headerMap, role, rowIndex + 1);
                         users.add(user);
                     } catch (Exception e) {
-                        log.warn("⚠️ Skipping row {} in sheet {}: {}", rowIndex + 1, sheetName, e.getMessage());
+                        log.warn("️ Skipping row {} in sheet {}: {}", rowIndex + 1, sheetName, e.getMessage());
                     }
                 }
             }
         }
 
         return users;
+    }
+
+    private CreateUserRequest parseUserFromExcelRow(Row row, Map<String, Integer> headers, String role, int rowNumber) {
+        CreateUserRequest request = new CreateUserRequest();
+
+        request.setFirstName(getCellStringValue(row, headers, "firstname"));
+        request.setMiddleName(getCellStringValue(row, headers, "middlename"));
+        request.setLastName(getCellStringValue(row, headers, "lastname"));
+        request.setEmail(getCellStringValue(row, headers, "email"));
+        request.setPhoneNumber(getCellStringValue(row, headers, "phonenumber"));
+        request.setRole(role);
+
+        // Parse role-specific details
+        parseRoleSpecificDetailsFromExcel(request, row, headers);
+
+        return request;
+    }
+    private void parseRoleSpecificDetailsFromExcel(CreateUserRequest request, Row row, Map<String, Integer> headers) {
+        String role = request.getRole();
+
+        if ("DOCTOR".equals(role)) {
+            CreateUserRequest.DoctorDetailsRequest details = new CreateUserRequest.DoctorDetailsRequest();
+            details.setSpecialization(getCellStringValue(row, headers, "specialization"));
+            details.setDepartment(getCellStringValue(row, headers, "department"));
+            details.setLicenseNumber(getCellStringValue(row, headers, "licensenumber"));
+            details.setLicenseAuthority(getCellStringValue(row, headers, "licenseauthority"));
+            details.setLicenseIssueDate(getCellDateValue(row, headers, "licenseissuedate"));
+            details.setLicenseExpiryDate(getCellDateValue(row, headers, "licenseexpirydate"));
+            request.setDoctorDetails(details);
+        }
+        // Add other roles
+    }
+    private String getCellStringValue(Row row, Map<String, Integer> headers, String columnName) {
+        Integer index = headers.get(columnName.toLowerCase());
+        if (index == null) return null;
+
+        Cell cell = row.getCell(index);
+        if (cell == null) return null;
+
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue().trim();
+            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
+            default -> null;
+        };
+    }
+    private LocalDate getCellDateValue(Row row, Map<String, Integer> headers, String columnName) {
+        Integer index = headers.get(columnName.toLowerCase());
+        if (index == null) return null;
+
+        Cell cell = row.getCell(index);
+        if (cell == null) return null;
+
+        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            return cell.getLocalDateTimeCellValue().toLocalDate();
+        }
+        return null;
+    }
+    private String determineRoleFromSheetName(String sheetName) {
+        if (sheetName.contains("DOCTOR")) return "DOCTOR";
+        if (sheetName.contains("NURSE")) return "NURSE";
+        if (sheetName.contains("PATIENT")) return "PATIENT";
+        if (sheetName.contains("PHARMACIST")) return "PHARMACIST";
+        if (sheetName.contains("LAB")) return "LAB_SCIENTIST";
+        return null;
+    }
+
+
+    private Map<String, Integer> mapExcelHeaders(Row headerRow) {
+        Map<String, Integer> map = new HashMap<>();
+        for (Cell cell : headerRow) {
+            String header = cell.getStringCellValue().trim().toLowerCase();
+            map.put(header, cell.getColumnIndex());
+        }
+        return map;
     }
 
     private List<CreateUserRequest> parseCSV(MultipartFile file) throws IOException {
