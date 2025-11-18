@@ -1,10 +1,10 @@
 package com.hc.hospitalservice.service;
 
+import com.hc.hospitalservice.dto.BulkUploadResponse;
 import com.hc.hospitalservice.dto.CreateUserRequest;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -13,13 +13,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
 @Slf4j
 public class BulkUserUploadService {
-    public Map<String, String> processBulkUpload(MultipartFile file, String tenantDbName, String hospitalId) throws IOException {
+    public BulkUploadResponse processBulkUpload(MultipartFile file, String tenantDbName, String hospitalId) throws IOException {
         String filename = file.getOriginalFilename();
         List<CreateUserRequest> userRequests;
         if (filename != null && filename.endsWith(".csv")) {
@@ -29,6 +28,7 @@ public class BulkUserUploadService {
         } else {
             throw new IllegalArgumentException("Unsupported file format");
         }
+
     }
 
     private List<CreateUserRequest> parseExcel(MultipartFile file) throws IOException {
@@ -276,6 +276,47 @@ public class BulkUserUploadService {
             log.warn("Invalid date format: {}", value);
             return null;
         }
+    }
+    private List<BulkUploadResponse.FailureDetail> validateRecords(List<CreateUserRequest> users, String tenantDb) {
+        List<BulkUploadResponse.FailureDetail> errors = new ArrayList<>();
+        Set<String> emails = new HashSet<>();
+
+        for (int i = 0; i < users.size(); i++) {
+            CreateUserRequest user = users.get(i);
+            int rowNumber = i + 2; // +2 because: 0-indexed + header row
+
+            // Check required fields
+            if (user.getEmail() == null || user.getEmail().isEmpty()) {
+                errors.add(new BulkUploadResponse.FailureDetail(
+                        rowNumber, "", "Email is required"));
+                continue;
+            }
+
+            if (user.getFirstName() == null || user.getFirstName().isEmpty()) {
+                errors.add(new BulkUploadResponse.FailureDetail(
+                        rowNumber, user.getEmail(), "First name is required"));
+                continue;
+            }
+
+            if (user.getLastName() == null || user.getLastName().isEmpty()) {
+                errors.add(new BulkUploadResponse.FailureDetail(
+                        rowNumber, user.getEmail(), "Last name is required"));
+                continue;
+            }
+
+            if (user.getRole() == null) {
+                errors.add(new BulkUploadResponse.FailureDetail(
+                        rowNumber, user.getEmail(), "Role is required"));
+                continue;
+            }
+
+            // Check for duplicates in file
+            if (!emails.add(user.getEmail())) {
+                errors.add(new BulkUploadResponse.FailureDetail(
+                        rowNumber, user.getEmail(), "Duplicate email in file"));
+            }
+        }
+        return errors;
     }
 
 
