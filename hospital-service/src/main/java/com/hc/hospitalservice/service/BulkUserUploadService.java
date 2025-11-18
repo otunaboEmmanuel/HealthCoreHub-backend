@@ -30,6 +30,50 @@ public class BulkUserUploadService {
             throw new IllegalArgumentException("Unsupported file format");
         }
     }
+
+    private List<CreateUserRequest> parseExcel(MultipartFile file) throws IOException {
+        List<CreateUserRequest> users = new ArrayList<>();
+
+        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+
+            // Process each sheet (one per role)
+            for (int sheetIndex = 0; sheetIndex < workbook.getNumberOfSheets(); sheetIndex++) {
+                Sheet sheet = workbook.getSheetAt(sheetIndex);
+                String sheetName = sheet.getSheetName().toUpperCase();
+
+                log.info("📄 Processing sheet: {}", sheetName);
+
+                // Determine role from sheet name
+                String role = determineRoleFromSheetName(sheetName);
+                if (role == null) {
+                    log.warn("⚠️ Skipping sheet: {} (unknown role)", sheetName);
+                    continue;
+                }
+
+                // First row is header
+                Row headerRow = sheet.getRow(0);
+                if (headerRow == null) continue;
+
+                Map<String, Integer> headerMap = mapExcelHeaders(headerRow);
+
+                // Process data rows
+                for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+                    Row row = sheet.getRow(rowIndex);
+                    if (row == null) continue;
+
+                    try {
+                        CreateUserRequest user = parseUserFromExcelRow(row, headerMap, role, rowIndex + 1);
+                        users.add(user);
+                    } catch (Exception e) {
+                        log.warn("⚠️ Skipping row {} in sheet {}: {}", rowIndex + 1, sheetName, e.getMessage());
+                    }
+                }
+            }
+        }
+
+        return users;
+    }
+
     private List<CreateUserRequest> parseCSV(MultipartFile file) throws IOException {
         List<CreateUserRequest> userRequests = new ArrayList<>();
         try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
@@ -131,7 +175,7 @@ public class BulkUserUploadService {
             request.setLabScientistDetails(details);
 
         }
-        // Add other roles as needed
+        // Add other roles as needed(hospital staff would need to be here when i figure it out)
     }
 
     private String getStringValue(String[] row, Map<String, Integer> headers, String columnName) {

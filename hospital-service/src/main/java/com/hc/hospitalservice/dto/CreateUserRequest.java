@@ -120,4 +120,12 @@ public class CreateUserRequest {
         private String licenseAuthority;
         private Integer yearsOfExperience;
     }
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class HospitalStaffDetailsRequest {
+       private String position;
+       private String department;
+    }
 }
