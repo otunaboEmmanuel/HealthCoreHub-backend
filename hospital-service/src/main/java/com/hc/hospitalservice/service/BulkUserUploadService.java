@@ -31,6 +31,21 @@ public class BulkUserUploadService {
         } else {
             throw new IllegalArgumentException("Unsupported file format");
         }
+        List<BulkUploadResponse.FailureDetail> validationErrors = validateRecords(userRequests, tenantDbName);
+
+        if (!validationErrors.isEmpty()) {
+            log.warn("⚠️ Validation failed for {} records", validationErrors.size());
+            return BulkUploadResponse.builder()
+                    .totalRecords(userRequests.size())
+                    .successful(0)
+                    .failed(validationErrors.size())
+                    .failures(validationErrors)
+                    .message("Validation failed. Please fix errors and re-upload.")
+                    .build();
+        }
+
+        // Process each user
+        return processUsers(userRequests, tenantDbName, Integer.valueOf(hospitalId));
 
     }
 
