@@ -55,8 +55,13 @@ public class BulkController {
         }
         }
     @GetMapping("/bulk-upload/template")
-    public ResponseEntity<?> downloadTemplate(@RequestParam String format) {
+    public ResponseEntity<?> downloadTemplate(@RequestParam String format, HttpServletRequest servletRequest) {
         try {
+            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
+            if(!tenantRole.equalsIgnoreCase("admin")){
+                log.warn("bulk upload template is not accessible to this user-role {}",tenantRole);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error","You are not allowed to access this endpoint"));
+            }
             if ("csv".equalsIgnoreCase(format)) {
                 ByteArrayResource resource = templateDownloadService.generateCSVTemplate();
 
