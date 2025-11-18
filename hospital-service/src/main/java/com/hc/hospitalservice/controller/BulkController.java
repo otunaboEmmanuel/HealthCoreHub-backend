@@ -2,16 +2,15 @@ package com.hc.hospitalservice.controller;
 
 import com.hc.hospitalservice.dto.BulkUploadResponse;
 import com.hc.hospitalservice.service.BulkUserUploadService;
+import com.hc.hospitalservice.service.TemplateDownloadService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,6 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BulkController {
     private final BulkUserUploadService bulkUserUploadService;
+    private final TemplateDownloadService templateDownloadService;
 
     @PostMapping(value = "bulk-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> bulkUpload(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
@@ -46,8 +46,44 @@ public class BulkController {
             }
             log.info(" Processing bulk upload: {} for hospital: {}", fileName, hospitalId);
              BulkUploadResponse response = bulkUserUploadService.processBulkUpload(file, tenantDbName, hospitalId);
+             return ResponseEntity.ok().body(response);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error(" Bulk upload failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Bulk upload failed: " + e.getMessage()));
+        }
+        }
+    @GetMapping("/bulk-upload/template")
+    public ResponseEntity<?> downloadTemplate(@RequestParam String format) {
+        try {
+            if ("csv".equalsIgnoreCase(format)) {
+                ByteArrayResource resource = templateDownloadService.generateCSVTemplate();
+
+                return ResponseEntity.ok()
+                        .header("Content-Disposition", "attachment; filename=user-upload-template.csv")
+                        .contentType(MediaType.parseMediaType("text/csv"))
+                        .contentLength(resource.contentLength())
+                        .body(resource);
+
+            } else if ("xlsx".equalsIgnoreCase(format) || "excel".equalsIgnoreCase(format)) {
+                ByteArrayResource resource = templateDownloadService.generateExcelTemplate();
+
+                return ResponseEntity.ok()
+                        .header("Content-Disposition", "attachment; filename=user-upload-template.xlsx")
+                        .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                        .contentLength(resource.contentLength())
+                        .body(resource);
+
+            } else {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Invalid format. Use 'csv' or 'xlsx'"));
+            }
+
+        } catch (Exception e) {
+            log.error(" Failed to generate template", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to generate template"));
         }
     }
 }
+
