@@ -4,6 +4,7 @@ import com.hc.hospitalservice.dto.BulkUploadResponse;
 import com.hc.hospitalservice.dto.CreateUserRequest;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -17,7 +18,9 @@ import java.util.*;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class BulkUserUploadService {
+    private final UserManagementService userManagementService;
     public BulkUploadResponse processBulkUpload(MultipartFile file, String tenantDbName, String hospitalId) throws IOException {
         String filename = file.getOriginalFilename();
         List<CreateUserRequest> userRequests;
@@ -317,6 +320,35 @@ public class BulkUserUploadService {
             }
         }
         return errors;
+    }
+    private BulkUploadResponse processUsers(List<CreateUserRequest> users, String tenantDb, Integer hospitalId) {
+        int successful = 0;
+        List<BulkUploadResponse.FailureDetail> failures = new ArrayList<>();
+
+        for (int i = 0; i < users.size(); i++) {
+            CreateUserRequest user = users.get(i);
+            int rowNumber = i + 2;
+
+            try {
+               userManagementService.createUser(user, tenantDb, hospitalId);
+                successful++;
+                log.info(" Row {}: Invited {}", rowNumber, user.getEmail());
+
+            } catch (Exception e) {
+                log.error(" Row {}: Failed to invite {}", rowNumber, user.getEmail(), e);
+                failures.add(new BulkUploadResponse.FailureDetail(
+                        rowNumber, user.getEmail(), e.getMessage()));
+            }
+        }
+
+        return BulkUploadResponse.builder()
+                .totalRecords(users.size())
+                .successful(successful)
+                .failed(failures.size())
+                .failures(failures)
+                .message(String.format("Processed %d users. %d successful, %d failed.",
+                        users.size(), successful, failures.size()))
+                .build();
     }
 
 
