@@ -354,20 +354,19 @@ public class AuthService {
     public Map<String, Object> Me(String accessToken) {
         Map<String, Object> responseMap = new HashMap<>();
         log.info(" Me attempt");
-        try{
-            if(jwtService.isTokenValid(accessToken) && !jwtService.isTokenExpired(accessToken)){
-                Claims claims = jwtService.extractClaims(accessToken);
-                responseMap.put("email", claims.get("email"));
-                responseMap.put("hospital_id", claims.get("hospital_id"));
-                responseMap.put("global_role", claims.get("global_role"));
-                responseMap.put("tenant_role",claims.get("tenant_role"));
-                responseMap.put("tenant_user_id", claims.get("tenant_user_id"));
-                responseMap.put("status", claims.get("status"));
+
+            if(!jwtService.isTokenValid(accessToken) && jwtService.isTokenExpired(accessToken)){
+                log.info("token expired or invalid");
+                responseMap.put("error", "Invalid token");
+                return responseMap;
             }
-        }catch (Exception e){
-            log.info("token validation failed");
-            throw new RuntimeException("token validation failed");
-        }
-        return responseMap;
+            Claims claims = jwtService.extractClaims(accessToken);
+            responseMap.put("email", claims.get("email"));
+            responseMap.put("hospital_id", claims.get("hospital_id"));
+            responseMap.put("global_role", claims.get("global_role"));
+            responseMap.put("tenant_role",claims.get("tenant_role"));
+            responseMap.put("tenant_user_id", claims.get("tenant_user_id"));
+            responseMap.put("status", claims.get("status"));
+            return responseMap;
     }
 }
