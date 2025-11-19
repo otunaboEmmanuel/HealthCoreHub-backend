@@ -146,11 +146,12 @@ public class AuthController {
                 "message", "Logged out successfully"
         ));
     }
-    @PostMapping("me")
+    @GetMapping("me")
     public ResponseEntity<?> me(HttpServletRequest request, HttpServletResponse response) {
         try {
             String accessToken = cookieService.getAccessTokenFromCookie(request)
                     .orElseThrow(() -> new IllegalArgumentException("Access token not found"));
+            Map<String, Object> result = authService.Me(accessToken);
             return ResponseEntity.ok(result);
         }catch (Exception e) {
             Map<String, String> error = new HashMap<>();
