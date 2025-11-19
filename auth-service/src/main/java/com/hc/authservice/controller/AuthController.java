@@ -124,17 +124,17 @@ public class AuthController {
         }
 
     }
-//    @PostMapping("/refresh")
-//    public ResponseEntity<?> refreshToken(
-//            HttpServletRequest request,
-//            HttpServletResponse response) {
-//
-//        String refreshToken = cookieService.getRefreshTokenFromCookie(request)
-//                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
-//
-//        Map<String,Object> loginResponse = authService.refreshToken(refreshToken, response);
-//        return ResponseEntity.ok(loginResponse);
-//    }
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        String refreshToken = cookieService.getRefreshTokenFromCookie(request)
+                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
+
+        Map<String,Object> loginResponse = authService.refreshToken(refreshToken, response);
+        return ResponseEntity.ok(loginResponse);
+    }
     /**
      * Logout - clears cookies
      */
@@ -151,9 +151,6 @@ public class AuthController {
         try {
             String accessToken = cookieService.getAccessTokenFromCookie(request)
                     .orElseThrow(() -> new IllegalArgumentException("Access token not found"));
-            String refreshToken = cookieService.getRefreshTokenFromCookie(request).
-                    orElseThrow(() -> new IllegalArgumentException("refresh token not found"));
-            Map<String, Object> result = authService.authenticate(accessToken, refreshToken, response);
             return ResponseEntity.ok(result);
         }catch (Exception e) {
             Map<String, String> error = new HashMap<>();
