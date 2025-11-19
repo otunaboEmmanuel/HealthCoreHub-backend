@@ -147,7 +147,7 @@ public class AuthController {
         ));
     }
     @GetMapping("me")
-    public ResponseEntity<?> me(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> me(HttpServletRequest request) {
         try {
             String accessToken = cookieService.getAccessTokenFromCookie(request)
                     .orElseThrow(() -> new IllegalArgumentException("Access token not found"));
