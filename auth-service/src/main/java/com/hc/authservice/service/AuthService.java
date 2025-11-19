@@ -8,6 +8,7 @@ import com.hc.authservice.entity.AuthUser;
 import com.hc.authservice.entity.RefreshToken;
 import com.hc.authservice.repository.AuthUserRepository;
 import com.hc.authservice.repository.RefreshTokenRepository;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -308,38 +309,84 @@ public class AuthService {
         authUserRepository.deleteById(userId);
     }
     //creating refresh token after access token has expired
-    @Transactional(rollbackFor = Exception.class)
-    public Map<String, Object> refreshToken(String refreshToken, HttpServletResponse response) {
-        log.info(" Token refresh attempt");
+//    @Transactional(rollbackFor = Exception.class)
+//    public Map<String, Object> refreshToken(String refreshToken, HttpServletResponse response) {
+//        log.info(" Token refresh attempt");
+//        Map<String,Object> responseMap = new HashMap<>();
+//        //validate refresh token
+//        RefreshToken refreshToken1 = refreshTokenRepository.findByToken(refreshToken).orElse(null);
+//        if (refreshToken1 == null) {
+//            log.info("refresh token not found");
+//            responseMap.put("error", "Invalid refresh token");
+//            return responseMap;
+//        }
+//        String userId = jwtService.extractUserId(refreshToken);
+//        AuthUser user = authUserRepository.findById(userId)
+//                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+//
+//        if (!user.getIsActive()) {
+//            throw new IllegalArgumentException("Account is not active");
+//        }
+//        UserInfo userInfo = getTenantRoleAndId(user);
+//        if (userInfo == null) {
+//            throw new RuntimeException("User not found in tenant DB: " + user.getEmail());
+//        }
+//        //get tenant status from tenantDb
+//        String tenantStatus = getTenantUserStatus(user);
+//        // Generate new access token
+//        String newAccessToken = jwtService.generateToken(user, userInfo.getRole(), tenantStatus, userInfo.getUserId());
+//        // Set new access token cookie (keep refresh token)
+//        cookieService.setAccessTokenCookie(response, newAccessToken);
+//        log.info(" Token refreshed for user: {}", user.getEmail());
+//        responseMap.put("userId", user.getId());
+//        responseMap.put("success", true);
+//        responseMap.put("email", user.getEmail());
+//        return responseMap;
+//    }
+
+    public Map<String, Object> authenticate(String accessToken, String refreshToken, HttpServletResponse response) {
+        log.info(" Token authentication attempt");
         Map<String,Object> responseMap = new HashMap<>();
-        //validate refresh token
-        RefreshToken refreshToken1 = refreshTokenRepository.findByToken(refreshToken).orElse(null);
-        if (refreshToken1 == null) {
-            log.info("refresh token not found");
-            responseMap.put("error", "Invalid refresh token");
+        if(jwtService.isTokenExpired(accessToken)) {
+            log.info("access token expired");
+            RefreshToken refreshToken1 = refreshTokenRepository.findByToken(refreshToken).orElse(null);
+            if (refreshToken1 == null) {
+                log.info("refresh token not found");
+                responseMap.put("error", "Invalid refresh token");
+                return responseMap;
+            }
+            if (!jwtService.isTokenExpired(refreshToken1.getToken())) {
+                String userId = jwtService.extractUserId(refreshToken);
+                AuthUser user = authUserRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+                UserInfo userInfo = getTenantRoleAndId(user);
+                if (userInfo == null) {
+                    throw new RuntimeException("User not found in tenant DB: " + user.getEmail());
+                }
+                String tenantStatus = getTenantUserStatus(user);
+                String newAccessToken = jwtService.generateToken(user, userInfo.getRole(), tenantStatus, userInfo.getUserId());
+                String newRefreshToken = jwtService.generateRefreshToken(user);
+                cookieService.setAccessTokenCookie(response, newAccessToken);
+                cookieService.setRefreshTokenCookie(response, newRefreshToken);
+                log.info("access token and refresh token have been updated");
+                return getStringObjectMap(newAccessToken, responseMap);
+            }
+            cookieService.clearAuthCookies(response);
+            responseMap.put("error", "Invalid refresh token. log in again");
             return responseMap;
         }
-        String userId = jwtService.extractUserId(refreshToken);
-        AuthUser user = authUserRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return getStringObjectMap(accessToken, responseMap);
+    }
 
-        if (!user.getIsActive()) {
-            throw new IllegalArgumentException("Account is not active");
-        }
-        UserInfo userInfo = getTenantRoleAndId(user);
-        if (userInfo == null) {
-            throw new RuntimeException("User not found in tenant DB: " + user.getEmail());
-        }
-        //get tenant status from tenantDb
-        String tenantStatus = getTenantUserStatus(user);
-        // Generate new access token
-        String newAccessToken = jwtService.generateToken(user, userInfo.getRole(), tenantStatus, userInfo.getUserId());
-        // Set new access token cookie (keep refresh token)
-        cookieService.setAccessTokenCookie(response, newAccessToken);
-        log.info(" Token refreshed for user: {}", user.getEmail());
-        responseMap.put("userId", user.getId());
-        responseMap.put("success", true);
-        responseMap.put("email", user.getEmail());
-        return responseMap;
+    private Map<String, Object> getStringObjectMap(String accessToken, Map<String, Object> responseMap) {
+        Claims claims = jwtService.extractClaims(accessToken);
+        responseMap.put("user_id",claims.get("user_id"));
+        responseMap.put("email", claims.get("email"));
+        responseMap.put("hospital_id", claims.get("hospital_id"));
+        responseMap.put("tenant_db", claims.get("tenant_db"));
+        responseMap.put("global_role", claims.get("global_role"));
+        responseMap.put("tenant_role",claims.get("tenant_role"));
+        responseMap.put("tenant_user_id", claims.get("tenant_user_id"));
+        responseMap.put("status", claims.get("status"));
+        return  responseMap;
     }
 }

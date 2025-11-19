@@ -5,7 +5,9 @@ import com.hc.authservice.dto.LoginResponse;
 import com.hc.authservice.dto.RegisterRequest;
 import com.hc.authservice.service.AuthService;
 import com.hc.authservice.service.CookieService;
+import com.hc.authservice.service.JwtService;
 import com.hc.authservice.service.UserActivationService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -30,6 +32,7 @@ public class AuthController {
     private final AuthService authService;
     private final UserActivationService userActivationService;
     private final CookieService cookieService;
+    private final JwtService jwtService;
 
     /**
      * Register a new user (called by other services)
@@ -121,17 +124,17 @@ public class AuthController {
         }
 
     }
-    @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response) {
-
-        String refreshToken = cookieService.getRefreshTokenFromCookie(request)
-                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
-
-        Map<String,Object> loginResponse = authService.refreshToken(refreshToken, response);
-        return ResponseEntity.ok(loginResponse);
-    }
+//    @PostMapping("/refresh")
+//    public ResponseEntity<?> refreshToken(
+//            HttpServletRequest request,
+//            HttpServletResponse response) {
+//
+//        String refreshToken = cookieService.getRefreshTokenFromCookie(request)
+//                .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
+//
+//        Map<String,Object> loginResponse = authService.refreshToken(refreshToken, response);
+//        return ResponseEntity.ok(loginResponse);
+//    }
     /**
      * Logout - clears cookies
      */
@@ -142,6 +145,21 @@ public class AuthController {
                 "success", "true",
                 "message", "Logged out successfully"
         ));
+    }
+    @PostMapping("me")
+    public ResponseEntity<?> me(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            String accessToken = cookieService.getAccessTokenFromCookie(request)
+                    .orElseThrow(() -> new IllegalArgumentException("Access token not found"));
+            String refreshToken = cookieService.getRefreshTokenFromCookie(request).
+                    orElseThrow(() -> new IllegalArgumentException("refresh token not found"));
+            Map<String, Object> result = authService.authenticate(accessToken, refreshToken, response);
+            return ResponseEntity.ok(result);
+        }catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Authentication failed");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
     }
 
 }
