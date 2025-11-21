@@ -95,6 +95,19 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+
+  # ============================================
+  # REDIS DATABASE
+  # ============================================
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - healthcare-network
+
   # ============================================
   # MICROSERVICES
   # ============================================
@@ -270,6 +283,7 @@ services:
     container_name: gateway-service
     restart: always
     depends_on:
+      - redis
       - onboarding-service
       - auth-service
       - hospital-service
@@ -280,6 +294,10 @@ services:
       AUTH_SERVICE_URL: http://auth-service:4001
       HOSPITAL_SERVICE_URL: http://hospital-service:4002
       APPOINTMENT_SERVICE_URL: http://appointment-service:4005
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DATABASE: 0
     ports:
       - "4004:4004"
     networks:

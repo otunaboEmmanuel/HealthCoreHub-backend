@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/auth-service/auth-service.iml" filepath="$PROJECT_DIR$/auth-service/auth-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/healthcarehub.iml" filepath="$PROJECT_DIR$/healthcarehub.iml" />
-      <module fileurl="file://$PROJECT_DIR$/hospital-service/hospital-service.iml" filepath="$PROJECT_DIR$/hospital-service/hospital-service.iml" />
     </modules>
   </component>
 </project>
