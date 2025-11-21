@@ -15,6 +15,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -56,6 +58,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     log.debug("Tenant context set: {}", tenantDb);
                 }
             }
+
 
             // Continue request
             filterChain.doFilter(request, response);
