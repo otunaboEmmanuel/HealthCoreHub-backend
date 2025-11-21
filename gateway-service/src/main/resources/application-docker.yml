@@ -133,3 +133,6 @@ management:
       enabled: true
   health:
     show-details: always
+
+jwt:
+  secret: ${JWT_SECRET}

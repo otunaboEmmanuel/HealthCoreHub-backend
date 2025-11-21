@@ -294,6 +294,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:4001
       HOSPITAL_SERVICE_URL: http://hospital-service:4002
       APPOINTMENT_SERVICE_URL: http://appointment-service:4005
+      JWT_SECRET: ${JWT_SECRET}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
