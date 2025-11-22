@@ -65,7 +65,7 @@ public class RateLimitConfig {
                 ip = ip.split(",")[0].trim();
             }
 
-            log.debug("🔑 User Key Resolver (fallback to IP): {}", ip);
+            log.debug(" User Key Resolver (fallback to IP): {}", ip);
             return Mono.just("ip:" + ip);
         };
     }
@@ -81,11 +81,11 @@ public class RateLimitConfig {
                     .getFirst("X-Tenant-Db");
 
             if (tenantDb != null && !tenantDb.isEmpty()) {
-                log.debug("🔑 Tenant Key Resolver: tenant:{}", tenantDb);
+                log.debug(" Tenant Key Resolver: tenant:{}", tenantDb);
                 return Mono.just("tenant:" + tenantDb);
             }
 
-            log.debug("🔑 Tenant Key Resolver (default)");
+            log.debug(" Tenant Key Resolver (default)");
             return Mono.just("tenant:default");
         };
     }
