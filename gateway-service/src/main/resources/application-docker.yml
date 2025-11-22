@@ -48,7 +48,7 @@ spring:
             - Path=/api/hospital/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
-
+            - name: RequestRateLimiter
         - id: onboarding-service-plans
           uri: http://onboarding-service:4000
           predicates:
