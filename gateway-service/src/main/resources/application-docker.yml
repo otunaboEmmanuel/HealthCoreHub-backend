@@ -60,13 +60,22 @@ spring:
             - Path=/api/plans/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
-
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                key-resolver: "#{@userKeyResolver}"
         - id: onboarding-service-admin
           uri: http://onboarding-service:4000
           predicates:
             - Path=/api/admin/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                key-resolver: "#{@userKeyResolver}"
         # === APPOINTMENT SERVICE ROUTES ===
         - id: appointment-service-doctor
           uri: http://appointment-service:4005
