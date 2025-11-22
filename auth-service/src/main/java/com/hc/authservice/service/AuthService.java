@@ -6,6 +6,8 @@ import com.hc.authservice.dto.RegisterRequest;
 import com.hc.authservice.dto.UserInfo;
 import com.hc.authservice.entity.AuthUser;
 import com.hc.authservice.entity.RefreshToken;
+import com.hc.authservice.exception.RateLimitExceededException;
+import com.hc.authservice.ratelimit.ServiceRateLimiter;
 import com.hc.authservice.repository.AuthUserRepository;
 import com.hc.authservice.repository.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
@@ -48,6 +50,7 @@ public class AuthService {
     @Value("${jwt.refresh-expiration}")
     private Long refreshExpiration;
     private final CookieService cookieService;
+    private final ServiceRateLimiter rateLimiter;
 
     /**
      * Register a new user (called by onboarding-service or hospital-service)
@@ -90,6 +93,18 @@ public class AuthService {
     public Map<String, Object> login(LoginRequest request, HttpServletResponse response) {
         log.info("🔐 Login attempt for: {}", request.getEmail());
 
+        if (!rateLimiter.checkLoginRateLimit(request.getEmail())) {
+            long waitTime = rateLimiter.getSecondsUntilReset(
+                    "auth:login:" + request.getEmail().toLowerCase()
+            );
+
+            throw new RateLimitExceededException(
+                    String.format("Too many login attempts for this email. Please try again in %d seconds.",
+                            waitTime),
+                    waitTime,
+                    "service-login"
+            );
+        }
         // Find user
         AuthUser authUser = authUserRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
