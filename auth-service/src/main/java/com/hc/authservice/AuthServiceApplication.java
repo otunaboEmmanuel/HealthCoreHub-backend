@@ -14,7 +14,4 @@ public class AuthServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(AuthServiceApplication.class, args);
     }
-    Set<Integer> integerSet = new HashSet<>();
-    Map<String, String> map = new HashMap<>();
-
 }
