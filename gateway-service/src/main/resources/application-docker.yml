@@ -83,6 +83,11 @@ spring:
             - Path=/api/doctor/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                key-resolver: "#{@userKeyResolver}"
 
         - id: appointment-service-booking
           uri: http://appointment-service:4005
@@ -90,6 +95,11 @@ spring:
             - Path=/api/appointment/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
         # === AUTH SERVICE ROUTES ===
         - id: auth-service-login
           uri: http://auth-service:4001
@@ -97,6 +107,11 @@ spring:
             - Path=/auth/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
 
 
         # === HOSPITAL SERVICE ROUTES ===
@@ -106,6 +121,11 @@ spring:
             - Path=/api/users/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                key-resolver: "#{@userKeyResolver}"
 
         - id: hospital-service-profile
           uri: http://hospital-service:4002
