@@ -4,14 +4,12 @@ import com.hc.appointmentservice.dto.AppointmentDTO;
 import com.hc.appointmentservice.dto.DoctorResponse;
 import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.service.AppointmentService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
