@@ -22,29 +22,24 @@ import java.util.Map;
 @Slf4j
 public class UserManagementController {
     private final UserManagementService userManagementService;
-    private final JwtService jwtService;
     private final UserProfileService userProfileService;
-
     /**
      * Create a new user (only admins can do this)
      */
     @PostMapping()
     public ResponseEntity<?> createUser(
              @Valid @RequestBody CreateUserRequest request,
-            HttpServletRequest servletRequest) {
-
+             @RequestHeader(value = "X-Hospital-Id", required = false) String hospitalId,
+             @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+             @RequestHeader("X-Tenant-Role") String tenantRole) {
         try {
-
-            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
-            Integer hospitalId = Integer.valueOf(servletRequest.getAttribute("hospitalId").toString());
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!"ADMIN".equals(tenantRole)&& !("DOCTOR".equals(tenantRole)) && !("NURSE".equals(tenantRole)))
             {
                 Map<String, String> error = new HashMap<>();
                 error.put("error", "Only admins can create users");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
             }
-            Map<String,Object> response = userManagementService.createUser(request, tenantDb, hospitalId);
+            Map<String,Object> response = userManagementService.createUser(request, tenantDb, Integer.valueOf(hospitalId));
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
@@ -63,11 +58,9 @@ public class UserManagementController {
     }
     @PutMapping("{userId}/photo")
     public ResponseEntity<?> updateProfilePhoto(@RequestParam(value = "profile_picture", required = false) MultipartFile file,
-                                                @PathVariable Integer userId,
-                                                HttpServletRequest servletRequest) {
+                                                @PathVariable Integer userId, @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                                @RequestHeader("X-Tenant-Role") String tenantRole) {
         try {
-            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!"DOCTOR".equals(tenantRole) && !"ADMIN".equals(tenantRole)){
                 log.warn(" Unauthorized role : {}", tenantRole);
                 throw new IllegalArgumentException("Only doctors can set profile picture");
@@ -84,10 +77,9 @@ public class UserManagementController {
     }
     @GetMapping("download-photo/{userId}")
     public ResponseEntity<?> downloadProfilePhoto(@PathVariable Integer userId,
-                                                  HttpServletRequest servletRequest) {
+                                                  @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                                  @RequestHeader("X-Tenant-Role") String tenantRole) {
         try {
-            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!"DOCTOR".equals(tenantRole) && !"ADMIN".equals(tenantRole)){
                 log.warn(" Unauthorized role : {}", tenantRole);
                 throw new IllegalArgumentException("Only doctors and admin can set profile picture");
@@ -156,10 +148,9 @@ public class UserManagementController {
     @PutMapping("{id}")
     public ResponseEntity<?> updateStatus(@PathVariable Integer id,
                                            @RequestBody UpdateRequest request,
-                                          HttpServletRequest servletRequest) {
+                                          @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                          @RequestHeader("X-Tenant-Role") String tenantRole) {
         try {
-            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!"ADMIN".equals(tenantRole))
             {
                 Map<String, String> error = new HashMap<>();
@@ -184,10 +175,9 @@ public class UserManagementController {
     }
     //get hospital number from patientId
     @GetMapping("{patientId}")
-    public ResponseEntity<?> getHospitalNumber(@PathVariable Integer patientId, HttpServletRequest servletRequest) {
+    public ResponseEntity<?> getHospitalNumber(@PathVariable Integer patientId,  @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                               @RequestHeader("X-Tenant-Role") String tenantRole) {
         try{
-            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if(!"ADMIN".equals(tenantRole))
             {
                 log.warn("this user is not admin");
@@ -203,10 +193,9 @@ public class UserManagementController {
         }
     }
     @GetMapping()
-    public ResponseEntity<?> getPatients(HttpServletRequest servletRequest) {
+    public ResponseEntity<?> getPatients( @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                          @RequestHeader("X-Tenant-Role") String tenantRole) {
         try{
-            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if(!"ADMIN".equals(tenantRole))
             {
                 log.warn("only admin can access this");
@@ -228,5 +217,4 @@ public class UserManagementController {
         }
     }
 
-    //get mapping to get image, to do after we discuss with team
 }
