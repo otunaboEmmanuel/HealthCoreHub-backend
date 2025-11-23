@@ -177,9 +177,11 @@ services:
       TENANT_DB_USERNAME: postgres
       TENANT_DB_PASSWORD: postgres
       JWT_SECRET: ${JWT_SECRET}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
       JWT_EXPIRATION: 86400000
       JWT_REFRESH_EXPIRATION: 604800000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     expose:
       - "4001"
       - "9001"
