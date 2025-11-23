@@ -25,13 +25,10 @@ import java.util.Map;
 public class BulkController {
     private final BulkUserUploadService bulkUserUploadService;
     private final TemplateDownloadService templateDownloadService;
-
     @PostMapping(value = "bulk-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> bulkUpload(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+    public ResponseEntity<?> bulkUpload(@RequestParam("file") MultipartFile file,@RequestHeader(value = "X-Hospital-Id", required = false) String hospitalId,
+                                        @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,@RequestHeader("X-Tenant-Role") String tenantRole) {
         try{
-            String tenantRole = request.getAttribute("tenantRole").toString();
-            String tenantDbName = request.getAttribute("tenantDb").toString();
-            String hospitalId = request.getAttribute("hospitalId").toString();
             if(!tenantRole.equalsIgnoreCase("admin")){
                 log.info("to upload bulk upload files is not accessible to this user-role {}",tenantRole);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "You are not allowed to access this endpoint, contact hospital-admin"));
@@ -46,7 +43,7 @@ public class BulkController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "only csv and .xlsx files are supported"));
             }
             log.info(" Processing bulk upload: {} for hospital: {}", fileName, hospitalId);
-             BulkUploadResponse response = bulkUserUploadService.processBulkUpload(file, tenantDbName, hospitalId);
+             BulkUploadResponse response = bulkUserUploadService.processBulkUpload(file, tenantDb, hospitalId);
              return ResponseEntity.ok().body(response);
         } catch (IOException e) {
             log.error(" Bulk upload failed", e);
@@ -55,9 +52,8 @@ public class BulkController {
         }
         }
     @GetMapping("/bulk-upload/template")
-    public ResponseEntity<?> downloadTemplate(@RequestParam String format, HttpServletRequest servletRequest) {
+    public ResponseEntity<?> downloadTemplate(@RequestParam String format,@RequestHeader("X-Tenant-Role") String tenantRole) {
         try {
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if(!tenantRole.equalsIgnoreCase("admin")){
                 log.warn("bulk upload template is not accessible to this user-role {}",tenantRole);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error","You are not allowed to access this endpoint"));
