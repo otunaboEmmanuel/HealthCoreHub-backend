@@ -1,23 +1,17 @@
 package com.hc.hospitalservice.controller;
 
 import com.hc.hospitalservice.dto.*;
-import com.hc.hospitalservice.service.JwtService;
 import com.hc.hospitalservice.service.UserManagementService;
 import com.hc.hospitalservice.service.UserProfileService;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

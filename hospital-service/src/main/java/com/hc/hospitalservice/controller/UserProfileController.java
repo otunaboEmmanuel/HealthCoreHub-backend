@@ -2,7 +2,6 @@ package com.hc.hospitalservice.controller;
 
 import com.hc.hospitalservice.dto.PatientDto;
 import com.hc.hospitalservice.dto.UserProfileDTO;
-import com.hc.hospitalservice.service.JwtService;
 import com.hc.hospitalservice.service.UserProfileService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,18 +20,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class UserProfileController {
-    private final JwtService jwtService;
     private final UserProfileService userProfileService;
-
     @GetMapping()
-    public ResponseEntity<?> getMyProfile(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getMyProfile(@RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                          @RequestHeader("X-Email") String email) {
         try {
-            String token = authHeader.replace("Bearer ", "");
-            Claims claims = jwtService.extractClaims(token);
-
-            String email = claims.getSubject();
-            String tenantDb = claims.get("tenant_db", String.class);
-
             UserProfileDTO profile = userProfileService.getUserProfile(email, tenantDb);
 
             return ResponseEntity.ok(profile);
@@ -47,15 +39,11 @@ public class UserProfileController {
     @GetMapping("/{email}")
     public ResponseEntity<?> getUserProfile(
             @PathVariable String email,
-            HttpServletRequest request) {
+            @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb) {
 
         try {
-            String tenantDb = request.getAttribute("tenantDb").toString();
-
             UserProfileDTO profile = userProfileService.getUserProfile(email, tenantDb);
-
             return ResponseEntity.ok(profile);
-
         } catch (Exception e) {
             log.error(" Error fetching profile", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -64,10 +52,9 @@ public class UserProfileController {
     }
 
     @GetMapping("pending")
-    public ResponseEntity<?> getPendingProfile(HttpServletRequest request) {
+    public ResponseEntity<?> getPendingProfile(@RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                               @RequestHeader("X-Tenant-Role") String tenantRole) {
         try {
-            String tenantDb = request.getAttribute("tenantDb").toString();
-            String tenantRole = request.getAttribute("tenantRole").toString();
             if(!"ADMIN".equals(tenantRole)&& !("DOCTOR".equals(tenantRole))&& !("NURSE".equals(tenantRole))){
                 log.error(" Error fetching profile");
                 Map<String, String> error = new HashMap<>();

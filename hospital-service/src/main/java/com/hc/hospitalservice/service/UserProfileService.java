@@ -73,7 +73,7 @@ public class UserProfileService {
             return profile;
 
         } catch (SQLException e) {
-            log.error("❌ Error fetching user profile", e);
+            log.error(" Error fetching user profile", e);
             throw new RuntimeException("Failed to fetch profile: " + e.getMessage());
         }
     }
