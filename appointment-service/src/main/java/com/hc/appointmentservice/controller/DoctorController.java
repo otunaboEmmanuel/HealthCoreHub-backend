@@ -4,8 +4,6 @@ import com.hc.appointmentservice.dto.DoctorDTO;
 import com.hc.appointmentservice.dto.DoctorResponse;
 import com.hc.appointmentservice.dto.UpdateDoctorRequest;
 import com.hc.appointmentservice.service.DoctorService;
-import com.hc.appointmentservice.service.JwtService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,7 +19,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class DoctorController {
-    private final JwtService jwtService;
     private final DoctorService doctorService;
     //update availability
     @PostMapping("appointment/{id}")
