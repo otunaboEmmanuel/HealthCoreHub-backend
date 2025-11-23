@@ -146,18 +146,25 @@ public class AuthController {
                 "message", "Logged out successfully"
         ));
     }
-    @GetMapping("me")
-    public ResponseEntity<?> me(HttpServletRequest request) {
-        try {
-            String accessToken = cookieService.getAccessTokenFromCookie(request)
-                    .orElseThrow(() -> new IllegalArgumentException("Access token not found"));
-            Map<String, Object> result = authService.Me(accessToken);
-            return ResponseEntity.ok(result);
-        }catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Authentication failed");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-Email") String email,
+            @RequestHeader(value = "X-Hospital-Id", required = false) String hospitalId,
+            @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+            @RequestHeader("X-Global-Role") String globalRole,
+            @RequestHeader("X-User-Status") String status) {
+        Map<String, Object> response = new HashMap<>();
+        log.info(" Getting user details | UserId: {} | Email: {} | Role: {} | Status : {}",
+                userId, email, globalRole, status);
+        response.put("status", status);
+        response.put("userId", userId);
+        response.put("email", email);
+        response.put("hospitalId", hospitalId);
+        response.put("tenantDb", tenantDb);
+        response.put("globalRole", globalRole);
+        return ResponseEntity.ok(response);
     }
 
 
