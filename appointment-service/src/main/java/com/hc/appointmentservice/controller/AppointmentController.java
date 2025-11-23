@@ -23,13 +23,12 @@ import java.util.Map;
 @Service
 public class AppointmentController {
     private final AppointmentService appointmentService;
-
     @PostMapping("{patientId}/{doctorId}")
     public ResponseEntity<?> addAppointment(@RequestBody AppointmentDTO appointment,
-                                            @PathVariable Integer patientId, @PathVariable Integer doctorId, HttpServletRequest request) {
+                                            @PathVariable Integer patientId, @PathVariable Integer doctorId,
+                                            @RequestHeader("X-Tenant-Role") String tenantRole,
+                                            @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb){
         try {
-            String tenantRole = request.getAttribute("tenantRole").toString();
-            String tenantDb = request.getAttribute("tenantDb").toString();
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 throw new RuntimeException("does not have access to this endpoint");
             }
@@ -49,9 +48,8 @@ public class AppointmentController {
     //update appointment
     @PutMapping("{appointmentId}")
     public ResponseEntity<?> updateAppointment(@RequestBody Map<String, String> request,
-                                               @PathVariable Integer appointmentId, HttpServletRequest servletRequest) {
+                                               @PathVariable Integer appointmentId, @RequestHeader("X-Tenant-Role") String tenantRole) {
         try {
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 log.warn("Invalid appointment request for : {}", tenantRole);
                 throw new RuntimeException("does not have access to this endpoint");
@@ -69,11 +67,10 @@ public class AppointmentController {
     }
     //get particular patient by email for appointment booking
     @GetMapping("{email}")
-    public ResponseEntity<?> getAppointment(@PathVariable String email,HttpServletRequest servletRequest) {
+    public ResponseEntity<?> getAppointment(@PathVariable String email,
+                                            @RequestHeader("X-Tenant-Role") String tenantRole,
+                                            @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb) {
         try {
-
-            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 log.warn("Invalid appointment request for: {}", tenantRole);
                 throw new RuntimeException("does not have access to this endpoint");
@@ -90,10 +87,10 @@ public class AppointmentController {
         }
     }
     @GetMapping("patient/{patientId}")
-    public ResponseEntity<?> getAppointmentByPatientId(@PathVariable Integer patientId, HttpServletRequest servletRequest) {
+    public ResponseEntity<?> getAppointmentByPatientId(@PathVariable Integer patientId,
+                                                       @RequestHeader("X-Tenant-Role") String tenantRole,
+                                                       @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb) {
         try {
-            String tenantDb = servletRequest.getAttribute("tenantDb").toString();
-            String tenantRole = servletRequest.getAttribute("tenantRole").toString();
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 log.warn("this token can't access this endpoint: {}", tenantRole);
                 throw new RuntimeException("does not have access to this endpoint");

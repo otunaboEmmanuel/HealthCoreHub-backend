@@ -365,23 +365,4 @@ public class AuthService {
         return responseMap;
     }
 
-
-    public Map<String, Object> Me(String accessToken) {
-        Map<String, Object> responseMap = new HashMap<>();
-        log.info(" Me attempt");
-
-            if(!jwtService.isTokenValid(accessToken) && jwtService.isTokenExpired(accessToken)){
-                log.info("token expired or invalid");
-                responseMap.put("error", "Invalid token");
-                return responseMap;
-            }
-            Claims claims = jwtService.extractClaims(accessToken);
-            responseMap.put("email", claims.get("email"));
-            responseMap.put("hospital_id", claims.get("hospital_id"));
-            responseMap.put("global_role", claims.get("global_role"));
-            responseMap.put("tenant_role",claims.get("tenant_role"));
-            responseMap.put("tenant_user_id", claims.get("tenant_user_id"));
-            responseMap.put("status", claims.get("status"));
-            return responseMap;
-    }
 }
