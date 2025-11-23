@@ -191,7 +191,7 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4001/api/auth/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4001/auth/health"]
       interval: 30s
       timeout: 10s
       retries: 3
