@@ -1,9 +1,11 @@
-package com.hc.rediscachestarter.config;
+package com.hc.redis.autoconfigure;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.annotation.EnableCaching;
@@ -19,9 +21,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import java.time.Duration;
 
 @AutoConfiguration
+@AutoConfigureAfter(RedisAutoConfiguration.class)  // ← Add this
 @ConditionalOnClass(RedisConnectionFactory.class)
 @EnableCaching
-public class RedisAutoConfiguration {
+public class CustomRedisAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
@@ -54,7 +57,9 @@ public class RedisAutoConfiguration {
                 .entryTtl(Duration.ofMinutes(10))
                 .disableCachingNullValues()
                 .serializeKeysWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
+                        RedisSerializationContext.SerializationPair.fromSerializer(
+                                new StringRedisSerializer()
+                        )
                 )
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(serializer)
