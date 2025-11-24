@@ -1,5 +1,4 @@
 package com.hc.authservice.ratelimit;
-
 import io.github.bucket4j.*;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
 import io.github.bucket4j.redis.lettuce.cas.LettuceBasedProxyManager;
@@ -14,9 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -125,7 +122,6 @@ public class ServiceRateLimiter {
 
         return allowed;
     }
-
     /**
      * Check rate limit for password reset (by email)
      */
@@ -133,7 +129,6 @@ public class ServiceRateLimiter {
         if (!rateLimitProperties.isEnabled()) {
             return true;
         }
-
         String key = "auth:password-reset:" + email.toLowerCase();
         RateLimitProperties.EndpointLimit config = rateLimitProperties.getPasswordReset();
 
@@ -186,7 +181,6 @@ public class ServiceRateLimiter {
                         ))
                         .build()
         );
-
         return bucket.getAvailableTokens();
     }
 }

@@ -81,7 +81,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                     .header("X-User-Status", status)
                     .build();
 
-            log.info("✅ JWT validated for user: {} | Role: {} | Path: {}",
+            log.info(" JWT validated for user: {} | Role: {} | Path: {}",
                     email, globalRole, path);
 
             // Continue with modified request
