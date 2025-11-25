@@ -38,6 +38,7 @@ public class CreateUserRequest {
     private PatientDetailsRequest patientDetails;
     private PharmacistDetailsRequest pharmacistDetails;
     private LabScientistDetailsRequest labScientistDetails;
+    private HospitalStaffDetailsRequest hospitalStaffDetails;
 
     // ✅ Static nested DTOs
     @Data

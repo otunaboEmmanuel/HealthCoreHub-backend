@@ -210,11 +210,44 @@ public class UserManagementService {
             case "PATIENT" -> createPatientRecord(request.getPatientDetails(), userId, tenantDb);
             case "PHARMACIST" -> createPharmacistRecord(request.getPharmacistDetails(), userId, tenantDb);
             case "LAB_SCIENTIST" -> createLabScientistRecord(request.getLabScientistDetails(), userId, tenantDb);
+            case "STAFF"-> createStaffRecord(request.getHospitalStaffDetails(),userId,tenantDb);
             default -> {
                 log.warn("No role-specific table for role: {}", request.getRole());
                 yield null;
             }
         };
+    }
+
+    private Integer createStaffRecord(CreateUserRequest.HospitalStaffDetailsRequest hospitalStaffDetails, Integer userId, String tenantDb) {
+        if (hospitalStaffDetails == null) {
+            log.warn("Staff details not provided for user: {}", userId);
+            return null;
+        }
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+                INSERT INTO staff (user_id, position, department, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                RETURNING id
+                """;
+        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+                            PreparedStatement statement = conn.prepareStatement(sql) ){
+            statement.setInt(1,userId);
+            statement.setString(2,hospitalStaffDetails.getPosition());
+            statement.setString(3,hospitalStaffDetails.getDepartment());
+            boolean hasResult = statement.execute();
+            if (hasResult) {
+               try (ResultSet resultSet = statement.getResultSet()) {
+                   if (resultSet.next()) {
+                       Integer HospitalStaffId = resultSet.getInt("id");
+                       log.info("Staff created in tenant DB with ID: {}", HospitalStaffId);
+                       return HospitalStaffId;
+                   }
+               }
+            }
+            throw new SQLException("Doctor record insertion failed — no ID returned");
+        }catch (SQLException e) {
+            log.error(" Staff record creation failed", e);
+            throw new RuntimeException("Staff record creation failed: " + e.getMessage(), e);
+        }
     }
 
     /**
