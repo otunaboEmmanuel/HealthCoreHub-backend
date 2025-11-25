@@ -67,6 +67,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             String tenantRole = jwtService.extractClaim(claims, "tenant_role");
             String tenantUserId = jwtService.extractClaim(claims, "tenant_user_id");
             String status = jwtService.extractClaim(claims, "status");
+            String firstName = jwtService.extractClaim(claims, "first_name");
+            String lastName = jwtService.extractClaim(claims, "last_name");
 
             // Build modified request with user context headers
             ServerHttpRequest modifiedRequest = exchange.getRequest()
@@ -79,6 +81,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                     .header("X-Tenant-Role", tenantRole)
                     .header("X-Tenant-User-Id", tenantUserId)
                     .header("X-User-Status", status)
+                    .header("X-Tenant-FirstName", firstName)
+                    .header("X-Tenant-LastName", lastName)
                     .build();
 
             log.info(" JWT validated for user: {} | Role: {} | Path: {}",
