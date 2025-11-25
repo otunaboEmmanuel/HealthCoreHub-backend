@@ -225,7 +225,6 @@ public class DoctorService {
         }
 
     }
-    //@CacheEvict(value = "appointments", key = "#appointment.doctorId + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> updateStatus(Map<String, String> request, Integer appointmentId, String tenantDb) {
         log.info("getting patient id {}", appointmentId);
