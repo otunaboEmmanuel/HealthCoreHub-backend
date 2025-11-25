@@ -163,7 +163,7 @@ public class AuthService {
         }
 
         // Generate tokens
-        String accessToken = jwtService.generateToken(authUser, userInfo.getRole(), tenantStatus, userInfo.getUserId());
+        String accessToken = jwtService.generateToken(authUser, userInfo.getRole(), tenantStatus, userInfo.getUserId(), userInfo.getFirstName(), userInfo.getLastName());
         String refreshToken = jwtService.generateRefreshToken(authUser);
 
         // Save refresh token
@@ -201,7 +201,7 @@ public class AuthService {
 
         log.info("Fetching tenant role from: {}", tenantUrl);
 
-        String sql = "SELECT role, id FROM users WHERE email = ?";
+        String sql = "SELECT role, id, first_name, last_name FROM users WHERE email = ?";
 
         try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -213,6 +213,8 @@ public class AuthService {
                 return UserInfo.builder()
                         .role(rs.getString("role"))
                         .userId(rs.getInt("id"))
+                        .firstName(rs.getString("first_name"))
+                        .lastName(rs.getString("last_name"))
                         .build();
             }
 
@@ -355,7 +357,7 @@ public class AuthService {
         //get tenant status from tenantDb
         String tenantStatus = getTenantUserStatus(user);
         // Generate new access token
-        String newAccessToken = jwtService.generateToken(user, userInfo.getRole(), tenantStatus, userInfo.getUserId());
+        String newAccessToken = jwtService.generateToken(user, userInfo.getRole(), tenantStatus, userInfo.getUserId(), userInfo.getFirstName(), userInfo.getLastName());
         // Set new access token cookie (keep refresh token)
         cookieService.setAccessTokenCookie(response, newAccessToken);
         log.info(" Token refreshed for user: {}", user.getEmail());
