@@ -1,5 +1,6 @@
 package com.hc.appointmentservice.config;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.cache.annotation.EnableCaching;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -22,21 +23,28 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
 
+//    @Bean
+//    public ObjectMapper redisObjectMapper() {
+//        ObjectMapper mapper = new ObjectMapper();
+//
+//        // Register JavaTimeModule for LocalDateTime support
+//        mapper.registerModule(new JavaTimeModule());
+//
+//        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+//        mapper.activateDefaultTyping(
+//                BasicPolymorphicTypeValidator.builder()
+//                        .allowIfBaseType(Object.class)
+//                        .build(),
+//                ObjectMapper.DefaultTyping.NON_FINAL
+//        );
+//
+//        return mapper;
+//    }
     @Bean
     public ObjectMapper redisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
-
-        // Register JavaTimeModule for LocalDateTime support
         mapper.registerModule(new JavaTimeModule());
-
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        mapper.activateDefaultTyping(
-                BasicPolymorphicTypeValidator.builder()
-                        .allowIfBaseType(Object.class)
-                        .build(),
-                ObjectMapper.DefaultTyping.NON_FINAL
-        );
-
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         return mapper;
     }
 

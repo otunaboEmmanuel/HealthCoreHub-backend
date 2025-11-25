@@ -111,7 +111,7 @@ public class AppointmentService {
         return response;
     }
 
-    @Cacheable(value = "email",key = "'by-email'")
+    @Cacheable(value = "appointment",key = "#email")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> getPatientByEmail(String email, String tenantDb) {
         log.info("get patient by email {}", email);
