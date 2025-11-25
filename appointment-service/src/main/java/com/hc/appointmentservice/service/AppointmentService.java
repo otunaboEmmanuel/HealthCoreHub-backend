@@ -11,6 +11,8 @@ import com.hc.appointmentservice.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,7 +91,14 @@ public class AppointmentService {
             throw new RuntimeException(e);
         }
     }
-
+    @CachePut(
+            value = "appointment",
+            key = "#appointmentId"
+    )
+    @CacheEvict(
+            value = "appointment",
+            allEntries = true
+    )
     public Map<String, Object> updateAppointment(Map<String, String> request, Integer appointmentId) {
         Map<String, Object> response = new HashMap<>();
         Appointment appointment = appointmentRepository.findById(appointmentId).orElse(null);
@@ -111,7 +120,7 @@ public class AppointmentService {
         return response;
     }
 
-    @Cacheable(value = "appointment",key = "#email")
+    @Cacheable(value = "appointment", key = "#email + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> getPatientByEmail(String email, String tenantDb) {
         log.info("get patient by email {}", email);
@@ -170,6 +179,7 @@ public class AppointmentService {
 
     }
 
+    @Cacheable(value = "appointment", key = "#patientId + ':' + #tenantDb")
     public List<DoctorResponse> getAppointmentByPatient(Integer patientId, String tenantDb) {
         List<Appointment> appointments = appointmentRepository.findAllByPatientId(patientId);
         Set<Integer> doctorIds = appointments.stream().map(Appointment::getDoctorId).collect(Collectors.toSet());

@@ -7,6 +7,9 @@ import com.hc.appointmentservice.dto.*;
 import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.enums.Status;
 import com.hc.appointmentservice.repository.AppointmentRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +40,7 @@ public class DoctorService {
 
     private final AppointmentRepository appointmentRepository;
     private final EmailService emailService;
-
+    @CacheEvict(value = "appointments", key = "#id + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, String> setDoctorAvailability(Integer id, UpdateDoctorRequest request, String tenantDb) {
         String sql = "SELECT 1 FROM doctors WHERE id = ?";
@@ -95,7 +98,7 @@ public class DoctorService {
             throw new RuntimeException("Database error while checking doctor existence", e);
         }
     }
-
+    @Cacheable(value = "doctors", key = "#tenantDb")
     public List<DoctorDTO> getAllDoctors(String tenantDb) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
@@ -155,7 +158,7 @@ public class DoctorService {
             return Collections.singletonList(availabilityJson);  // Fallback
         }
     }
-
+    @Cacheable(value = "appointments", key = "#doctorId + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public List<DoctorResponse> getAppointments(Integer doctorId, String tenantDb) {
         List<Appointment> appointments = appointmentRepository.findByDoctorId(doctorId);
@@ -216,7 +219,7 @@ public class DoctorService {
         }
 
     }
-
+    //@CacheEvict(value = "appointments", key = "#appointment.doctorId + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> updateStatus(Map<String, String> request, Integer appointmentId, String tenantDb) {
         log.info("getting patient id {}", appointmentId);
@@ -245,7 +248,7 @@ public class DoctorService {
         result.put("status", "success");
         result.put("message", "appointment updated");
         return result;
-        //supposed to send email(i forgot) extract email from user table from patient
+
     }
 
     private DoctorInfo getDoctorInfo(String tenantDb, Integer doctorId)  {
@@ -300,7 +303,7 @@ public class DoctorService {
             throw new RuntimeException("Database error while fetching  patient", e);
         }
     }
-
+    @Cacheable(value = "doctors", key = "#email + ':' + #tenantDb")
     public DoctorDTO getDoctorByEmail(String email, String tenantDb) {
           String tenantUrl= String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
              String sql = """
@@ -332,7 +335,7 @@ public class DoctorService {
                  throw new RuntimeException("Database error while fetching  doctor", e);
              }
     }
-
+    @Cacheable(value = "availability", key = "#doctorId + ':' + #tenantDb")
     public Map<String, Object> getAvailability(Integer doctorId, String tenantDb) {
         Map<String, Object> availability = new HashMap<>();
         String sql = "SELECT 1 FROM doctors WHERE id = ?";
