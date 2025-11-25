@@ -11,6 +11,7 @@ import com.hc.appointmentservice.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -110,7 +111,7 @@ public class AppointmentService {
         return response;
     }
 
-
+    @Cacheable(value = "email",key = "'by-email'")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> getPatientByEmail(String email, String tenantDb) {
         log.info("get patient by email {}", email);

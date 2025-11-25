@@ -7,19 +7,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="redis-cache-starter" />
         <module name="auth-service" />
-      </profile>
-      <profile name="Annotation profile for onboarding-service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.40/lombok-1.18.40.jar" />
-        </processorPath>
-        <module name="hospital-service" />
-        <module name="gateway-service" />
-        <module name="onboarding-service" />
       </profile>
       <profile name="Annotation profile for appointment-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -30,9 +18,30 @@
         </processorPath>
         <module name="appointment-service" />
       </profile>
+      <profile name="Annotation profile for hospital-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.40/lombok-1.18.40.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.40/lombok-1.18.40.jar" />
+        </processorPath>
+        <module name="hospital-service" />
+      </profile>
+      <profile name="Annotation profile for onboarding-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.40/lombok-1.18.40.jar" />
+        </processorPath>
+        <module name="gateway-service" />
+        <module name="onboarding-service" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="api-gateway" target="21" />
+      <module name="redis-cache-starter" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

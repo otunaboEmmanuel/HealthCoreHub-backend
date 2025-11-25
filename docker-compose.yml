@@ -259,6 +259,9 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     expose:
       - "4005"
     networks:

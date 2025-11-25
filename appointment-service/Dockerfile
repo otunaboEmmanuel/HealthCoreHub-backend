@@ -6,22 +6,24 @@ WORKDIR /app
 COPY pom.xml .
 
 # Download dependencies with better retry and connection handling
-RUN mvn dependency:resolve -B \
-    -Dmaven.wagon.http.retryHandler.count=5 \
-    -Dmaven.wagon.http.retryHandler.requestSentEnabled=true \
-    -Dmaven.artifact.threads=1 \
-    -Dhttp.keepAlive=false \
-    -Dmaven.wagon.http.pool=false \
-    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 \
-    || mvn dependency:resolve -B \
-    || true
+#RUN mvn dependency:resolve -B \
+#    -Dmaven.wagon.http.retryHandler.count=5 \
+#    -Dmaven.wagon.http.retryHandler.requestSentEnabled=true \
+#    -Dmaven.artifact.threads=1 \
+#    -Dhttp.keepAlive=false \
+#    -Dmaven.wagon.http.pool=false \
+#    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 \
+#    || mvn dependency:resolve -B \
+#    || true
+RUN mvn -B dependency:go-offline
 
 # Copy source code
 COPY src ./src
 
 # Build the application (try offline first, fallback to online)
-RUN mvn clean package -DskipTests -o 2>/dev/null || \
-    mvn clean package -DskipTests
+#RUN mvn clean package -DskipTests -o 2>/dev/null || \
+#    mvn clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 
 FROM eclipse-temurin:21-jre-jammy AS runner

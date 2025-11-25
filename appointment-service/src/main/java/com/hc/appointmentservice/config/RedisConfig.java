@@ -1,14 +1,13 @@
-package com.hc.redis.autoconfigure;
+package com.hc.appointmentservice.config;
+
+import org.springframework.cache.annotation.EnableCaching;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.cache.annotation.EnableCaching;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -19,23 +18,39 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 
-@AutoConfiguration
-@AutoConfigureBefore(RedisAutoConfiguration.class)
-@ConditionalOnClass(RedisConnectionFactory.class)
+@Configuration
 @EnableCaching
-public class CustomRedisAutoConfiguration {
+public class RedisConfig {
 
     @Bean
-    @ConditionalOnMissingBean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public ObjectMapper redisObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // Register JavaTimeModule for LocalDateTime support
+        mapper.registerModule(new JavaTimeModule());
+
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        mapper.activateDefaultTyping(
+                BasicPolymorphicTypeValidator.builder()
+                        .allowIfBaseType(Object.class)
+                        .build(),
+                ObjectMapper.DefaultTyping.NON_FINAL
+        );
+
+        return mapper;
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(
+            RedisConnectionFactory connectionFactory,
+            ObjectMapper redisObjectMapper) {
+
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-
+        // Use the custom ObjectMapper with JavaTimeModule
         GenericJackson2JsonRedisSerializer serializer =
-                new GenericJackson2JsonRedisSerializer(mapper);
+                new GenericJackson2JsonRedisSerializer(redisObjectMapper);
 
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(serializer);
@@ -47,10 +62,12 @@ public class CustomRedisAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+    public RedisCacheManager cacheManager(
+            RedisConnectionFactory connectionFactory,
+            ObjectMapper redisObjectMapper) {
+
         GenericJackson2JsonRedisSerializer serializer =
-                new GenericJackson2JsonRedisSerializer(new ObjectMapper());
+                new GenericJackson2JsonRedisSerializer(redisObjectMapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(10))
