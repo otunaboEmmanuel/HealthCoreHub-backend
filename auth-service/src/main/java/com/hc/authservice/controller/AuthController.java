@@ -154,7 +154,8 @@ public class AuthController {
             @RequestHeader(value = "X-Hospital-Id", required = false) String hospitalId,
             @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
             @RequestHeader("X-Global-Role") String globalRole,
-            @RequestHeader("X-User-Status") String status) {
+            @RequestHeader("X-User-Status") String status,
+            @RequestHeader("X-Tenant-Role") String tenantRole) {
         Map<String, Object> response = new HashMap<>();
         log.info(" Getting user details | UserId: {} | Email: {} | Role: {} | Status : {}",
                 userId, email, globalRole, status);
@@ -164,6 +165,7 @@ public class AuthController {
         response.put("hospitalId", hospitalId);
         response.put("tenantDb", tenantDb);
         response.put("globalRole", globalRole);
+        response.put("tenant_role", tenantRole);
         return ResponseEntity.ok(response);
     }
 
