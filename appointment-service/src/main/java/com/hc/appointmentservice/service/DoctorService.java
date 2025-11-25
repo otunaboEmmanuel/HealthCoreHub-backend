@@ -40,7 +40,7 @@ public class DoctorService {
 
     private final AppointmentRepository appointmentRepository;
     private final EmailService emailService;
-    @CacheEvict(value = "appointments", key = "#id + ':' + #tenantDb")
+    @CacheEvict(value = "availability", key = "#id + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, String> setDoctorAvailability(Integer id, UpdateDoctorRequest request, String tenantDb) {
         String sql = "SELECT 1 FROM doctors WHERE id = ?";
@@ -49,11 +49,17 @@ public class DoctorService {
         }
 
         setDoctorAppointment(id, request, tenantDb);
+        evictDoctorsCache(tenantDb);
 
         Map<String, String> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", "Doctor has been updated successfully");
         return response;
+    }
+
+    @CacheEvict(value = "doctors", key = "#tenantDb")
+    public void evictDoctorsCache(String tenantDb) {
+        log.debug("Evicting doctors cache for tenant {}", tenantDb);
     }
 
     private void setDoctorAppointment(Integer id, UpdateDoctorRequest request, String tenantDb) {
@@ -237,6 +243,7 @@ public class DoctorService {
         }
         appointment.setStatus(Status.valueOf(request.get("status").toUpperCase()));
         appointmentRepository.save(appointment);
+        evictAppointmentCache(appointment.getDoctorId(), tenantDb);
         if(appointment.getStatus() == Status.CONFIRMED) {
             log.info("sending email to patient {}", appointmentId);
             PatientInfo patientInfo = getPatientDetails(tenantDb,appointment.getPatientId());
@@ -249,6 +256,11 @@ public class DoctorService {
         result.put("message", "appointment updated");
         return result;
 
+    }
+
+    @CacheEvict(value = "appointments", key = "#doctorId + ':' + #tenantDb")
+    public void evictAppointmentCache(Integer doctorId, String tenantDb) {
+        log.debug("Evicting appointment cache for doctor {} in tenant {}", doctorId, tenantDb);
     }
 
     private DoctorInfo getDoctorInfo(String tenantDb, Integer doctorId)  {
