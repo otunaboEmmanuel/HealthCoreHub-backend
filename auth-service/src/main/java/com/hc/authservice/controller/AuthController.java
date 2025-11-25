@@ -146,7 +146,6 @@ public class AuthController {
                 "message", "Logged out successfully"
         ));
     }
-
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(
             @RequestHeader("X-User-Id") String userId,
@@ -155,7 +154,9 @@ public class AuthController {
             @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
             @RequestHeader("X-Global-Role") String globalRole,
             @RequestHeader("X-User-Status") String status,
-            @RequestHeader("X-Tenant-Role") String tenantRole) {
+            @RequestHeader("X-Tenant-Role") String tenantRole,
+            @RequestHeader("X-Tenant-FirstName") String firstName,
+            @RequestHeader("X-Tenant-LastName") String lastName) {
         Map<String, Object> response = new HashMap<>();
         log.info(" Getting user details | UserId: {} | Email: {} | Role: {} | Status : {}",
                 userId, email, globalRole, status);
@@ -166,6 +167,8 @@ public class AuthController {
         response.put("tenantDb", tenantDb);
         response.put("globalRole", globalRole);
         response.put("tenant_role", tenantRole);
+        response.put("firstName", firstName);
+        response.put("lastName", lastName);
         return ResponseEntity.ok(response);
     }
 
