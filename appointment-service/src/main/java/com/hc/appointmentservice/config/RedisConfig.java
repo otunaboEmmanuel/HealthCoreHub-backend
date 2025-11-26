@@ -21,16 +21,13 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
 
-    //  ObjectMapper specifically for Redis (with type info)
     @Bean(name = "redisObjectMapper")
     public ObjectMapper redisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
-
-        // Register JavaTimeModule
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        //  Enable type info for Redis deserialization
+        // Enable type info for Redis
         mapper.activateDefaultTyping(
                 BasicPolymorphicTypeValidator.builder()
                         .allowIfBaseType(Object.class)
