@@ -345,7 +345,7 @@ public class AuthService {
             return responseMap;
         }
         String userId = jwtService.extractUserId(refreshToken);
-        AuthUser user = authUserRepository.findById(userId)
+        AuthUser user = authUserRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (!user.getIsActive()) {
