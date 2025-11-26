@@ -76,11 +76,13 @@ public class UserManagementService {
             String activationLink = String.format("%s/activate?token=%s",
                     frontendUrl, activationToken);
             // Step 2: Create user in Tenant DB
-
             Integer tenantUserId = createUserInTenantDb(request, tenantDb, userIdStr);
+            log.info("Creating user in tenant Db : {} with role: {}", request.getEmail(), request.getRole());
             if (tenantUserId == null) {
-                log.info("deleting user with id {}", userIdStr);
+                log.info("deleting user with id {} ", userIdStr);
                 authServiceGrpcClient.deleteUser(userIdStr);
+                log.info("deleting user with email {} ", request.getEmail());
+                deleteUserFromTenantDb(tenantDb,request);
             }
             Integer staffId = null;
             if (shouldCreateRoleSpecificRecord(request.getRole())) {
@@ -112,6 +114,24 @@ public class UserManagementService {
             }
             throw new RuntimeException("User creation failed: " + e.getMessage(), e);
         }
+    }
+
+    private void deleteUserFromTenantDb(String tenantDb, CreateUserRequest request) {
+            String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+            String sql = "DELETE FROM users WHERE email = ?";
+            try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+                                PreparedStatement statement = conn.prepareStatement(sql)){
+                statement.setString(1,request.getEmail());
+                int affectedRows = statement.executeUpdate();
+                if (affectedRows == 0) {
+                   log.error("Failed to delete user: {}", request.getEmail());
+                   throw new SQLException("Failed to delete user: " + request.getEmail());
+                }
+                log.info("User deleted successfully: {}", request.getEmail());
+            }catch (SQLException e){
+                log.error("Failed to delete user: {}", request.getEmail(), e);
+                throw new RuntimeException("Failed to delete user: " + request.getEmail(), e);
+            }
     }
 
     public String saveFileToStorage(MultipartFile file){

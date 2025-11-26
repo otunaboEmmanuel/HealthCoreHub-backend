@@ -242,6 +242,7 @@ public class DoctorService {
         }
         appointment.setStatus(Status.valueOf(request.get("status").toUpperCase()));
         appointmentRepository.save(appointment);
+        //evict appointment cache
         evictAppointmentCache(appointment.getDoctorId(), tenantDb);
         if(appointment.getStatus() == Status.CONFIRMED) {
             log.info("sending email to patient {}", appointmentId);
@@ -316,7 +317,7 @@ public class DoctorService {
     }
 
     @Cacheable(value = "doctors", key = "#email + ':' + #tenantDb")
-    public Map<String,Object> getDoctorByEmail(String email, String tenantDb) {
+    public DoctorDTO getDoctorByEmail(String email, String tenantDb) {
         Map<String,Object> result = new HashMap<>();
           String tenantUrl= String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
              String sql = """
@@ -331,7 +332,7 @@ public class DoctorService {
                    statement.setString(1, email);
                    ResultSet rs = statement.executeQuery();
                  if(rs.next()){
-                      DoctorDTO doctorDTO= DoctorDTO.builder()
+                     return DoctorDTO.builder()
                              .lastName(rs.getString("last_name"))
                              .firstName(rs.getString("first_name"))
                              .profile_picture(rs.getString("profile_picture"))
@@ -340,8 +341,7 @@ public class DoctorService {
                              .license_number(rs.getString("license_number"))
                               //.availability(parseAvailability(rs.getString("availability")))  // ← Parse JSON
                              .build();
-                      result.put("doctor", doctorDTO);
-                      return result;
+
                  }
                  throw new IllegalArgumentException("Doctor not found with email: " +email );
 

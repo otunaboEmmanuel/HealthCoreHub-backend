@@ -115,7 +115,7 @@ public class DoctorController {
                 log.warn("Invalid appointment request: {}", tenantRole);
                 throw new RuntimeException("does not have access to this endpoint");
             }
-            Map<String,Object> result = doctorService.getDoctorByEmail(email, tenantDb);
+            DoctorDTO result = doctorService.getDoctorByEmail(email, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
         }catch (IllegalArgumentException e) {
             log.warn("Invalid appointment request: {}", e.getMessage());

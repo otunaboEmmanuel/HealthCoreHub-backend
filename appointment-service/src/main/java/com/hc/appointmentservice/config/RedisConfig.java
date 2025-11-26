@@ -1,12 +1,10 @@
 package com.hc.appointmentservice.config;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-import org.springframework.cache.annotation.EnableCaching;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -22,11 +20,24 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 public class RedisConfig {
-    @Bean
+
+    //  ObjectMapper specifically for Redis (with type info)
+    @Bean(name = "redisObjectMapper")
     public ObjectMapper redisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
+
+        // Register JavaTimeModule
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        //  Enable type info for Redis deserialization
+        mapper.activateDefaultTyping(
+                BasicPolymorphicTypeValidator.builder()
+                        .allowIfBaseType(Object.class)
+                        .build(),
+                ObjectMapper.DefaultTyping.NON_FINAL
+        );
+
         return mapper;
     }
 
@@ -38,7 +49,6 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Use the custom ObjectMapper with JavaTimeModule
         GenericJackson2JsonRedisSerializer serializer =
                 new GenericJackson2JsonRedisSerializer(redisObjectMapper);
 
@@ -76,5 +86,4 @@ public class RedisConfig {
                 .transactionAware()
                 .build();
     }
-
 }
