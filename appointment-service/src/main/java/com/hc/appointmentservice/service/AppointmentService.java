@@ -122,15 +122,15 @@ public class AppointmentService {
 
     @Cacheable(value = "appointment", key = "#email + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
-    public Map<String, Object> getPatientByEmail(String email, String tenantDb) {
+    public PatientDto getPatientByEmail(String email, String tenantDb) {
         log.info("get patient by email {}", email);
         PatientDto patientDto = getTenantPatientByEmail(email, tenantDb);
         Map<String, Object> response = new HashMap<>();
         if(patientDto == null){
             response.put("status", "error");
         }
-        response.put("patient", patientDto);
-        return response;
+
+        return patientDto;
     }
 
     private PatientDto getTenantPatientByEmail(String email, String tenantDb) {

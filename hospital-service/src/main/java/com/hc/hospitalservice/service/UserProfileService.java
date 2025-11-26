@@ -7,6 +7,7 @@ import com.hc.hospitalservice.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -216,7 +217,7 @@ public class UserProfileService {
                 }
 
             }
-
+            @CacheEvict(value = "patients", key = "#tenantDb")
             @Transactional(rollbackFor = Exception.class)
             public Map<String, String> updateUser(Integer id, String tenantDb, UpdateRequest request) {
                 try {

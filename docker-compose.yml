@@ -222,6 +222,9 @@ services:
       FILE_UPLOAD_DIRECTORY: /app/uploads
       GRPC_CLIENT_AUTH_SERVICE_ADDRESS: static://auth-service:9001
       FRONTEND_URL: http://localhost:3000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes: # ← ADD THIS SECTION
       - hospital_uploads:/app/uploads/
     ports:

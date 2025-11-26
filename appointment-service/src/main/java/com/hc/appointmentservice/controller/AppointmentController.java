@@ -2,6 +2,7 @@ package com.hc.appointmentservice.controller;
 
 import com.hc.appointmentservice.dto.AppointmentDTO;
 import com.hc.appointmentservice.dto.DoctorResponse;
+import com.hc.appointmentservice.dto.PatientDto;
 import com.hc.appointmentservice.entity.Appointment;
 import com.hc.appointmentservice.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -73,7 +74,7 @@ public class AppointmentController {
                 log.warn("Invalid appointment request for: {}", tenantRole);
                 throw new RuntimeException("does not have access to this endpoint");
             }
-            Map<String,Object> result = appointmentService.getPatientByEmail(email, tenantDb);
+            PatientDto result = appointmentService.getPatientByEmail(email, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
         }catch (IllegalArgumentException e) {
             log.warn("Invalid email for request: {}", e.getMessage());

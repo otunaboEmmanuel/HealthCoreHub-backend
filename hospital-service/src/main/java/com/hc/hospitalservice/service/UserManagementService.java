@@ -6,6 +6,8 @@ import com.hc.hospitalservice.utils.Helper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +55,7 @@ public class UserManagementService {
     private String frontendUrl;
 
 
-
+    @CacheEvict(value = {"patients"}, key = "#tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> createUser(CreateUserRequest request, String tenantDb, Integer hospitalId) {
 
@@ -856,7 +858,7 @@ public class UserManagementService {
 
         return fullAddress.toString();
     }
-
+    @Cacheable(value = "patient", key = "#patientId + ':' + #tenantDb")
     public Map<String, Object> getHospitalNumber(String tenantDb, Integer patientId) {
         log.info("Getting hospital number from tenant DB: {}", tenantDb);
         String hospitalNumber = getHospitalNumberFromTenantDb(tenantDb,patientId);
@@ -875,6 +877,7 @@ public class UserManagementService {
               """;
         try( Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
                 PreparedStatement statement = conn.prepareStatement(sql)){
+            statement.setInt(1, patientId);
                     ResultSet rs = statement.executeQuery();
                     if(rs.next()){
                         return rs.getString("hospital_number");
@@ -885,7 +888,7 @@ public class UserManagementService {
                     throw new RuntimeException("Failed to fetch hospital number");
         }
     }
-
+    @Cacheable(value = "patients", key = "#tenantDb")
     public List<PatientDto> getPatients(String tenantDb) {
         String tenantUrl = String.format(
                 "jdbc:postgresql://%s:%s/%s",
@@ -942,7 +945,7 @@ public class UserManagementService {
 
         return patients;
     }
-
+    @CacheEvict(value = "profile_picture", key = "#userId + ':' + #tenantDb")
     public Map<String, Object> uploadProfilePicture(Integer userId, MultipartFile file, String tenantDb) {
         log.info("uploding profile picture from tenant DB: {}", tenantDb);
         String sql = "SELECT 1 FROM users WHERE id = ?";
@@ -981,7 +984,7 @@ public class UserManagementService {
             throw new RuntimeException("Failed to fetch user profile picture");
         }
     }
-
+    @Cacheable(value = "profile_picture", key = "#userId + ':' + #tenantDb")
     public String getProfilePicture(String tenantDb, Integer userId) {
         String sql = "SELECT 1 FROM users WHERE id = ?";
         if(!idExists(userId,tenantDb,sql)){
@@ -1050,7 +1053,7 @@ public class UserManagementService {
                     .body(null);
         }
     }
-
+    @Cacheable(value = "allPatients" ,key = "#tenantDb")
     public List<Map<String, Object>> getHospitalStaff(String tenantDb) {
         List<Map<String,Object>> result = new ArrayList<>();
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
