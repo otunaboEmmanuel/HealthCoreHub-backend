@@ -192,7 +192,7 @@ public class UserManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-    @GetMapping()
+    @GetMapping("active-patients")
     public ResponseEntity<?> getPatients( @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
                                           @RequestHeader("X-Tenant-Role") String tenantRole) {
         try{
@@ -216,5 +216,21 @@ public class UserManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
+    @GetMapping()
+    public ResponseEntity<?> getUsers(@RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                      @RequestHeader("X-Tenant-Role") String tenantRole){
+        try{
+            if(!"ADMIN".equals(tenantRole)){
+                log.warn("only admin can access this");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Only admins can access this"));
+            }
+            List<Map<String,Object>> result = userManagementService.getHospitalStaff(tenantDb);
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }catch (IllegalArgumentException e) {
+            log.warn("this user is not admin");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }

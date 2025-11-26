@@ -314,8 +314,10 @@ public class DoctorService {
             throw new RuntimeException("Database error while fetching  patient", e);
         }
     }
+
     @Cacheable(value = "doctors", key = "#email + ':' + #tenantDb")
-    public DoctorDTO getDoctorByEmail(String email, String tenantDb) {
+    public Map<String,Object> getDoctorByEmail(String email, String tenantDb) {
+        Map<String,Object> result = new HashMap<>();
           String tenantUrl= String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
              String sql = """
                      SELECT u.first_name,u.email,
@@ -329,7 +331,7 @@ public class DoctorService {
                    statement.setString(1, email);
                    ResultSet rs = statement.executeQuery();
                  if(rs.next()){
-                     return DoctorDTO.builder()
+                      DoctorDTO doctorDTO= DoctorDTO.builder()
                              .lastName(rs.getString("last_name"))
                              .firstName(rs.getString("first_name"))
                              .profile_picture(rs.getString("profile_picture"))
@@ -338,13 +340,16 @@ public class DoctorService {
                              .license_number(rs.getString("license_number"))
                               //.availability(parseAvailability(rs.getString("availability")))  // ← Parse JSON
                              .build();
+                      result.put("doctor", doctorDTO);
+                      return result;
                  }
-                 throw new IllegalArgumentException("Doctor not found with id: " + rs.getInt("id"));
+                 throw new IllegalArgumentException("Doctor not found with email: " +email );
 
              } catch (SQLException e) {
                  log.error("Error fetching users: {}", e.getMessage(), e);
                  throw new RuntimeException("Database error while fetching  doctor", e);
              }
+
     }
     @Cacheable(value = "availability", key = "#doctorId + ':' + #tenantDb")
     public Map<String, Object> getAvailability(Integer doctorId, String tenantDb) {

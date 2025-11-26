@@ -22,24 +22,6 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 public class RedisConfig {
-
-//    @Bean
-//    public ObjectMapper redisObjectMapper() {
-//        ObjectMapper mapper = new ObjectMapper();
-//
-//        // Register JavaTimeModule for LocalDateTime support
-//        mapper.registerModule(new JavaTimeModule());
-//
-//        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-//        mapper.activateDefaultTyping(
-//                BasicPolymorphicTypeValidator.builder()
-//                        .allowIfBaseType(Object.class)
-//                        .build(),
-//                ObjectMapper.DefaultTyping.NON_FINAL
-//        );
-//
-//        return mapper;
-//    }
     @Bean
     public ObjectMapper redisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
@@ -94,4 +76,5 @@ public class RedisConfig {
                 .transactionAware()
                 .build();
     }
+
 }

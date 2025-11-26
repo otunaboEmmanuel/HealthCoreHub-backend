@@ -1030,6 +1030,37 @@ public class UserManagementService {
                     .body(null);
         }
     }
+
+    public List<Map<String, Object>> getHospitalStaff(String tenantDb) {
+        List<Map<String,Object>> result = new ArrayList<>();
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+                 SELECT id, first_name, last_name, middle_name, email, phone_number, role
+                            FROM users
+                            WHERE role NOT IN (?, ?)
+                """;
+        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+                                PreparedStatement statement = conn.prepareStatement(sql)){
+            statement.setString(1,"ADMIN");
+            statement.setString(2,"PATIENT");
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()){
+                Map<String,Object> map = new HashMap<>();
+                map.put("id",resultSet.getInt("id"));
+                map.put("firstName",resultSet.getString("first_name"));
+                map.put("lastName",resultSet.getString("last_name"));
+                map.put("middleName",resultSet.getString("middle_name"));
+                map.put("email",resultSet.getString("email"));
+                map.put("phoneNumber",resultSet.getString("phone_number"));
+                map.put("role",resultSet.getString("role"));
+                result.add(map);
+            }
+            return  result;
+        }catch (SQLException e){
+            log.error(" Failed to fetch users from Db", e);
+            throw new RuntimeException("Failed to fetch users details", e);
+        }
+    }
 }
 
 
