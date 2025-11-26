@@ -57,14 +57,13 @@ public class UserManagementService {
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> createUser(CreateUserRequest request, String tenantDb, Integer hospitalId) {
 
-
         log.info("👤 Creating user: {} with role: {}", request.getEmail(), request.getRole());
 
         String userIdStr=null;
         try {
             // Step 1: Register in Auth Service
             Map<String, String> grpcInfo = registerInAuthService(request, hospitalId, tenantDb);
-            userIdStr = grpcInfo.get("userId");
+            userIdStr =  grpcInfo.get("userId");
             if (userIdStr == null || userIdStr.equals("null")) {
                 throw new RuntimeException("gRPC did not return a valid userId");
             }

@@ -323,12 +323,13 @@ public class AuthService {
     //grpc request to delete user upon failed instances in hospital service
     public void deleteUser(String userId) {
         log.info("checking if user with id {} exists", userId);
-        if (!(authUserRepository.existsById(userId))) {
+        UUID uuid = UUID.fromString(userId);
+        if (!(authUserRepository.existsById(uuid))) {
             log.info("user doesn't exists with id {}", userId);
             throw new IllegalArgumentException("user doesn't exists");
         }
         log.info("deleting user with id {}", userId);
-        authUserRepository.deleteById(userId);
+        authUserRepository.deleteById(uuid);
     }
 
     //creating refresh token after access token has expired
