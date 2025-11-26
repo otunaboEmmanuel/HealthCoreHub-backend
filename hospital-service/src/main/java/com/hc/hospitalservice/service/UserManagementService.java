@@ -318,9 +318,10 @@ public class UserManagementService {
             INSERT INTO nurses (
                 user_id, specialization, department, license_number,
                 license_issue_date, license_expiry_date, shift_hours,
-                years_of_experience, created_at RETURNING id
+                years_of_experience, created_at 
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            RETURNING id
             """;
         try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
