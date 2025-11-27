@@ -496,7 +496,7 @@ public class UserManagementService {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",
                 tenantDbHost, tenantDbPort, tenantDb);
         String sql = """
-        INSERT INTO lab_scientists (
+        INSERT INTO laboratory_scientists (
             user_id, license_number, license_issue_date, license_expiry_date,
             specialization, department, license_authority, years_of_experience, created_at
         )
