@@ -113,14 +113,14 @@ public class UserActivationService {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s",tenantDbHost, tenantDbPort, authUser.getTenantDb());
         String sql = """
                 UPDATE users
-                    SET password = ?, updated_at = CURRENT_TIMESTAMP
-                    WHERE email = ?, status = ?
+                    SET password = ?, updated_at = CURRENT_TIMESTAMP,  status = ?
+                    WHERE email = ?
                 """;
         try (Connection connection = DriverManager.getConnection(tenantUrl, tenantDbUsername,tenantDbPassword);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1,authUser.getPasswordHash());
-            statement.setString(2,authUser.getEmail());
-            statement.setString(3,"ACTIVE");
+            statement.setString(2,"ACTIVE");
+            statement.setString(3,authUser.getEmail());
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
                 log.warn("Query failed for activation for user {}", authUser.getId());
