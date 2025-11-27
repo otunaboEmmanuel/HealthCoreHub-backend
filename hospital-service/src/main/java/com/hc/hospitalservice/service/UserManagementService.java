@@ -453,6 +453,7 @@ public class UserManagementService {
             specialization, department, years_of_experience, license_authority, created_at
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        RETURNING id;
         """;
     try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
     PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -500,6 +501,7 @@ public class UserManagementService {
             specialization, department, license_authority, years_of_experience, created_at
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        RETURNING id;
         """;
         try (Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
