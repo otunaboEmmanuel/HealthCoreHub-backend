@@ -860,7 +860,7 @@ public class UserManagementService {
 
         return fullAddress.toString();
     }
-    @Cacheable(value = "patient", key = "#patientId + ':' + #tenantDb")
+    @Cacheable(value = "hospitalStaff", key = "#tenantDb")
     public Map<String, Object> getHospitalNumber(String tenantDb, Integer patientId) {
         log.info("Getting hospital number from tenant DB: {}", tenantDb);
         String hospitalNumber = getHospitalNumberFromTenantDb(tenantDb,patientId);
