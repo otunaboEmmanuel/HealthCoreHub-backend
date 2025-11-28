@@ -29,8 +29,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/auth/login",
             "/auth/register",
             "/auth/logout",
-            "auth/activate",
-            "auth/validate-token",
+            "/auth/activate",
+            "/auth/validate-token",
             "auth/refresh",
             "/auth/oauth",
             "/api/plans"  // Public endpoints add more from hospital service
