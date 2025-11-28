@@ -55,7 +55,7 @@ public class UserManagementService {
     private String frontendUrl;
 
 
-    @CacheEvict(value = {"patients"}, key = "#tenantDb")
+    @CacheEvict(value = {"patients", "hospitalStaff"}, key = "#tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> createUser(CreateUserRequest request, String tenantDb, Integer hospitalId) {
 
