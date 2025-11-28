@@ -532,6 +532,7 @@ public class UserManagementService {
             throw new RuntimeException("Lab scientist record creation failed: " + e.getMessage());
         }
     }
+    @CacheEvict(value = "patients", key = "#tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public UserResponse registerPatient(PatientRequest request) {
 
@@ -562,6 +563,8 @@ public class UserManagementService {
             // Get the actual hospital number that was used
             String hospitalNumber = getPatientHospitalNumber(patientId, tenantDb);
 
+            cacheEvictPatient(tenantDb);
+
             log.info(" Patient registered successfully: {} with hospital number: {}",
                     request.getEmail(), hospitalNumber);
 
@@ -584,6 +587,10 @@ public class UserManagementService {
             log.error(" Patient registration failed", e);
             throw new RuntimeException("Registration failed: " + e.getMessage(), e);
         }
+    }
+    @CacheEvict(value = "patients", key = "#tenantDb")
+    public void cacheEvictPatient(String tenantDb) {
+        log.debug("cacheEvictPatient called in tenant db {}", tenantDb);
     }
 
     private Integer createPatientWithUniqueHospitalNumber(Integer tenantUserId, String tenantDb) {
@@ -875,7 +882,7 @@ public class UserManagementService {
         String sql = """
               SELECT hospital_number
               FROM patients
-              WHERE patient_id = ?
+              WHERE id = ?
               """;
         try( Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
                 PreparedStatement statement = conn.prepareStatement(sql)){
