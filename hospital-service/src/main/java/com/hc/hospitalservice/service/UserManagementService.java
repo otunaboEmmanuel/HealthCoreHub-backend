@@ -552,8 +552,11 @@ public class UserManagementService {
             }
 
             // Step 3: Register in Auth Service
-            String authUserId = registerPatientInAuthService(request, request.getHospitalId(), tenantDb);
-
+            Map<String,String> grpcRequest = registerPatientInAuthService(request, request.getHospitalId(), tenantDb);
+            String authUserId = grpcRequest.get("user_id");
+            if (authUserId == null || authUserId.equals("null")) {
+                throw new RuntimeException("gRPC did not return a valid userId");
+            }
             // Step 4: Create user in tenant DB
             Integer tenantUserId = createPatientUserInTenantDb(request, tenantDb, authUserId);
 
@@ -781,29 +784,16 @@ public class UserManagementService {
             throw new RuntimeException("Database error: " + e.getMessage());
         }
     }
-    private String registerPatientInAuthService(PatientRequest request, Integer hospitalId, String tenantDb) {
+    private Map<String, String> registerPatientInAuthService(PatientRequest request, Integer hospitalId, String tenantDb) {
 
-        Map<String, Object> authRequest = Map.of(
-                "email", request.getEmail(),
-                "password", request.getPassword(),
-                "hospitalId", hospitalId,
-                "tenantDb", tenantDb,
-                "globalRole", "HOSPITAL_USER"
-        );
-
-        try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    authServiceUrl + "/auth/register",
-                    authRequest,
-                    Map.class
-            );
-            String authUserId = (String) response.getBody().get("userId");
-            log.info(" User registered in auth service: {}", authUserId);
-            return authUserId;
-
-        } catch (Exception e) {
-            log.error(" Auth service registration failed", e);
-            throw new RuntimeException("Auth registration failed: " + e.getMessage());
+        log.info(" Creating patient: {} ", request.getEmail());
+        try{
+            log.info("creating patient via grpc ");
+            return authServiceGrpcClient.registerStaff(request.getEmail(),
+                    hospitalId,tenantDb,"HOSPITAL_USER");
+        }catch(Exception e){
+            log.info("Error creating patient via grpc ");
+            throw new RuntimeException("Auth service registration failed: " + e.getMessage());
         }
     }
     public List<HospitalListDto> getHospitalList() {

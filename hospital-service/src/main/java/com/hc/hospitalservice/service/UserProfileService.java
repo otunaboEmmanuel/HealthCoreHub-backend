@@ -345,13 +345,19 @@ public class UserProfileService {
             response.put("status", "patient_not_found");
             return response;
         }
-        insertPatientRecordInTenantDb(patientUpdateRequest, tenantDb);
+        insertPatientRecordInTenantDb(patientUpdateRequest, tenantDb,patientId);
     }
 
-    private void insertPatientRecordInTenantDb(Map<String, Object> patientUpdateRequest, String tenantDb) {
+    private void insertPatientRecordInTenantDb(Map<String, Object> patientUpdateRequest, String tenantDb, Integer patientId) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
         String sql = """
-                INSERT INTO patients (gender, date_of_birth,marital_status,occupation,country,state,city,address_line,
-                """
+                INSERT INTO patients (gender, date_of_birth,marital_status,occupation,country,state,city,address_line,next_of_kin_name,
+                next_of_kin_relationship,next_of_kin_phone,emergency_contact_name,emergency_contact_phone, updated_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP) WHERE id = ?
+                """;
+        try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
+                                PreparedStatement statement = conn.prepareStatement(sql)){
+            statement.setInt(1,patientId);
+        }
     }
 }
