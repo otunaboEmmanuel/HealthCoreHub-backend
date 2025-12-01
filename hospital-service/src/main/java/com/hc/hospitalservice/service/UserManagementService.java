@@ -1062,7 +1062,7 @@ public class UserManagementService {
                     .body(null);
         }
     }
-    @Cacheable(value = "allPatients" ,key = "#tenantDb")
+    @Cacheable(value = "allStaffs" ,key = "#tenantDb")
     public List<Map<String, Object>> getHospitalStaff(String tenantDb) {
         List<Map<String,Object>> result = new ArrayList<>();
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
@@ -1093,7 +1093,7 @@ public class UserManagementService {
             throw new RuntimeException("Failed to fetch users details", e);
         }
     }
-
+    @CacheEvict(value = "allStaffs", key = "#tenantDb")
     public Map<String, Object> deleteUser(String tenantDb, Integer tenantUserId) {
         Map<String, Object> response = new HashMap<>();
         log.info("getting userId from tenant db: {}", tenantDb);
@@ -1121,7 +1121,7 @@ public class UserManagementService {
                     }
                 }
             }
-            throw new SQLException("Failed to fetch auth_user_id from id : %d", String.valueOf(tenantUserId));
+            throw new SQLException("Failed to fetch auth_user_id from id: " + tenantUserId);
         }catch (SQLException e){
             log.error(" Failed to fetch users from Db", e);
             throw new RuntimeException("Failed to fetch auth_user_id", e);
@@ -1137,11 +1137,13 @@ public class UserManagementService {
             int affectedRows = statement.executeUpdate();
             if (affectedRows > 0) {
                 log.info("User with id: {} has been deleted", tenantUserId);
+                return;
             }
-            log.info("User with id: {} has not been deleted", tenantUserId.toString());
-            throw new SQLException("failed to delete user with this id : %d check if it exists".formatted(tenantUserId));
+            log.info("User with id: {} has not been deleted", tenantUserId);
+            throw new SQLException("Failed to delete user with id: " + tenantUserId);
         }catch (SQLException e){
-            log.error(" Failed to delete user with id: {} ", tenantUserId, e);
+            log.error("Failed to delete user with id: {}", tenantUserId, e);
+            throw new RuntimeException(e);
         }
     }
 }
