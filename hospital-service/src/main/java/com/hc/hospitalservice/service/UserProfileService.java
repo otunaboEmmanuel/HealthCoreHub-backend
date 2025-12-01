@@ -346,18 +346,62 @@ public class UserProfileService {
             return response;
         }
         insertPatientRecordInTenantDb(patientUpdateRequest, tenantDb,patientId);
+        response.put("status", "patient_updated");
+        return response;
     }
 
     private void insertPatientRecordInTenantDb(Map<String, Object> patientUpdateRequest, String tenantDb, Integer patientId) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
         String sql = """
-                INSERT INTO patients (gender, date_of_birth,marital_status,occupation,country,state,city,address_line,next_of_kin_name,
-                next_of_kin_relationship,next_of_kin_phone,emergency_contact_name,emergency_contact_phone, updated_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP) WHERE id = ?
+                UPDATE patients
+                    SET gender= ?, date_of_birth=?,marital_status=?,occupation=?,country=?,state=?,city=?,address_line=?,next_of_kin_name=?,
+                    next_of_kin_relationship=?,next_of_kin_phone=?,emergency_contact_name=?,emergency_contact_phone=?, updated_at=CURRENT_TIMESTAMP
+                    WHERE id = ?
                 """;
         try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql)){
-            statement.setInt(1,patientId);
+            statement.setString(1, (String) patientUpdateRequest.get("gender"));
+
+            // date_of_birth -> DATE type
+            Object dob = patientUpdateRequest.get("date_of_birth");
+            if (dob instanceof java.sql.Date) {
+                statement.setDate(2, (java.sql.Date) dob);
+            } else if (dob instanceof String) {
+                statement.setDate(2, java.sql.Date.valueOf((String) dob)); // expects "YYYY-MM-DD"
+            } else {
+                statement.setNull(2, java.sql.Types.DATE);
+            }
+
+            statement.setString(3, (String) patientUpdateRequest.get("marital_status"));
+            statement.setString(4, (String) patientUpdateRequest.get("occupation"));
+            statement.setString(5, (String) patientUpdateRequest.get("country"));
+            statement.setString(6, (String) patientUpdateRequest.get("state"));
+            statement.setString(7, (String) patientUpdateRequest.get("city"));
+
+            // address_line is TEXT -> still use setString
+            statement.setString(8, (String) patientUpdateRequest.get("address_line"));
+
+            statement.setString(9, (String) patientUpdateRequest.get("next_of_kin_name"));
+            statement.setString(10, (String) patientUpdateRequest.get("next_of_kin_relationship"));
+            statement.setString(11, (String) patientUpdateRequest.get("next_of_kin_phone"));
+
+            statement.setString(12, (String) patientUpdateRequest.get("emergency_contact_name"));
+            statement.setString(13, (String) patientUpdateRequest.get("emergency_contact_phone"));
+
+            // WHERE id = ?
+            statement.setInt(14, patientId);
+
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("No patient record updated for id: " + patientId);
+            }
+
+            log.info("Updated patient {} successfully", patientId);
+
+        } catch (SQLException e) {
+            log.error("Failed to update patient {} in tenantDb {}", patientId, tenantDb, e);
+            throw new RuntimeException(e);
         }
-    }
+
+        }
 }

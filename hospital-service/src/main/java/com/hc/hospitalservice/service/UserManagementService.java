@@ -553,7 +553,7 @@ public class UserManagementService {
 
             // Step 3: Register in Auth Service
             Map<String,String> grpcRequest = registerPatientInAuthService(request, request.getHospitalId(), tenantDb);
-            String authUserId = grpcRequest.get("user_id");
+            String authUserId = grpcRequest.get("userId");
             if (authUserId == null || authUserId.equals("null")) {
                 throw new RuntimeException("gRPC did not return a valid userId");
             }

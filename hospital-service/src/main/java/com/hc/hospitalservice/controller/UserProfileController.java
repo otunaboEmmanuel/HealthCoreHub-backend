@@ -80,6 +80,10 @@ public class UserProfileController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("only admin and patients can access endpoint");
             }
             Map<String, Object> response = userProfileService.updatePatientRecord(patientUpdateRequest,tenantDb, patientId);
+            return ResponseEntity.ok(response);
+        }catch (Exception e){
+            log.error(" Error fetching profile", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }
