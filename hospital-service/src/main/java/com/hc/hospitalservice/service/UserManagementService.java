@@ -1097,7 +1097,26 @@ public class UserManagementService {
     public Map<String, Object> deleteUser(String tenantDb, Integer userId) {
         Map<String, Object> response = new HashMap<>();
         log.info("Deleting user in tenantDb with id: {}", userId);
-        deleteUserFromTenantDb();
+        deleteUserFromTenantDbWithId(tenantDb, userId);
+
+        authServiceGrpcClient.deleteUser(userIdStr);
+    }
+
+    private void deleteUserFromTenantDbWithId(String tenantDb, Integer userId) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = "DELETE FROM users WHERE id = ?";
+        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+                            PreparedStatement statement = conn.prepareStatement(sql)){
+            statement.setInt(1,userId);
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows > 0) {
+                log.info("User with id: {} has been deleted", userId);
+            }
+            log.info("User with id: {} has not been deleted", userId);
+            throw new SQLException("failed to delete user with this id : %d check if it exists".formatted(userId));
+        }catch (SQLException e){
+            log.error(" Failed to delete user with id: {} ", userId, e);
+        }
     }
 }
 
