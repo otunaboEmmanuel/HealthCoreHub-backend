@@ -243,6 +243,9 @@ public class UserManagementController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Only admins can access this endpoint"));
             }
             Map<String, Object> response = userManagementService.deleteUser(tenantDb,tenantUserId);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }
