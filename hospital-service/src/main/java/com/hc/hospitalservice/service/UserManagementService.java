@@ -1101,6 +1101,7 @@ public class UserManagementService {
         log.info("Deleting user in tenantDb with id: {}", tenantUserId.toString());
         deleteUserFromTenantDbWithId(tenantDb, tenantUserId);
         authServiceGrpcClient.deleteUser(String.valueOf(userIdStr));
+        log.info("grpc request completed for deleting user");
         response.put("user with id %s deleted and tenant id %s".formatted(userIdStr,tenantUserId), true);
         return response;
     }

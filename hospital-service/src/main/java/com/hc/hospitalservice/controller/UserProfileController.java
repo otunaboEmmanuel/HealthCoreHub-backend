@@ -70,4 +70,16 @@ public class UserProfileController {
                     .body(Map.of("error", "Failed to fetch patients"));
         }
     }
+    @PutMapping("{patientId}")
+    public ResponseEntity<?> patientUpdateRecord(@PathVariable Integer patientId, @RequestBody Map<String, Object> patientUpdateRequest,
+                                                 @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                                 @RequestHeader("X-Tenant-Role") String tenantRole) {
+        try{
+            log.info("patient update request: {}", patientUpdateRequest);
+            if(!"ADMIN".equals(tenantRole)&& !("PATIENT".equals(tenantRole))){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("only admin and patients can access endpoint");
+            }
+            Map<String, Object> response = userProfileService.updatePatientRecord(patientUpdateRequest,tenantDb, patientId);
+        }
+    }
 }

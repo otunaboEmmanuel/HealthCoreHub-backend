@@ -3,7 +3,6 @@ package com.hc.hospitalservice.service;
 import com.hc.hospitalservice.dto.PatientDto;
 import com.hc.hospitalservice.dto.UpdateRequest;
 import com.hc.hospitalservice.dto.UserProfileDTO;
-import com.hc.hospitalservice.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -221,7 +220,8 @@ public class UserProfileService {
             @Transactional(rollbackFor = Exception.class)
             public Map<String, String> updateUser(Integer id, String tenantDb, UpdateRequest request) {
                 try {
-                    if (!existsIdInTenantDb(id, tenantDb)) {
+                    String sql = "SELECT 1 FROM users WHERE id = ?";
+                    if (!existsIdInTenantDb(id, tenantDb, sql)) {
                         throw new IllegalArgumentException("User with this ID does not exist in this hospital");
                     }
                     if(request.getStatus().equalsIgnoreCase("REJECTED")) {
@@ -301,9 +301,8 @@ public class UserProfileService {
         }
     }
 
-    private Boolean existsIdInTenantDb(Integer id, String tenantDb) {
+    private Boolean existsIdInTenantDb(Integer id, String tenantDb, String sql) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
-        String sql = "SELECT 1 FROM users WHERE id = ?";
         try(Connection con = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
             PreparedStatement stmt = con.prepareStatement(sql)){
             stmt.setInt(1,id);
@@ -338,5 +337,21 @@ public class UserProfileService {
     }
 
 
+    public Map<String, Object> updatePatientRecord(Map<String, Object> patientUpdateRequest, String tenantDb, Integer patientId) {
+        Map<String, Object> response = new HashMap<>();
+        String sql = "SELECT * FROM patients WHERE id = ?";
+        if(!existsIdInTenantDb(patientId, tenantDb,sql)){
+            log.warn("patient with id={} does not exist in tenant {}", patientId, tenantDb);
+            response.put("status", "patient_not_found");
+            return response;
+        }
+        insertPatientRecordInTenantDb(patientUpdateRequest, tenantDb);
+    }
 
+    private void insertPatientRecordInTenantDb(Map<String, Object> patientUpdateRequest, String tenantDb) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+                INSERT INTO patients (gender, date_of_birth,marital_status,occupation,country,state,city,address_line,
+                """
+    }
 }
