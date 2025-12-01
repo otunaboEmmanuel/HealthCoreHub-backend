@@ -1094,28 +1094,54 @@ public class UserManagementService {
         }
     }
 
-    public Map<String, Object> deleteUser(String tenantDb, Integer userId) {
+    public Map<String, Object> deleteUser(String tenantDb, Integer tenantUserId) {
         Map<String, Object> response = new HashMap<>();
-        log.info("Deleting user in tenantDb with id: {}", userId);
-        deleteUserFromTenantDbWithId(tenantDb, userId);
-
-        authServiceGrpcClient.deleteUser(userIdStr);
+        log.info("getting userId from tenant db: {}", tenantDb);
+        UUID userIdStr = getUserIdFromTenantDb(tenantDb,tenantUserId);
+        log.info("Deleting user in tenantDb with id: {}", tenantUserId.toString());
+        deleteUserFromTenantDbWithId(tenantDb, tenantUserId);
+        authServiceGrpcClient.deleteUser(String.valueOf(userIdStr));
+        response.put("user with id %s deleted and tenant id %s".formatted(userIdStr,tenantUserId), true);
+        return response;
     }
 
-    private void deleteUserFromTenantDbWithId(String tenantDb, Integer userId) {
+    private UUID getUserIdFromTenantDb(String tenantDb, Integer tenantUserId) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = "SELECT auth_user_id FROM users WHERE id = ?";
+         UUID userIdStr = null;
+        try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+            PreparedStatement statement = conn.prepareStatement(sql)){
+            statement.setInt(1,tenantUserId);
+            boolean hasResultSet = statement.execute();
+            if(hasResultSet){
+                try(ResultSet rs = statement.getResultSet()){
+                    if(rs.next()) {
+                         userIdStr = rs.getObject("auth_user_id", UUID.class);
+                        return userIdStr;
+                    }
+                }
+            }
+            throw new SQLException("Failed to fetch auth_user_id from id : %d", String.valueOf(tenantUserId));
+        }catch (SQLException e){
+            log.error(" Failed to fetch users from Db", e);
+            throw new RuntimeException("Failed to fetch auth_user_id", e);
+        }
+    }
+
+    private void deleteUserFromTenantDbWithId(String tenantDb, Integer tenantUserId) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
         String sql = "DELETE FROM users WHERE id = ?";
         try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
                             PreparedStatement statement = conn.prepareStatement(sql)){
-            statement.setInt(1,userId);
+            statement.setInt(1,tenantUserId);
             int affectedRows = statement.executeUpdate();
             if (affectedRows > 0) {
-                log.info("User with id: {} has been deleted", userId);
+                log.info("User with id: {} has been deleted", tenantUserId);
             }
-            log.info("User with id: {} has not been deleted", userId);
-            throw new SQLException("failed to delete user with this id : %d check if it exists".formatted(userId));
+            log.info("User with id: {} has not been deleted", tenantUserId.toString());
+            throw new SQLException("failed to delete user with this id : %d check if it exists".formatted(tenantUserId));
         }catch (SQLException e){
-            log.error(" Failed to delete user with id: {} ", userId, e);
+            log.error(" Failed to delete user with id: {} ", tenantUserId, e);
         }
     }
 }
