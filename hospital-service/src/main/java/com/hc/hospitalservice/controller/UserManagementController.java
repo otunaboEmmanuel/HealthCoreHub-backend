@@ -233,4 +233,16 @@ public class UserManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    @DeleteMapping("{userId}")
+    public ResponseEntity<?> deleteUsers(@PathVariable Integer userId,@RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                         @RequestHeader("X-Tenant-Role") String tenantRole){
+        log.info("deleting user with id {} from hospital {}", userId, tenantDb);
+        try{
+            if(!tenantRole.equals("ADMIN")){
+                log.warn("only admin can access this specific endpoint");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Only admins can access this endpoint"));
+            }
+            Map<String, Object> response = userManagementService.deleteUser(tenantDb,userId);
+        }
+    }
 }

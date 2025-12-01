@@ -80,7 +80,7 @@ public class EmailService {
             The HealthCore Hub Team
             """, firstName, hospitalName, role, password);
     }
-    public void sendActivationEmail(String toEmail, String firstName, String activationLink, String role) {
+    public void sendActivationEmail(String toEmail, String firstName, String activationLink, String role, String hospitalName) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -88,7 +88,7 @@ public class EmailService {
             helper.setTo(toEmail);
             helper.setSubject("Activate Your Healthcare Account");
 
-            String htmlContent = buildActivationEmailHtml(firstName, activationLink, role);
+            String htmlContent = buildActivationEmailHtml(firstName, activationLink, role, hospitalName);
             helper.setText(htmlContent, true);
 
             javaMailSender.send(message);
@@ -100,7 +100,7 @@ public class EmailService {
         }
     }
 
-    private String buildActivationEmailHtml(String firstName, String activationLink, String role) {
+    private String buildActivationEmailHtml(String firstName, String activationLink, String role, String hospitalName) {
         return """
             <!DOCTYPE html>
             <html>
@@ -131,7 +131,7 @@ public class EmailService {
                     </div>
                     <div class="content">
                         <p>Hello %s,</p>
-                        <p>You have been invited to join our HealthCoreHub platform as a %s.</p>
+                        <p>You have been invited to join our HealthCoreHub platform as a %s at %s.</p>
                         <p>To activate your account and set your password, please click the button below:</p>
                         <p style="text-align: center;">
                             <a href="%s" class="button">Activate Account</a>
@@ -150,7 +150,7 @@ public class EmailService {
                 </div>
             </body>
             </html>
-            """.formatted(firstName, role, activationLink, activationLink);
+            """.formatted(firstName, role, hospitalName,activationLink, activationLink);
     }
 
 }

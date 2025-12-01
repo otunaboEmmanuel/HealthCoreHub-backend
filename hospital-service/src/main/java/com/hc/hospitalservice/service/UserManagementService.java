@@ -91,7 +91,7 @@ public class UserManagementService {
                 staffId = createRoleSpecificRecord(request, tenantUserId, tenantDb);
             }
             String hospitalName = userProfileService.getHospitalNameFromTenantDb(tenantDb);
-            emailService.sendActivationEmail(request.getEmail(), request.getFirstName(), activationLink, request.getRole().toUpperCase());
+            emailService.sendActivationEmail(request.getEmail(), request.getFirstName(), activationLink, request.getRole().toUpperCase(), hospitalName);
             log.info(" User created successfully: {}", request.getEmail());
             Map<String, Object> response = new HashMap<>();
             response.put("userId", tenantUserId);
@@ -1092,6 +1092,12 @@ public class UserManagementService {
             log.error(" Failed to fetch users from Db", e);
             throw new RuntimeException("Failed to fetch users details", e);
         }
+    }
+
+    public Map<String, Object> deleteUser(String tenantDb, Integer userId) {
+        Map<String, Object> response = new HashMap<>();
+        log.info("Deleting user in tenantDb with id: {}", userId);
+        deleteUserFromTenantDb();
     }
 }
 
