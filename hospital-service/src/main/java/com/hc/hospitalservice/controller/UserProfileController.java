@@ -86,4 +86,21 @@ public class UserProfileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    @PutMapping("update/{patientId}")
+    public ResponseEntity<?> patientUpdateRecordAsStaff(@PathVariable Integer patientId, @RequestBody Map<String, Object> patientUpdateRequest,
+                                                 @RequestHeader(value = "X-Tenant-Db", required = false) String tenantDb,
+                                                 @RequestHeader("X-Tenant-Role") String tenantRole) {
+        try{
+            log.info("patient update request: {}", patientUpdateRequest);
+            if(!"ADMIN".equals(tenantRole)&& !("DOCTOR".equals(tenantRole))){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("only admin and doctors can access endpoint");
+            }
+            Map<String, Object> response = userProfileService.updatePatientRecordAsStaff(patientUpdateRequest,tenantDb, patientId);
+            return ResponseEntity.ok(response);
+        }catch (Exception e){
+            log.error(" Error fetching profile", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 }

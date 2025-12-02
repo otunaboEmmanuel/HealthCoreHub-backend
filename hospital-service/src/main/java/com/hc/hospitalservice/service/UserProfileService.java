@@ -404,4 +404,20 @@ public class UserProfileService {
         }
 
         }
+
+    public Map<String, Object> updatePatientRecordAsStaff(Map<String, Object> patientUpdateRequest, String tenantDb, Integer patientId) {
+        Map<String, Object> response = new HashMap<>();
+        String sql = "SELECT * FROM patients WHERE id = ?";
+        if(!existsIdInTenantDb(patientId, tenantDb,sql)){
+            log.warn("patient with id={} does not exist in tenant {}", patientId, tenantDb);
+            response.put("status", "patient_not_found");
+            return response;
+        }
+        insertPatientRecordInTenantDbAsStaff(patientUpdateRequest, tenantDb,patientId);
+        response.put("status", "patient_updated");
+        return response;
+    }
+
+    private void insertPatientRecordInTenantDbAsStaff(Map<String, Object> patientUpdateRequest, String tenantDb, Integer patientId) {
+    }
 }
