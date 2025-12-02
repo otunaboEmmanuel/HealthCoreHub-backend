@@ -419,5 +419,27 @@ public class UserProfileService {
     }
 
     private void insertPatientRecordInTenantDbAsStaff(Map<String, Object> patientUpdateRequest, String tenantDb, Integer patientId) {
+        String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
+        String sql = """
+                UPDATE patients
+                SET genotype=?, allergies=?, chronic_condition=?, updated_at=CURRENT_TIMESTAMP
+                WHERE id = ?
+                """;
+        try (Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
+                                PreparedStatement statement = conn.prepareStatement(sql)){
+            statement.setString(1, (String) patientUpdateRequest.get("genotype"));
+            statement.setString(2,(String) patientUpdateRequest.get("allergies"));
+            statement.setString(3,(String) patientUpdateRequest.get("chronic_condition"));
+            statement.setInt(4,patientId);
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                log.error("No patient record updated for id: {}", patientId);
+                throw new SQLException("No patient record updated for id: " + patientId);
+            }
+            log.info("Updated patient {} successfully", patientId);
+        }catch (SQLException e) {
+            log.error("Failed to update patient {} in tenantDb {}", patientId, tenantDb, e);
+            throw new RuntimeException(e);
+        }
     }
 }
