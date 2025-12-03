@@ -355,7 +355,7 @@ public class UserProfileService {
         String sql = """
                 UPDATE patients
                     SET gender= ?, date_of_birth=?,marital_status=?,occupation=?,country=?,state=?,city=?,address_line=?,next_of_kin_name=?,
-                    next_of_kin_relationship=?,next_of_kin_phone=?,emergency_contact_name=?,emergency_contact_phone=?, updated_at=CURRENT_TIMESTAMP
+                    next_of_kin_relationship=?,next_of_kin_phone=?,emergency_contact_name=?,emergency_contact_phone=?,chronic_condition=?, updated_at=CURRENT_TIMESTAMP
                     WHERE id = ?
                 """;
         try(Connection conn = DriverManager.getConnection(tenantUrl, tenantDbUsername, tenantDbPassword);
@@ -387,9 +387,10 @@ public class UserProfileService {
 
             statement.setString(12, (String) patientUpdateRequest.get("emergency_contact_name"));
             statement.setString(13, (String) patientUpdateRequest.get("emergency_contact_phone"));
+            statement.setString(14,(String) patientUpdateRequest.get("chronic_condition"));
 
             // WHERE id = ?
-            statement.setInt(14, patientId);
+            statement.setInt(15, patientId);
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
@@ -422,15 +423,14 @@ public class UserProfileService {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
         String sql = """
                 UPDATE patients
-                SET genotype=?, allergies=?, chronic_condition=?, updated_at=CURRENT_TIMESTAMP
+                SET genotype=?, allergies=?, updated_at=CURRENT_TIMESTAMP
                 WHERE id = ?
                 """;
         try (Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql)){
             statement.setString(1, (String) patientUpdateRequest.get("genotype"));
             statement.setString(2,(String) patientUpdateRequest.get("allergies"));
-            statement.setString(3,(String) patientUpdateRequest.get("chronic_condition"));
-            statement.setInt(4,patientId);
+            statement.setInt(3,patientId);
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
                 log.error("No patient record updated for id: {}", patientId);

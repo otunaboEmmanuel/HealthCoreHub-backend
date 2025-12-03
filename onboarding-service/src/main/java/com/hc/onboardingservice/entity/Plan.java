@@ -29,7 +29,6 @@ public class Plan {
     @JdbcTypeCode(SqlTypes.JSON)  // This tells Hibernate to use JSON type
     @Column(columnDefinition = "jsonb")
     private List<String> features;
-
     private LocalDateTime createdAt;
 }
 
