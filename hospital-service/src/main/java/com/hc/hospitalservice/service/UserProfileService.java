@@ -423,14 +423,15 @@ public class UserProfileService {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
         String sql = """
                 UPDATE patients
-                SET genotype=?, allergies=?, updated_at=CURRENT_TIMESTAMP
+                SET genotype=?, allergies=?,blood_group, updated_at=CURRENT_TIMESTAMP
                 WHERE id = ?
                 """;
         try (Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
                                 PreparedStatement statement = conn.prepareStatement(sql)){
             statement.setString(1, (String) patientUpdateRequest.get("genotype"));
             statement.setString(2,(String) patientUpdateRequest.get("allergies"));
-            statement.setInt(3,patientId);
+            statement.setString(3,(String) patientUpdateRequest.get("blood_group"));
+            statement.setInt(4,patientId);
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
                 log.error("No patient record updated for id: {}", patientId);
