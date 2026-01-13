@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -293,9 +294,17 @@ public class HospitalService {
         return hospitalRepository.findById(id).orElse(null);
     }
 
-    public Hospital deleteHospital(Integer id) {
-        hospitalRepository.findById(id).ifPresent(hospitalRepository::delete);
-        return null;
+    public Map<String, String> deleteHospital(Integer id) {
+        Map<String, String> response = new HashMap<>();
+        try {
+            hospitalRepository.findById(id).ifPresent(hospitalRepository::delete);
+            response.put("success", "Hospital deleted successfully");
+            return response;
+        }catch (Exception e) {
+            log.warn(" Failed to delete hospital with ID: {}", id, e);
+            response.put("error", "Failed to delete hospital with ID: " + id);
+            return response;
+        }
     }
     private String registerInAuthService(
             HospitalRegistrationRequest.AdminInfo adminInfo,

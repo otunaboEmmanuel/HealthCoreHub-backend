@@ -66,7 +66,7 @@ public class HospitalController {
                                           @RequestParam(name= "size", defaultValue = "10", required = false) int size)
     {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<Hospital> hospitals = hospitalRepository.findAllWithDetails(pageable);
+        Page<Hospital> hospitals = hospitalRepository.findAllHospital(pageable);
         Page<HospitalListResponse> response = hospitals.map(HospitalListResponse::new);
         return ResponseEntity.ok(response);
     }
@@ -101,16 +101,8 @@ public class HospitalController {
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteHospital(@PathVariable Integer id)
     {
-        Map<String, String> response = new HashMap<>();
-        Hospital hospital = hospitalService.deleteHospital(id);
-        if (hospital == null)
-        {
-            response.put("code", "101");
-            response.put("message", "hospital does not exist".toUpperCase());
-        }
-        response.put("code", "00");
-        response.put("message", "hospital successfully deleted".toUpperCase());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        Map<String,String> result = hospitalService.deleteHospital(id);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 //    @DeleteMapping("/{dbName}")
 //    public ResponseEntity<?> dropTenantDatabase(
