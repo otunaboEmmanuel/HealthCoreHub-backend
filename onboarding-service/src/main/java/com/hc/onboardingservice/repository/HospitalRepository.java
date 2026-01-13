@@ -26,6 +26,6 @@ public interface HospitalRepository extends JpaRepository<Hospital, Integer> {
     Page<Hospital> findAllWithDetails(Pageable pageable);
 
     @EntityGraph(attributePaths = {"plan", "admins"})
-    Page<Hospital> findAllHospital(Pageable pageable);
+    Page<Hospital> findAll(Pageable pageable);
 
 }

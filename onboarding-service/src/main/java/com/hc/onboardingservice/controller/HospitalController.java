@@ -66,7 +66,7 @@ public class HospitalController {
                                           @RequestParam(name= "size", defaultValue = "10", required = false) int size)
     {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<Hospital> hospitals = hospitalRepository.findAllHospital(pageable);
+        Page<Hospital> hospitals = hospitalRepository.findAll(pageable);
         Page<HospitalListResponse> response = hospitals.map(HospitalListResponse::new);
         return ResponseEntity.ok(response);
     }
