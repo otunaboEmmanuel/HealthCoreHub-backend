@@ -99,6 +99,7 @@ public class HospitalService {
 
             // 10. Send confirmation email
             log.info(" Sending confirmation email");
+            //we're sending raw passwords over email,
             sendConfirmationEmail(hospital, admin, request.getAdmin().getPassword());
 
             // 11. Build response

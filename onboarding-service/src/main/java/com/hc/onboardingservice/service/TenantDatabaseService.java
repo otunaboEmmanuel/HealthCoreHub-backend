@@ -48,6 +48,7 @@ public class TenantDatabaseService {
 
             if (!rs.next()) {
                 stmt.executeUpdate("CREATE DATABASE " + dbName);
+
                 log.info(" Created database '{}'", dbName);
             } else {
                 log.warn(" Database '{}' already exists", dbName);
@@ -128,13 +129,13 @@ public class TenantDatabaseService {
             );
 
             stmt.executeUpdate("DROP DATABASE IF EXISTS " + dbName);
-            log.info("✅ Dropped database '{}'", dbName);
+            log.info(" Dropped database '{}'", dbName);
 
             stmt.executeUpdate("DROP USER IF EXISTS " + dbUser);
-            log.info("✅ Dropped user '{}'", dbUser);
+            log.info(" Dropped user '{}'", dbUser);
 
         } catch (SQLException e) {
-            log.error("❌ Error dropping tenant database", e);
+            log.error(" Error dropping tenant database", e);
             throw new RuntimeException("Failed to drop tenant database: " + e.getMessage());
         }
     }
