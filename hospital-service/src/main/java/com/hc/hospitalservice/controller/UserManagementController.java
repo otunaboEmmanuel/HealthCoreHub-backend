@@ -36,7 +36,7 @@ public class UserManagementController {
             if (!"ADMIN".equals(tenantRole)&& !("DOCTOR".equals(tenantRole)) && !("NURSE".equals(tenantRole)))
             {
                 Map<String, String> error = new HashMap<>();
-                error.put("error", "Only admins can create users");
+                error.put("error", "Only doctors,nurses and admins can create users");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
             }
             Map<String,Object> response = userManagementService.createUser(request, tenantDb, Integer.valueOf(hospitalId));

@@ -1099,20 +1099,16 @@ public class UserManagementService {
     private UUID getUserIdFromTenantDb(String tenantDb, Integer tenantUserId) {
         String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
         String sql = "SELECT auth_user_id FROM users WHERE id = ?";
-         UUID userIdStr = null;
         try(Connection conn = DriverManager.getConnection(tenantUrl,tenantDbUsername,tenantDbPassword);
             PreparedStatement statement = conn.prepareStatement(sql)){
             statement.setInt(1,tenantUserId);
-            boolean hasResultSet = statement.execute();
-            if(hasResultSet){
-                try(ResultSet rs = statement.getResultSet()){
-                    if(rs.next()) {
-                         userIdStr = rs.getObject("auth_user_id", UUID.class);
-                        return userIdStr;
-                    }
+            try(ResultSet resultSet = statement.executeQuery()){
+                if(resultSet.next()){
+                    log.info("getting auth_user_id from tenant db with id: {}", tenantUserId);
+                    return resultSet.getObject("auth_user_id",UUID.class);
                 }
+                throw new RuntimeException("getting auth_user_id failed");
             }
-            throw new SQLException("Failed to fetch auth_user_id from id: " + tenantUserId);
         }catch (SQLException e){
             log.error(" Failed to fetch users from Db", e);
             throw new RuntimeException("Failed to fetch auth_user_id", e);
