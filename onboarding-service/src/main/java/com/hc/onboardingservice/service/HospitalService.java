@@ -296,15 +296,10 @@ public class HospitalService {
 
     public Map<String, String> deleteHospital(Integer id) {
         Map<String, String> response = new HashMap<>();
-        try {
-            hospitalRepository.findById(id).ifPresent(hospitalRepository::delete);
-            response.put("success", "Hospital deleted successfully");
-            return response;
-        }catch (Exception e) {
-            log.warn(" Failed to delete hospital with ID: {}", id, e);
-            response.put("error", "Failed to delete hospital with ID: " + id);
-            return response;
-        }
+        Hospital hospital = hospitalRepository.findById(id).orElseThrow(() -> new RuntimeException("Hospital with ID: " + id + " not found") );
+        hospitalRepository.deleteById(hospital.getId());
+        response.put("message", "Hospital with ID: " + id + " deleted successfully");
+        return response;
     }
     private String registerInAuthService(
             HospitalRegistrationRequest.AdminInfo adminInfo,

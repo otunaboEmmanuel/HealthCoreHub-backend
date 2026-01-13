@@ -33,7 +33,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             "/auth/validate-token",
             "/auth/refresh",
             "/auth/oauth",
-            "/api/plans"  // Public endpoints add more from hospital service
+            "/api/plans",
+            "/api/hospital"// Public endpoints add more from hospital service
     );
 
     @Override
