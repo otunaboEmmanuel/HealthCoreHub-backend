@@ -1086,13 +1086,19 @@ public class UserManagementService {
     @CacheEvict(value = "allStaffs", key = "#tenantDb")
     public Map<String, Object> deleteUser(String tenantDb, Integer tenantUserId) {
         Map<String, Object> response = new HashMap<>();
+        String sql = "SELECT 1 FROM users WHERE id = ?";
+        if(!idExists(tenantUserId,tenantDb,sql)){
+            log.warn("User with id {} does not exist in tenant {}", tenantUserId, tenantDb);
+            response.put("status","User with id " + tenantUserId + " does not exist");
+            return response;
+        }
         log.info("getting userId from tenant db: {}", tenantDb);
         UUID userIdStr = getUserIdFromTenantDb(tenantDb,tenantUserId);
         log.info("Deleting user in tenantDb with id: {}", tenantUserId.toString());
         deleteUserFromTenantDbWithId(tenantDb, tenantUserId);
         authServiceGrpcClient.deleteUser(String.valueOf(userIdStr));
         log.info("grpc request completed for deleting user");
-        response.put("user with id %s deleted and tenant id %s".formatted(userIdStr,tenantUserId), true);
+        response.put("status","user with id %s deleted and tenant id %s has been deleted".formatted(userIdStr,tenantUserId));
         return response;
     }
 
