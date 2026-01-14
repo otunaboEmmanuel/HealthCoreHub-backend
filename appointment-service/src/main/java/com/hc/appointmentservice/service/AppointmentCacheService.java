@@ -12,4 +12,8 @@ public class AppointmentCacheService {
     public void evictDoctorAppointments(Integer doctorId, String tenantDb) {
         log.debug("Evicting cache");
     }
+    @CacheEvict(value = "appointments", key = "#patientId + ':' + #tenantDb")
+    public void evictPatientAppointments(Integer patientId, String tenantDb) {
+        log.debug("Evicting cache for patient");
+    }
 }

@@ -39,6 +39,7 @@ public class AppointmentService {
     @Value("${tenant.datasource.password}")
     private String tenantDbPassword;
     private final AppointmentRepository appointmentRepository;
+    private final AppointmentCacheService appointmentCacheService;
 
     @CacheEvict(value = "appointments", key = "#doctorId + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
@@ -63,7 +64,9 @@ public class AppointmentService {
                 .reason(appointment.getReason())
                 .status(Status.PENDING)
                 .build();
-         return appointmentRepository.save(appointment1);
+         Appointment saved =  appointmentRepository.save(appointment1);
+         appointmentCacheService.evictPatientAppointments(patientId, tenantDb);
+         return saved;
     }
 
     private boolean userExistsInTenant(String tenantDb, Integer patientId) {
@@ -180,7 +183,7 @@ public class AppointmentService {
 
     }
 
-    @Cacheable(value = "appointment", key = "#patientId + ':' + #tenantDb")
+    @Cacheable(value = "appointments", key = "#patientId + ':' + #tenantDb")
     public List<DoctorResponse> getAppointmentByPatient(Integer patientId, String tenantDb) {
         List<Appointment> appointments = appointmentRepository.findAllByPatientId(patientId);
         Set<Integer> doctorIds = appointments.stream().map(Appointment::getDoctorId).collect(Collectors.toSet());
