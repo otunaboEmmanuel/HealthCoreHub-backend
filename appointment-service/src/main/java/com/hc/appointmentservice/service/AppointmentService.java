@@ -40,6 +40,7 @@ public class AppointmentService {
     private String tenantDbPassword;
     private final AppointmentRepository appointmentRepository;
 
+    @CacheEvict(value = "appointments", key = "#doctorId + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public Appointment bookAppointment(AppointmentDTO appointment, String tenantDb, Integer patientId, Integer doctorId) {
         if(!userExistsInTenant(tenantDb,patientId)){
@@ -50,11 +51,10 @@ public class AppointmentService {
             log.error("doctor with id {} not exists",doctorId);
             throw new RuntimeException("doctor with id " + doctorId + " not exists");
         }
-        if(appointmentRepository.findByAppointmentTime(appointment.getAppointmentTime()).isPresent()){
+        if(appointmentRepository.findByAppointmentTimeAndDoctorId(appointment.getAppointmentTime(),doctorId).isPresent()){
             log.warn("appointment time already exists");
             throw new RuntimeException("appointment time already exists");
         }
-        cacheEvictDoctorAppointments(tenantDb,doctorId);
         Appointment appointment1 = Appointment.builder()
                 .appointmentTime(appointment.getAppointmentTime())
                 .date(appointment.getDate())
@@ -64,10 +64,6 @@ public class AppointmentService {
                 .status(Status.PENDING)
                 .build();
          return appointmentRepository.save(appointment1);
-    }
-    @CacheEvict(value = "appointments", key = "#doctorId + ':' + #tenantDb")
-    public void cacheEvictDoctorAppointments(String tenantDb, Integer doctorId) {
-        log.debug("clearing doctor appointments for doctor with id {}", doctorId);
     }
 
     private boolean userExistsInTenant(String tenantDb, Integer patientId) {
