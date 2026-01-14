@@ -40,6 +40,7 @@ public class DoctorService {
 
     private final AppointmentRepository appointmentRepository;
     private final EmailService emailService;
+    private final AppointmentCacheService appointmentCacheService;
     @CacheEvict(value = "availability", key = "#id + ':' + #tenantDb")
     @Transactional(rollbackFor = Exception.class)
     public Map<String, String> setDoctorAvailability(Integer id, UpdateDoctorRequest request, String tenantDb) {
@@ -225,6 +226,7 @@ public class DoctorService {
         }
 
     }
+
     @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> updateStatus(Map<String, String> request, Integer appointmentId, String tenantDb) {
         log.info("getting patient id {}", appointmentId);
@@ -242,8 +244,7 @@ public class DoctorService {
         }
         appointment.setStatus(Status.valueOf(request.get("status").toUpperCase()));
         appointmentRepository.save(appointment);
-        //evict appointment cache
-        evictAppointmentCache(appointment.getDoctorId(), tenantDb);
+        appointmentCacheService.evictDoctorAppointments(appointment.getDoctorId(), tenantDb);
         if(appointment.getStatus() == Status.CONFIRMED) {
             log.info("sending email to patient {}", appointmentId);
             PatientInfo patientInfo = getPatientDetails(tenantDb,appointment.getPatientId());
@@ -258,10 +259,6 @@ public class DoctorService {
 
     }
 
-    @CacheEvict(value = "appointments", key = "#doctorId + ':' + #tenantDb")
-    public void evictAppointmentCache(Integer doctorId, String tenantDb) {
-        log.debug("Evicting appointment cache for doctor {} in tenant {}", doctorId, tenantDb);
-    }
 
     private DoctorInfo getDoctorInfo(String tenantDb, Integer doctorId)  {
          String tenantUrl = String.format("jdbc:postgresql://%s:%s/%s", tenantDbHost, tenantDbPort, tenantDb);
