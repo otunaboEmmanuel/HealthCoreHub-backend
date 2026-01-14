@@ -54,6 +54,7 @@ public class AppointmentService {
             log.warn("appointment time already exists");
             throw new RuntimeException("appointment time already exists");
         }
+        cacheEvictDoctorAppointments(tenantDb,doctorId);
         Appointment appointment1 = Appointment.builder()
                 .appointmentTime(appointment.getAppointmentTime())
                 .date(appointment.getDate())
@@ -63,6 +64,10 @@ public class AppointmentService {
                 .status(Status.PENDING)
                 .build();
          return appointmentRepository.save(appointment1);
+    }
+    @CacheEvict(value = "appointments", key = "#doctorId + ':' + #tenantDb")
+    public void cacheEvictDoctorAppointments(String tenantDb, Integer doctorId) {
+        log.debug("clearing doctor appointments for doctor with id {}", doctorId);
     }
 
     private boolean userExistsInTenant(String tenantDb, Integer patientId) {
@@ -110,7 +115,7 @@ public class AppointmentService {
            }
             appointment.setAppointmentTime(request.get("appointmentTime"));
             appointment.setDate(LocalDate.parse(request.get("date")));
-            appointment.setStatus(Status.valueOf(request.get("status").toUpperCase()));
+            //appointment.setStatus(Status.valueOf(request.get("status").toUpperCase()));
             appointmentRepository.save(appointment);
             response.put("status", "00");
             response.put("message", "appointment updated successfully");
