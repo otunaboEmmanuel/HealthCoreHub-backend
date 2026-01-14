@@ -51,7 +51,7 @@ public class AppointmentController {
         try {
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 log.warn("Invalid appointment request for : {}", tenantRole);
-                throw new RuntimeException("does not have access to this endpoint");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "you do not have access to this endpoint"));
             }
             Map<String, Object> response = appointmentService.updateAppointment(request, appointmentId);
             return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -72,7 +72,7 @@ public class AppointmentController {
         try {
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 log.warn("Invalid appointment request for: {}", tenantRole);
-                throw new RuntimeException("does not have access to this endpoint");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "you do not have access to this endpoint"));
             }
             PatientDto result = appointmentService.getPatientByEmail(email, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
@@ -92,7 +92,7 @@ public class AppointmentController {
         try {
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("patient")) {
                 log.warn("this token can't access this endpoint: {}", tenantRole);
-                throw new RuntimeException("does not have access to this endpoint");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "you do not have access to this endpoint"));
             }
             List<DoctorResponse> result = appointmentService.getAppointmentByPatient(patientId, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);

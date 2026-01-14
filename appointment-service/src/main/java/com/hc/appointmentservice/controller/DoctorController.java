@@ -75,7 +75,7 @@ public class DoctorController {
         try {
             if (!("ADMIN".equals(tenantRole)) && !("DOCTOR".equals(tenantRole))) {
                 log.error(" this role cant access endpoint {}", tenantRole);
-                throw new RuntimeException(" this role cant access endpoint " + tenantRole);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "you do not have access to this endpoint"));
             }
             List<DoctorResponse> doctorResponses = doctorService.getAppointments(doctorId, tenantDb);
             return ResponseEntity.ok(Map.of("doctors", doctorResponses));
@@ -95,7 +95,7 @@ public class DoctorController {
         try{
             if(!("DOCTOR".equals(tenantRole))&& !("ADMIN".equals(tenantRole))){
                 log.error(" this role cant access endpoint {}", tenantRole);
-                throw new RuntimeException(" this role cant access endpoint " + tenantRole);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "you do not have access to this endpoint"));
             }
             Map<String, Object> result = doctorService.updateStatus(request, appointmentId, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
@@ -113,7 +113,7 @@ public class DoctorController {
 
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("doctor")) {
                 log.warn("Invalid appointment request: {}", tenantRole);
-                throw new RuntimeException("does not have access to this endpoint");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "you do not have access to this endpoint"));
             }
             DoctorDTO result = doctorService.getDoctorByEmail(email, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(result);
@@ -132,7 +132,7 @@ public class DoctorController {
         try {
             if (!tenantRole.equalsIgnoreCase("admin") && !tenantRole.equalsIgnoreCase("doctor") && !tenantRole.equalsIgnoreCase("patient")) {
                 log.warn("Invalid appointment request: {}", tenantRole);
-                throw new RuntimeException("does not have access to this endpoint");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "you do not have access to this endpoint"));
             }
             Map<String, Object> response = doctorService.getAvailability(doctorId, tenantDb);
             return ResponseEntity.status(HttpStatus.OK).body(response);
