@@ -249,7 +249,7 @@ public class DoctorService {
             PatientInfo patientInfo = getPatientDetails(tenantDb,appointment.getPatientId());
             DoctorInfo doctorInfo = getDoctorInfo(tenantDb, appointment.getDoctorId());
             String DocName = doctorInfo.getFirstName() + " " + doctorInfo.getLastName();
-            emailService.sendSimpleMail(patientInfo.getEmail(),patientInfo.getFirstName(),appointment.getAppointmentTime(),DocName);
+            //emailService.sendSimpleMail(patientInfo.getEmail(),patientInfo.getFirstName(),appointment.getAppointmentTime(),DocName);
         }
         Map<String, Object> result = new HashMap<>();
         result.put("status", "success");

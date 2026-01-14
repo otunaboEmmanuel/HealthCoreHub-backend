@@ -110,12 +110,12 @@ public class AppointmentService {
            }
             appointment.setAppointmentTime(request.get("appointmentTime"));
             appointment.setDate(LocalDate.parse(request.get("date")));
+            appointment.setStatus(Status.valueOf(request.get("status").toUpperCase()));
             appointmentRepository.save(appointment);
             response.put("status", "00");
             response.put("message", "appointment updated successfully");
             return response;
         }
-        response.put("status", "error");
         response.put("message", "appointment not found");
         return response;
     }
